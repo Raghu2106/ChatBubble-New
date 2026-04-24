@@ -5,12 +5,12 @@
   --color-brand: #7c3aed;
   --color-brand-light: #a78bfa;
   --color-brand-dark: #5b21b6;
-  --color-bg: #09090b;
-  --color-surface: #18181b;
-  --color-surface-hover: #27272a;
-  --color-text: #fafafa;
-  --color-text-muted: #a1a1aa;
-  --color-border: #27272a;
+  --color-bg: #f1f5f9;
+  --color-surface: #e2e8f0;
+  --color-surface-hover: #cbd5e1;
+  --color-text: #0f172a;
+  --color-text-muted: #475569;
+  --color-border: #cbd5e1;
 
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
   --font-display: "Lexend", system-ui, sans-serif;
@@ -25,17 +25,21 @@ body {
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--color-border);
   border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--color-text-muted);
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
 .glass {

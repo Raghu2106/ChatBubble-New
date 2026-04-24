@@ -38,14 +38,21 @@ export default function App() {
     setStep('chat');
   };
 
+  const handleExit = () => {
+    socket.disconnect();
+    socket.connect(); // Reconnect to be ready for next session
+    setUser(null);
+    setStep('landing');
+  };
+
   if (isAdmin) {
     return <AdminPanel />;
   }
 
   return (
-    <div className="min-h-screen bg-[#1a1625] overflow-x-hidden relative">
+    <div className="min-h-screen bg-bg overflow-x-hidden relative">
       {step === 'chat' && user ? (
-        <ChatInterface user={user} />
+        <ChatInterface user={user} onExit={handleExit} />
       ) : (
         <>
           <LandingPage onStart={() => setStep('entry')} />

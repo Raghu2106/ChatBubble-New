@@ -126,15 +126,8 @@ async function startServer() {
       const user = users.get(userId);
       if (!user) return;
 
-      // Rate limit: 1 msg / 1 sec (spec said 2 sec, let's stick to 1.5s for balance)
+      // Rate limit removed by user request
       const now = Date.now();
-      const lastTime = (user as any).lastMessageTime || 0;
-      if (now - lastTime < 1500) {
-        socket.emit('error', 'Please slow down. Anti-spam active.');
-        return;
-      }
-      (user as any).lastMessageTime = now;
-
       const message: ChatMessage = {
         id: uuidv4(),
         senderId: user.id,

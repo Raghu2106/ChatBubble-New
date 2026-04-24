@@ -11,6 +11,7 @@ import { ChatMessage, Room, Gender } from './types';
 
 interface ChatInterfaceProps {
   user: { nickname: string; id: string; gender?: Gender; interests: string[] };
+  onExit: () => void;
 }
 
 type Tab = 'Rooms' | 'Messages' | 'People';
@@ -22,11 +23,11 @@ const CATEGORIES = [
   { id: 'global', name: 'Connect Globally', icon: Globe },
 ];
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit }) => {
   const [activeTab, setActiveTab] = useState<Tab>('Rooms');
   const [currentRoom, setCurrentRoom] = useState<string>('lobby');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [onlineUsers, setOnlineUsers] = useState<{ id: string; nickname: string; gender?: Gender; isDND?: boolean }[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<{ id: string; nickname: string; gender?: Gender; isDND?: boolean; currentRoom?: string }[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [collapsedCategories, setCollapsedCategories] = useState<string[]>(['global']);
   const [peopleSortBy, setPeopleSortBy] = useState<SortOption>('alphabet');
@@ -109,6 +110,18 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
     );
   };
   
+  const handleClosePrivateChat = (otherId: string) => {
+    setPrivateThreads(prev => {
+      const next = { ...prev };
+      delete next[otherId];
+      return next;
+    });
+    if (activePrivateChat === otherId) {
+      setActivePrivateChat(null);
+      setCurrentRoom('lobby');
+    }
+  };
+
   const handleBlock = (userId: string) => {
     socket.emit('block:user', userId);
     setBlockedUsers(prev => {
@@ -142,39 +155,52 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
     : currentRoomData?.name || "The Lobby";
 
   return (
-    <div className="h-screen flex flex-col bg-[#1a1625] text-white overflow-hidden font-sans">
+    <div className="h-screen flex flex-col bg-bg text-text overflow-hidden font-sans">
       
       {/* TOP PRIVACY BAR */}
-      <div className="bg-[#241d33] py-2 px-4 flex items-center justify-center gap-2 border-b border-white/5 shrink-0">
-        <Lock size={12} className="text-[#a855f7]" />
-        <span className="text-[10px] uppercase font-black tracking-widest text-white/40">
+      <div className="bg-surface py-2 px-4 flex items-center justify-center gap-2 border-b border-border shrink-0">
+        <Lock size={12} className="text-brand" />
+        <span className="text-[10px] uppercase font-black tracking-widest text-text-muted">
           Your conversations stay private. No personal data stored.
         </span>
       </div>
 
       {/* MAIN HEADER */}
-      <header className="h-16 flex-shrink-0 flex items-center justify-between px-10 bg-[#1a1625] border-b border-white/5">
+      <header className="h-16 flex-shrink-0 flex items-center justify-between px-10 bg-surface/80 backdrop-blur-md border-b border-border shadow-sm sticky top-0 z-10 relative">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center">
-            <MessageSquare size={18} className="text-white" />
+          <div className="w-8 h-8 bg-brand/10 rounded-lg flex items-center justify-center">
+            <MessageSquare size={18} className="text-brand" />
           </div>
-          <h1 className="text-xl font-black tracking-tight text-white/90">ChatSpace</h1>
+          <h1 className="text-xl font-black tracking-tight text-text">ChatSpace</h1>
+        </div>
+
+        {/* Centered Welcome Message */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <span className="text-sm font-medium text-text-muted pointer-events-auto">
+            Welcome, <span className="text-text font-black">{user.nickname}</span>
+          </span>
         </div>
 
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-3">
-             <span className="text-[10px] font-black uppercase text-white/30 tracking-widest flex items-center gap-1.5">
+             <span className="text-[10px] font-black uppercase text-text-muted tracking-widest flex items-center gap-1.5">
                {isDND ? <BellOff size={12} /> : <Bell size={12} />} DND
              </span>
              <button 
                onClick={toggleDND}
-               className={`w-10 h-5 rounded-full relative transition-all duration-300 ${isDND ? 'bg-[#9d367c]' : 'bg-white/10'}`}
+               className={`w-10 h-5 rounded-full relative transition-all duration-300 ${isDND ? 'bg-brand' : 'bg-border'}`}
              >
-                <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all duration-300 ${isDND ? 'left-6' : 'left-1'}`} />
+                <div className={`absolute top-1 w-3 h-3 rounded-full bg-white shadow-sm transition-all duration-300 ${isDND ? 'left-6' : 'left-1'}`} />
              </button>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-white/40">Welcome, <span className="text-white font-black">{user.nickname}</span></span>
+          <div className="flex items-center">
+            <button 
+              onClick={onExit}
+              className="flex items-center gap-2 px-4 py-2 bg-surface/50 hover:bg-red-500/10 text-text-muted hover:text-red-500 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest border border-border hover:border-red-500/20"
+            >
+              <DoorOpen size={14} />
+              Exit Chat
+            </button>
           </div>
         </div>
       </header>
@@ -185,7 +211,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
         {/* LEFT SIDEBAR CATEGORIES */}
         <aside className="w-72 flex flex-col gap-4 flex-shrink-0">
            {/* Navigation Tabs */}
-           <div className="flex bg-white/5 p-1 rounded-xl">
+           <div className="flex bg-border/20 p-1 rounded-xl">
               {(['Rooms', 'Messages', 'People'] as Tab[]).map(tab => {
                 let count = 0;
                 if (tab === 'Messages') count = Object.keys(privateThreads).length;
@@ -196,11 +222,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
                     key={tab}
                     onClick={() => setActiveTab(tab)}
                     className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-2 ${
-                      activeTab === tab ? 'bg-white/10 text-white shadow-xl' : 'text-white/30 hover:text-white/60'
+                      activeTab === tab ? 'bg-surface text-text shadow-sm' : 'text-text-muted hover:text-text'
                     }`}
                   >
                     <div className={`px-1.5 py-0.5 rounded-full text-[8px] flex items-center justify-center font-black ${
-                      activeTab === tab ? 'bg-[#9d367c] text-white' : 'bg-white/10 text-white/40'
+                      activeTab === tab ? 'bg-brand text-white' : 'bg-surface-hover text-text-muted'
                     }`}>
                       {count}
                     </div>
@@ -211,25 +237,25 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
            </div>
 
            {/* Content List Card */}
-           <div className="flex-1 bg-[#241d33]/40 rounded-[2rem] border border-white/5 flex flex-col overflow-hidden">
-              <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-hide">
+           <div className="flex-1 bg-surface rounded-[2rem] border border-border shadow-sm flex flex-col overflow-hidden">
+              <div className="flex-1 overflow-y-auto p-4 space-y-6">
                  {activeTab === 'Rooms' && (
                    <div className="space-y-6">
                      {/* THE LOBBY - SPECIAL ITEM */}
                      <div className="space-y-2">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-[#a855f7] px-2">The Lobby</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-brand px-2">The Lobby</span>
                         <button 
                           onClick={() => switchRoom('lobby')}
                           className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all ${
-                            currentRoom === 'lobby' ? 'bg-[#9d367c]/20 text-[#ff8ac8]' : 'hover:bg-white/5 text-white/40'
+                            currentRoom === 'lobby' ? 'bg-brand/10 text-brand shadow-sm' : 'hover:bg-surface-hover text-text-muted'
                           }`}
                         >
                            <div className="flex items-center gap-3">
-                             <MessageSquare size={16} className={currentRoom === 'lobby' ? 'text-[#ff8ac8]' : 'opacity-40'} />
+                             <MessageSquare size={16} className={currentRoom === 'lobby' ? 'text-brand' : 'opacity-40'} />
                              <span className="text-xs font-bold truncate max-w-[140px] tracking-tight">General Lobby</span>
                            </div>
                            <div className="flex items-center gap-1.5">
-                              <div className={`w-1 h-1 rounded-full ${currentRoom === 'lobby' ? 'bg-[#ff8ac8]' : 'bg-white/20'}`} />
+                              <div className={`w-1 h-1 rounded-full ${currentRoom === 'lobby' ? 'bg-brand' : 'bg-slate-300'}`} />
                               <span className="text-[9px] font-black opacity-60 font-mono">
                                 {rooms.find(r => r.id === 'lobby')?.userCount || 0}
                               </span>
@@ -259,11 +285,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
                               <div className="flex items-center gap-2">
                                  <ChevronDown 
                                    size={14} 
-                                   className={`text-white/20 transition-transform ${isCollapsed ? '-rotate-90' : ''}`} 
+                                   className={`text-text-muted transition-transform ${isCollapsed ? '-rotate-90' : ''}`} 
                                  />
-                                 <span className="text-[10px] font-black uppercase tracking-widest text-[#a855f7]">{category.name}</span>
+                                   <span className="text-[10px] font-black uppercase tracking-widest text-brand">{category.name}</span>
                               </div>
-                              <Plus size={14} className="text-white/10 group-hover:text-white/40 transition-colors" />
+                              <Plus size={14} className="text-text-muted/40 group-hover:text-text-muted transition-colors" />
                             </div>
                             
                             {!isCollapsed && (
@@ -273,16 +299,16 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
                                     key={room.id}
                                     onClick={() => switchRoom(room.id)}
                                     className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all ${
-                                      currentRoom === room.id ? 'bg-[#9d367c]/20 text-[#ff8ac8]' : 'hover:bg-white/5 text-white/40'
+                                      currentRoom === room.id ? 'bg-brand/10 text-brand shadow-sm' : 'hover:bg-surface-hover text-text-muted'
                                     }`}
                                   >
                                      <div className="flex items-center gap-3">
-                                       <Hash size={16} className={currentRoom === room.id ? 'text-[#ff8ac8]' : 'opacity-40'} />
-                                       <span className="text-xs font-bold truncate max-w-[140px] tracking-tight">{room.name}</span>
+                                        <Hash size={16} className={currentRoom === room.id ? 'text-brand' : 'opacity-40'} />
+                                        <span className="text-xs font-bold truncate max-w-[140px] tracking-tight text-text">{room.name}</span>
                                      </div>
                                      <div className="flex items-center gap-1.5">
-                                        <div className={`w-1 h-1 rounded-full ${currentRoom === room.id ? 'bg-[#ff8ac8]' : 'bg-white/20'}`} />
-                                        <span className="text-[9px] font-black opacity-60 font-mono">{room.userCount || 0}</span>
+                                        <div className={`w-1 h-1 rounded-full ${currentRoom === room.id ? 'bg-brand' : 'bg-slate-300'}`} />
+                                        <span className="text-[9px] font-black opacity-60 font-mono text-text-muted">{room.userCount || 0}</span>
                                      </div>
                                   </button>
                                 ))}
@@ -297,20 +323,20 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
                  {activeTab === 'People' && (
                     <div className="space-y-4">
                       {/* Sort Controls */}
-                      <div className="flex items-center justify-between px-2 pb-2 border-b border-white/5">
+                      <div className="flex items-center justify-between px-2 pb-2 border-b border-border">
                         <div className="flex gap-2">
                            <button 
                              onClick={() => setPeopleSortBy('alphabet')}
-                             className={`text-[8px] font-black uppercase tracking-tighter px-2 py-1 rounded ${peopleSortBy === 'alphabet' ? 'bg-[#9d367c] text-white' : 'bg-white/5 text-white/30'}`}
+                             className={`text-[8px] font-black uppercase tracking-tighter px-2 py-1 rounded ${peopleSortBy === 'alphabet' ? 'bg-brand text-white' : 'bg-surface-hover text-text-muted'}`}
                            >A-Z</button>
                            <button 
                              onClick={() => setPeopleSortBy('gender')}
-                             className={`text-[8px] font-black uppercase tracking-tighter px-2 py-1 rounded ${peopleSortBy === 'gender' ? 'bg-[#9d367c] text-white' : 'bg-white/5 text-white/30'}`}
+                             className={`text-[8px] font-black uppercase tracking-tighter px-2 py-1 rounded ${peopleSortBy === 'gender' ? 'bg-brand text-white' : 'bg-surface-hover text-text-muted'}`}
                            >Gender</button>
                         </div>
                         <button 
                           onClick={() => setPeopleSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                          className="text-[8px] font-black uppercase tracking-tighter text-[#a855f7] hover:text-[#ff8ac8]"
+                          className="text-[8px] font-black uppercase tracking-tighter text-brand hover:text-brand-dark"
                         >
                           {peopleSortOrder === 'asc' ? 'Ascending ↑' : 'Descending ↓'}
                         </button>
@@ -331,36 +357,36 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
                           .map(u => (
                           <div 
                             key={u.id} 
-                            className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-white/5 transition-all group"
+                            className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-surface-hover transition-all group"
                           >
                              <button 
                                onClick={() => setActivePrivateChat(u.id)}
                                className="flex items-center gap-3 flex-1 text-left"
                              >
-                                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-[#ff8ac8]">
+                                <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-brand">
                                    {u.nickname.charAt(0)}
                                 </div>
                                 <div>
                                    <div className="flex items-center gap-2">
-                                     <p className="text-xs font-bold tracking-tight">{u.nickname}</p>
-                                     {u.isDND && <BellOff size={10} className="text-[#a855f7]" title="DND Enabled" />}
-                                     {blockedUsers.has(u.id) && <Shield size={10} className="text-red-400" title="Restricted" />}
+                                     <p className="text-xs font-bold tracking-tight text-text">{u.nickname}</p>
+                                     {u.isDND && <BellOff size={10} className="text-brand" title="DND Enabled" />}
+                                     {blockedUsers.has(u.id) && <Shield size={10} className="text-red-500" title="Restricted" />}
                                    </div>
-                                   <p className="text-[9px] text-[#a855f7] uppercase font-black tracking-widest">{u.gender || 'Private'}</p>
+                                   <p className="text-[9px] text-text-muted uppercase font-black tracking-widest">{u.gender || 'Private'}</p>
                                 </div>
                              </button>
                              
                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button 
+                                  <button 
                                   onClick={() => blockedUsers.has(u.id) ? handleUnblock(u.id) : handleBlock(u.id)}
-                                  className={`p-1.5 rounded-lg transition-colors ${blockedUsers.has(u.id) ? 'bg-red-400/20 text-red-400' : 'bg-white/5 text-white/40 hover:text-white'}`}
+                                  className={`p-1.5 rounded-lg transition-colors ${blockedUsers.has(u.id) ? 'bg-red-500/10 text-red-500' : 'bg-surface-hover text-text-muted hover:text-text'}`}
                                   title={blockedUsers.has(u.id) ? "Unrestrict" : "Restrict"}
                                 >
                                    <Shield size={12} />
                                 </button>
                                 <button 
                                   onClick={() => handleReport(u.id)}
-                                  className="p-1.5 rounded-lg bg-white/5 text-white/40 hover:text-red-400 hover:bg-red-400/10 transition-all"
+                                  className="p-1.5 rounded-lg bg-surface-hover text-text-muted hover:text-red-500 hover:bg-red-500/10 transition-all"
                                   title="Report"
                                 >
                                    <ShieldAlert size={12} />
@@ -384,31 +410,41 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
                     return (
                       <div 
                         key={otherId} 
-                        className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all group ${activePrivateChat === otherId ? 'bg-white/10' : 'hover:bg-white/5'}`}
+                        className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all group ${activePrivateChat === otherId ? 'bg-brand/10 shadow-sm' : 'hover:bg-surface-hover/50'}`}
                       >
                          <button 
                            onClick={() => setActivePrivateChat(otherId)}
                            className="flex items-center gap-3 flex-1 min-w-0 text-left"
                          >
-                            <div className="w-8 h-8 rounded-lg bg-[#9d367c]/20 flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-[#ff8ac8]">
+                            <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-brand">
                                {displayName.charAt(0)}
                             </div>
                             <div className="flex-1 min-w-0">
                                <div className="flex justify-between items-center">
                                   <div className="flex items-center gap-1.5 min-w-0">
-                                    <p className="text-xs font-bold tracking-tight truncate">{displayName}</p>
-                                    {blockedUsers.has(otherId) && <Shield size={10} className="text-red-400 shrink-0" />}
+                                    <p className="text-xs font-bold tracking-tight truncate text-text">{displayName}</p>
+                                    {blockedUsers.has(otherId) && <Shield size={10} className="text-red-500 shrink-0" />}
                                   </div>
-                                  <span className="text-[8px] opacity-30">{new Date(lastMsg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                  <span className="text-[8px] text-text-muted opacity-60">{new Date(lastMsg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                </div>
-                               <p className="text-[10px] text-white/40 truncate">{lastMsg.content}</p>
+                               <p className="text-[10px] text-text-muted truncate">{lastMsg.content}</p>
                             </div>
                          </button>
                          
                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2">
                             <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleClosePrivateChat(otherId);
+                              }}
+                              className="p-1.5 rounded-lg bg-surface-hover text-text-muted hover:text-text"
+                              title="Close Chat"
+                            >
+                               <Plus size={12} className="rotate-45" />
+                            </button>
+                             <button 
                               onClick={() => blockedUsers.has(otherId) ? handleUnblock(otherId) : handleBlock(otherId)}
-                              className={`p-1.5 rounded-lg transition-colors ${blockedUsers.has(otherId) ? 'bg-red-400/20 text-red-400' : 'bg-white/5 text-white/40 hover:text-white'}`}
+                              className={`p-1.5 rounded-lg transition-colors ${blockedUsers.has(otherId) ? 'bg-red-500/10 text-red-500' : 'bg-surface-hover text-text-muted hover:text-text'}`}
                               title={blockedUsers.has(otherId) ? "Unrestrict" : "Restrict"}
                             >
                                <Shield size={12} />
@@ -422,39 +458,39 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
         </aside>
 
         {/* CENTER CHAT DISPLAY WINDOW */}
-        <main className="flex-1 bg-[#241d33]/30 rounded-[2.5rem] border border-white/5 flex flex-col overflow-hidden relative">
+        <main className="flex-1 bg-surface rounded-[2.5rem] border border-border flex flex-col overflow-hidden relative shadow-sm">
            {/* Window Header */}
-           <div className="p-6 flex items-center gap-4 border-b border-white/5 bg-white/[0.02]">
-              <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center">
-                 <MessageSquare size={24} className="text-[#ff8ac8]" />
+           <div className="p-6 flex items-center gap-4 border-b border-border bg-surface-hover/20">
+              <div className="w-12 h-12 bg-brand/10 rounded-2xl flex items-center justify-center border border-brand/5">
+                 <MessageSquare size={24} className="text-brand" />
               </div>
               <div>
-                 <h2 className="text-lg font-black tracking-tight">{currentChatName}</h2>
-                 <p className="text-[11px] text-white/40 font-medium">
+                 <h2 className="text-lg font-black tracking-tight text-text">{currentChatName}</h2>
+                 <p className="text-[11px] text-text-muted font-medium">
                     {currentRoomData?.description || "A place for open, respectful conversations"}
                  </p>
               </div>
            </div>
 
            {/* Message Buffer Flow */}
-           <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide">
+           <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6">
               <div className="flex justify-center mb-8">
-                 <div className="bg-white/5 px-4 py-1.5 rounded-full text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] border border-white/5">
-                   Welcome to {currentChatName}!
+                 <div className="bg-border/30 px-4 py-1.5 rounded-full text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] border border-border">
+                    Welcome to {currentChatName}!
                  </div>
               </div>
 
-              <div className="bg-[#ff8ac8]/5 border border-[#ff8ac8]/10 p-5 rounded-2xl mb-8 mx-auto max-w-[90%]">
-                 <p className="text-[11px] text-[#ff8ac8]/60 text-center leading-relaxed font-medium">
+              <div className="bg-brand/5 border border-brand/10 p-5 rounded-2xl mb-8 mx-auto max-w-[90%]">
+                 <p className="text-[11px] text-brand/60 text-center leading-relaxed font-medium">
                    Please be respectful. Treat others kindly and keep conversations appropriate. Indecent behavior can be anonymously reported. 
                    <br/><br/>
-                   <span className="text-white/80 font-black">RULES:</span> 
+                   <span className="text-text font-black">RULES:</span> 
                    <br/>
-                   1. 5 reports result in an <span className="text-white">IP & Nickname ban for 30 minutes</span>.
+                   1. 5 reports result in an <span className="text-text font-bold">IP & Nickname ban for 30 minutes</span>.
                    <br/>
-                   2. Enable <span className="text-white">DND</span> (top right) to block incoming private messages.
+                   2. Enable <span className="text-text font-bold">DND</span> (top right) to block incoming private messages.
                    <br/>
-                   3. <span className="text-white">Restrict</span> annoying users to block their private messages.
+                   3. <span className="text-text font-bold">Restrict</span> annoying users to block their private messages.
                  </p>
               </div>
 
@@ -462,19 +498,19 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
                 <div className="flex flex-col gap-6">
                    <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-2 ml-4">
-                         <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Wanderer_42</span>
-                         <span className="text-[8px] text-white/10 font-bold">13:18</span>
+                         <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">Wanderer_42</span>
+                         <span className="text-[8px] text-text-muted/40 font-bold">13:18</span>
                       </div>
-                      <div className="bg-white/5 text-white/90 self-start rounded-2xl rounded-tl-none px-5 py-3 text-sm border border-white/5 font-medium shadow-lg backdrop-blur-sm">
+                      <div className="bg-bg/50 text-text self-start rounded-2xl rounded-tl-none px-5 py-3 text-sm border border-border font-medium shadow-sm">
                         Hey everyone! How is it going?
                       </div>
                    </div>
                    <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-2 ml-4">
-                         <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">NightOwl</span>
-                         <span className="text-[8px] text-white/10 font-bold">13:19</span>
+                         <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">NightOwl</span>
+                         <span className="text-[8px] text-text-muted/40 font-bold">13:19</span>
                       </div>
-                      <div className="bg-white/5 text-white/90 self-start rounded-2xl rounded-tl-none px-5 py-3 text-sm border border-white/5 font-medium shadow-lg backdrop-blur-sm">
+                      <div className="bg-bg/50 text-text self-start rounded-2xl rounded-tl-none px-5 py-3 text-sm border border-border font-medium shadow-sm">
                         Just vibing here, you?
                       </div>
                    </div>
@@ -484,15 +520,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
               {messages.map((msg, idx) => (
                 <div key={msg.id} className="flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2">
                    <div className={`flex items-center gap-2 ${msg.senderId === socket.id ? 'justify-end mr-4' : 'ml-4'}`}>
-                      <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">{msg.senderName}</span>
-                      <span className="text-[8px] text-white/10 font-bold">
+                      <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">{msg.senderName}</span>
+                      <span className="text-[8px] text-text-muted/40 font-bold">
                         {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                    </div>
-                   <div className={`max-w-[80%] px-5 py-3 rounded-2xl text-sm leading-relaxed font-medium shadow-lg transition-all ${
+                   <div className={`max-w-[80%] px-5 py-3 rounded-2xl text-sm leading-relaxed font-medium shadow-sm transition-all ${
                      msg.senderId === socket.id 
-                       ? 'bg-[#9d367c] text-white self-end rounded-tr-none' 
-                       : 'bg-white/5 text-white/90 self-start rounded-tl-none border border-white/5'
+                       ? 'bg-brand text-white self-end rounded-tr-none' 
+                       : 'bg-bg/50 text-text self-start rounded-tl-none border border-border'
                    }`}>
                      {msg.content}
                    </div>
@@ -504,7 +540,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
            <div className="p-6 pt-0">
               {activePrivateChat && onlineUsers.find(u => u.id === activePrivateChat)?.isDND && (
                 <div className="mb-2 text-center">
-                   <span className="text-[10px] font-black text-[#a855f7] uppercase tracking-widest bg-[#a855f7]/10 px-3 py-1 rounded-full border border-[#a855f7]/20">
+                   <span className="text-[10px] font-black text-brand uppercase tracking-widest bg-brand/10 px-3 py-1 rounded-full border border-brand/20">
                      Recipient has DND enabled
                    </span>
                 </div>
@@ -516,13 +552,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
                       value={inputText}
                       onChange={(e) => setInputText(e.target.value)}
                       placeholder={`Message ${currentChatName}...`} 
-                      className="w-full bg-white/5 rounded-xl py-4 px-6 text-sm focus:outline-none border border-white/5 focus:border-[#9d367c]/40 transition-all font-medium placeholder:text-white/20 shadow-inner"
+                      className="w-full bg-bg/50 rounded-xl py-4 px-6 text-sm focus:outline-none border border-border focus:border-brand transition-all font-medium placeholder:text-text-muted/30 shadow-inner"
                     />
                  </div>
                  <button 
                    type="submit"
                    disabled={!inputText.trim()}
-                   className="w-14 h-14 bg-[#9d367c] hover:bg-[#b03d8b] disabled:opacity-30 rounded-xl flex items-center justify-center shadow-lg transition-all active:scale-95 text-white flex-shrink-0"
+                   className="w-14 h-14 bg-brand hover:bg-brand-dark disabled:opacity-30 rounded-xl flex items-center justify-center shadow-lg shadow-brand/20 transition-all active:scale-95 text-white flex-shrink-0"
                  >
                     <Send size={20} />
                  </button>
