@@ -1,16 +1,70 @@
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import { createServer as createViteServer } from "vite";
+// Vite is imported dynamically in dev mode
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
-import type { 
-  ChatMessage, 
-  Room, 
-  User, 
-  ClientToServerEvents, 
-  ServerToClientEvents 
-} from "./src/types.ts";
+// Types duplicated from src/types.ts for backend consistency without runtime imports
+export type Gender = 'Male' | 'Female' | 'Other' | 'Non-binary' | 'Prefer not to say';
+
+export interface User {
+  id: string;
+  nickname: string;
+  gender?: Gender;
+  interests: string[];
+  ip: string;
+  bannedUntil?: number;
+  reports: Set<string>;
+  blockedUsers: Set<string>;
+  isDND: boolean;
+  currentRoom?: string;
+  lastMessageTime: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  senderName: string;
+  senderGender?: Gender;
+  content: string;
+  timestamp: number;
+  roomId?: string;
+  recipientId?: string;
+  type: 'public' | 'private' | 'system';
+}
+
+export interface Room {
+  id: string;
+  name: string;
+  description: string;
+  userCount: number;
+}
+
+export interface ServerToClientEvents {
+  'room:message': (message: ChatMessage) => void;
+  'private:message': (message: ChatMessage) => void;
+  'user:joined': (user: { id: string; nickname: string; gender?: Gender; currentRoom?: string; isDND?: boolean }) => void;
+  'user:left': (userId: string) => void;
+  'users:list': (users: { id: string; nickname: string; gender?: Gender; currentRoom?: string; isDND?: boolean }[]) => void;
+  'error': (msg: string) => void;
+  'ban': (durationHours: number) => void;
+  'status:update': (data: { userId: string; isDND: boolean }) => void;
+  'match:found': (data: { peerId: string; peerNickname: string; peerGender?: Gender }) => void;
+  'match:left': () => void;
+}
+
+export interface ClientToServerEvents {
+  'join:room': (roomId: string) => void;
+  'send:message': (data: { roomId: string; content: string }) => void;
+  'send:private': (data: { recipientId: string; content: string }) => void;
+  'report:user': (userId: string) => void;
+  'block:user': (userId: string) => void;
+  'unblock:user': (userId: string) => void;
+  'toggle:dnd': (isDND: boolean) => void;
+  'match:find': () => void;
+  'match:cancel': () => void;
+  'match:leave': () => void;
+}
 
 const PORT = 3000;
 
@@ -56,6 +110,7 @@ const bannedNicknames = new Map<string, number>(); // nickname -> unbanTime
 const matchingQueue: string[] = []; // socket IDs
 
 async function startServer() {
+  console.log(`Starting server in ${process.env.NODE_ENV || 'development'} mode...`);
   const app = express();
   const httpServer = createServer(app);
   const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
@@ -359,6 +414,7 @@ async function startServer() {
 
   // Vite + Express setup
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
