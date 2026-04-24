@@ -504,26 +504,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit }) =>
                  </p>
               </div>
 
-              {messages.length === 0 && (
-                <div className="flex flex-col gap-6">
-                   <div className="flex flex-col gap-1">
-                      <div className="flex items-center gap-2 ml-4">
-                         <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">Wanderer_42</span>
-                         <span className="text-[8px] text-text-muted/40 font-bold">13:18</span>
-                      </div>
-                      <div className="bg-bg/50 text-text self-start rounded-2xl rounded-tl-none px-5 py-3 text-sm border border-border font-medium shadow-sm">
-                        Hey everyone! How is it going?
-                      </div>
-                   </div>
-                   <div className="flex flex-col gap-1">
-                      <div className="flex items-center gap-2 ml-4">
-                         <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">NightOwl</span>
-                         <span className="text-[8px] text-text-muted/40 font-bold">13:19</span>
-                      </div>
-                      <div className="bg-bg/50 text-text self-start rounded-2xl rounded-tl-none px-5 py-3 text-sm border border-border font-medium shadow-sm">
-                        Just vibing here, you?
-                      </div>
-                   </div>
+              {messages.length === 0 && !activePrivateChat && (
+                <div className="flex flex-col items-center justify-center py-20 opacity-40 select-none pointer-events-none">
+                  <div className="w-16 h-16 bg-brand/10 rounded-full flex items-center justify-center mb-4">
+                    <MessageSquare size={32} className="text-brand" />
+                  </div>
+                  <p className="text-sm font-black uppercase tracking-widest text-text-muted">No messages yet</p>
+                  <p className="text-[10px] font-bold text-text-muted/60">Say hi to start the conversation!</p>
                 </div>
               )}
 
