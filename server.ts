@@ -151,11 +151,13 @@ async function startServer() {
       }
 
       // Check if nickname is already taken across all active users
-      const isTaken = Array.from(users.values()).some(u => 
-        u.nickname.trim().toLowerCase() === cleanNickname.toLowerCase()
+      const allUsers = Array.from(users.values());
+      const isTaken = allUsers.some(u => 
+        (u.nickname || '').trim().toLowerCase() === cleanNickname.toLowerCase()
       );
 
       if (isTaken) {
+        console.log(`Registration failed: Nickname "${cleanNickname}" is already taken.`);
         socket.emit('error', 'This nickname is already in use. Please choose another one.');
         return;
       }

@@ -6,9 +6,10 @@ import { Gender } from './types';
 interface EntryScreenProps {
   onJoin: (nickname: string, gender: Gender, interests: string[]) => void;
   onClose?: () => void;
+  error?: string | null;
 }
 
-export const EntryScreen: React.FC<EntryScreenProps> = ({ onJoin, onClose }) => {
+export const EntryScreen: React.FC<EntryScreenProps> = ({ onJoin, onClose, error }) => {
   const [nickname, setNickname] = useState('');
   const [gender, setGender] = useState<Gender | ''>('');
   const [isAgreed, setIsAgreed] = useState(false);
@@ -110,6 +111,18 @@ export const EntryScreen: React.FC<EntryScreenProps> = ({ onJoin, onClose }) => 
           </div>
 
           {/* Submit */}
+          {error && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl mb-4"
+            >
+              <p className="text-[11px] text-red-500 font-bold text-center leading-tight">
+                {error}
+              </p>
+            </motion.div>
+          )}
+
           <button
             type="submit"
             disabled={!isFormValid}

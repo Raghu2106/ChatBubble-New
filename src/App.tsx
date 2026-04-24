@@ -24,6 +24,7 @@ export default function App() {
 
     socket.on('error', (msg) => {
       setError(msg);
+      setUser(null);
     });
 
     socket.on('registration:success' as any, ({ userId }: { userId: string }) => {
@@ -62,7 +63,7 @@ export default function App() {
         <>
           <LandingPage onStart={() => setStep('entry')} />
           {step === 'entry' && (
-            <EntryScreen onJoin={handleJoin} onClose={() => setStep('landing')} />
+            <EntryScreen onJoin={handleJoin} onClose={() => setStep('landing')} error={error} />
           )}
         </>
       )}
