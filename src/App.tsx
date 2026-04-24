@@ -26,16 +26,21 @@ export default function App() {
       setError(msg);
     });
 
+    socket.on('registration:success' as any, ({ userId }: { userId: string }) => {
+      setStep('chat');
+    });
+
     return () => {
       socket.disconnect();
       socket.off('error');
+      socket.off('registration:success' as any);
     };
   }, [isAdmin]);
 
   const handleJoin = (nickname: string, gender: Gender, interests: string[]) => {
+    setError(null);
     socket.emit('register' as any, { nickname, gender, interests });
-    setUser({ id: socket.id || 'me', nickname, gender, interests });
-    setStep('chat');
+    setUser({ id: 'pending', nickname, gender, interests });
   };
 
   const handleExit = () => {

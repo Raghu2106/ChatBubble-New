@@ -143,6 +143,13 @@ async function startServer() {
 
     // Custom entry signal
     socket.on('register' as any, (data: { nickname: string, gender?: any, interests?: string[] }) => {
+      // Check if nickname is already taken
+      const isTaken = Array.from(users.values()).some(u => u.nickname.toLowerCase() === data.nickname.toLowerCase());
+      if (isTaken) {
+        socket.emit('error', 'This nickname is already in use. Please choose another one.');
+        return;
+      }
+
       // Check if nickname is banned
       const nickBanTime = bannedNicknames.get(data.nickname.toLowerCase());
       if (nickBanTime && nickBanTime > Date.now()) {
@@ -167,6 +174,8 @@ async function startServer() {
       users.set(userId, newUser);
       sessions.set(socket.id, userId);
       
+      socket.emit('registration:success' as any, { userId });
+
       // Default join lobby
       joinRoom(socket, 'lobby');
     });
