@@ -1,22 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Lexend:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-brand: #6b46c1;
-  --color-brand-light: #9f7aea;
-  --color-brand-dark: #44337a;
-  --color-bg: #1a1625;
-  --color-surface: #2d2438;
-  --color-surface-hover: #3d314a;
-  --color-text: #e2e8f0;
-  --color-text-muted: #a0aec0;
-  --color-border: rgba(255, 255, 255, 0.05);
+  --color-brand: #7c3aed;
+  --color-brand-light: #a78bfa;
+  --color-brand-dark: #5b21b6;
+  --color-bg: #09090b;
+  --color-surface: #18181b;
+  --color-surface-hover: #27272a;
+  --color-text: #fafafa;
+  --color-text-muted: #a1a1aa;
+  --color-border: #27272a;
 
-  --font-sans: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-display: "Lexend", system-ui, sans-serif;
 }
 
 body {
   background-color: var(--color-bg);
   color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Custom scrollbar */
@@ -49,5 +53,3 @@ body {
   background: var(--color-surface);
   border-bottom-left-radius: 4px;
 }
-
-

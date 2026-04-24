@@ -10,7 +10,7 @@ import {
   User, 
   ClientToServerEvents, 
   ServerToClientEvents 
-} from "./src/types";
+} from "./src/types.ts";
 
 const PORT = 3000;
 
@@ -19,14 +19,41 @@ const users = new Map<string, User>();
 const sessions = new Map<string, string>(); // socketId -> userId
 const rooms: Room[] = [
   { id: 'lobby', name: 'The Lobby', description: 'A place for open, respectful conversations.', userCount: 0 },
-  { id: 'bangalore', name: 'Bangalore', description: 'Chat with folks in Silicon Valley of India.', userCount: 0 },
+  // Indian Cities
+  { id: 'mumbai', name: 'Mumbai', description: 'Chat with folks in the City of Dreams.', userCount: 0 },
   { id: 'delhi', name: 'Delhi', description: 'The heart of India. Conversations and chai.', userCount: 0 },
-  { id: 'music', name: 'Music', description: 'Beats, melodies, and everything in between.', userCount: 0 },
-  { id: 'tech', name: 'Tech', description: 'Coders, creators, and geeks unite.', userCount: 0 },
-  { id: 'movies', name: 'Movies', description: 'Discuss the latest blockbusters and cult classics.', userCount: 0 },
+  { id: 'bangalore', name: 'Bangalore', description: 'Silicon Valley of India.', userCount: 0 },
+  { id: 'hyderabad', name: 'Hyderabad', description: 'City of Pearls and Biryani.', userCount: 0 },
+  { id: 'chennai', name: 'Chennai', description: 'Gateway to South India.', userCount: 0 },
+  { id: 'kolkata', name: 'Kolkata', description: 'City of Joy.', userCount: 0 },
+  { id: 'pune', name: 'Pune', description: 'The Oxford of the East.', userCount: 0 },
+  { id: 'ahmedabad', name: 'Ahmedabad', description: 'Manchester of the East.', userCount: 0 },
+  { id: 'thiruvananthapuram', name: 'Thiruvananthapuram', description: 'Capital of Kerala - God\'s Own Country.', userCount: 0 },
+  { id: 'lucknow', name: 'Lucknow', description: 'City of Nawabs.', userCount: 0 },
+  { id: 'jaipur', name: 'Jaipur', description: 'The Pink City.', userCount: 0 },
+  { id: 'chandigarh', name: 'Chandigarh', description: 'The Beautiful City.', userCount: 0 },
+  // Global / Asia / GCC
+  { id: 'usa', name: 'USA', description: 'Connect with people across the United States.', userCount: 0 },
+  { id: 'uk', name: 'United Kingdom', description: 'British vibes and banter.', userCount: 0 },
+  { id: 'canada', name: 'Canada', description: 'O Canada! Friendly chats from the Great White North.', userCount: 0 },
+  { id: 'australia', name: 'Australia', description: 'G\'day mate! Australian connections.', userCount: 0 },
+  { id: 'germany', name: 'Germany', description: 'Chat with folks from Deutschland.', userCount: 0 },
+  { id: 'france', name: 'France', description: 'Bonjour! French connections.', userCount: 0 },
+  { id: 'uae', name: 'UAE', description: 'Connecting Dubai, Abu Dhabi, and beyond.', userCount: 0 },
+  { id: 'saudi', name: 'Saudi Arabia', description: 'Middle East vibes and conversations.', userCount: 0 },
+  { id: 'qatar', name: 'Qatar', description: 'Connect with folks in Doha and beyond.', userCount: 0 },
+  { id: 'singapore', name: 'Singapore', description: 'The Lion City.', userCount: 0 },
+  { id: 'japan', name: 'Japan', description: 'Connect with the Land of the Rising Sun.', userCount: 0 },
+  { id: 'south_korea', name: 'South Korea', description: 'Chat with folks in the land of K-culture.', userCount: 0 },
+  { id: 'thailand', name: 'Thailand', description: 'Vibrant chats from the Land of Smiles.', userCount: 0 },
+  { id: 'philippines', name: 'Philippines', description: 'Connecting across the Pearl of the Orient Seas.', userCount: 0 },
+  { id: 'malaysia', name: 'Malaysia', description: 'Truly Asia! Connect with Malaysian vibes.', userCount: 0 },
+  { id: 'bahrain', name: 'Bahrain', description: 'Connecting folks in the heart of the Gulf.', userCount: 0 },
 ];
 
 const bannedIps = new Map<string, number>(); // ip -> unbanTime
+const bannedNicknames = new Map<string, number>(); // nickname -> unbanTime
+const matchingQueue: string[] = []; // socket IDs
 
 async function startServer() {
   const app = express();
@@ -60,12 +87,21 @@ async function startServer() {
     });
 
     // Custom entry signal
-    socket.on('register' as any, (data: { nickname: string, gender?: any }) => {
+    socket.on('register' as any, (data: { nickname: string, gender?: any, interests?: string[] }) => {
+      // Check if nickname is banned
+      const nickBanTime = bannedNicknames.get(data.nickname.toLowerCase());
+      if (nickBanTime && nickBanTime > Date.now()) {
+        const remaining = Math.ceil((nickBanTime - Date.now()) / 60000);
+        socket.emit('error', `This nickname is temporarily banned. Try again in ${remaining} minutes.`);
+        return;
+      }
+
       const userId = uuidv4();
       const newUser: User = {
         id: userId,
         nickname: data.nickname,
         gender: data.gender,
+        interests: data.interests || [],
         ip: ip,
         reports: new Set(),
         blockedUsers: new Set(),
@@ -180,10 +216,11 @@ async function startServer() {
       if (!targetUser.reports.has(reporterId)) {
         targetUser.reports.add(reporterId);
 
-        // 5 reports -> 6 hour ban
+        // 5 reports -> 30 minute ban
         if (targetUser.reports.size >= 5) {
-          const unbanTime = Date.now() + (6 * 60 * 60 * 1000);
+          const unbanTime = Date.now() + (30 * 60 * 1000);
           bannedIps.set(targetUser.ip, unbanTime);
+          bannedNicknames.set(targetUser.nickname.toLowerCase(), unbanTime);
           
           // Disconnect the banned user
           const bannedSocketId = Array.from(sessions.entries())
@@ -192,7 +229,7 @@ async function startServer() {
           if (bannedSocketId) {
             const bannedSocket = io.sockets.sockets.get(bannedSocketId);
             if (bannedSocket) {
-              bannedSocket.emit('ban', 6);
+              bannedSocket.emit('ban', 0.5); // 0.5 hours = 30 mins
               bannedSocket.disconnect();
             }
           }
@@ -209,7 +246,51 @@ async function startServer() {
       }
     });
 
+    socket.on('match:find', () => {
+      const userId = sessions.get(socket.id);
+      if (!userId) return;
+
+      if (matchingQueue.includes(socket.id)) return;
+
+      const user = users.get(userId);
+      if (!user) return;
+
+      // Try to find a peer with common interests
+      const peerSocketId = matchingQueue.find(sid => {
+        const peerUid = sessions.get(sid);
+        const peer = users.get(peerUid || '');
+        if (!peer) return false;
+        
+        // Simple overlap check
+        const overlap = (user as any).interests?.some((i: string) => (peer as any).interests?.includes(i));
+        return overlap || matchingQueue.length > 5; // Match anyway if queue is too long
+      });
+
+      if (peerSocketId && io.sockets.sockets.has(peerSocketId)) {
+        const idx = matchingQueue.indexOf(peerSocketId);
+        if (idx > -1) matchingQueue.splice(idx, 1);
+
+        const peerUserId = sessions.get(peerSocketId);
+        const peerUser = users.get(peerUserId || '');
+
+        if (peerUser) {
+          socket.emit('match:found', { peerId: peerUser.id, peerNickname: peerUser.nickname, peerGender: peerUser.gender });
+          io.to(peerSocketId).emit('match:found', { peerId: user.id, peerNickname: user.nickname, peerGender: user.gender });
+        }
+      } else {
+        matchingQueue.push(socket.id);
+      }
+    });
+
+    socket.on('match:cancel', () => {
+      const idx = matchingQueue.indexOf(socket.id);
+      if (idx > -1) matchingQueue.splice(idx, 1);
+    });
+
     socket.on("disconnect", () => {
+      const idx = matchingQueue.indexOf(socket.id);
+      if (idx > -1) matchingQueue.splice(idx, 1);
+      
       const userId = sessions.get(socket.id);
       if (userId) {
         const user = users.get(userId);
@@ -241,18 +322,31 @@ async function startServer() {
     });
 
     socket.join(roomId);
+    user.currentRoom = roomId;
     const targetRoom = rooms.find(rm => rm.id === roomId);
     if (targetRoom) targetRoom.userCount++;
 
     // Notify others
-    socket.to(roomId).emit('user:joined', { id: user.id, nickname: user.nickname, gender: user.gender });
+    socket.to(roomId).emit('user:joined', { 
+      id: user.id, 
+      nickname: user.nickname, 
+      gender: user.gender, 
+      currentRoom: user.currentRoom,
+      isDND: user.isDND
+    });
     
     // Send list of users in room
     const members = Array.from(io.sockets.adapter.rooms.get(roomId) || [])
       .map(sid => {
         const uid = sessions.get(sid);
         const u = users.get(uid || '');
-        return u ? { id: u.id, nickname: u.nickname, gender: u.gender } : null;
+        return u ? { 
+          id: u.id, 
+          nickname: u.nickname, 
+          gender: u.gender, 
+          currentRoom: u.currentRoom,
+          isDND: u.isDND
+        } : null;
       })
       .filter(Boolean);
     

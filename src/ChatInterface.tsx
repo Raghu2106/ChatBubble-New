@@ -2,28 +2,39 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Users, MessageSquare, Globe, User, MoreVertical, 
-  Send, ShieldAlert, Ban, DoorOpen, Bell, BellOff, X
+  Send, ShieldAlert, DoorOpen, Bell, BellOff, RefreshCw,
+  Lock, Search, Plus, ChevronDown, Music, Code, Film, Zap,
+  Moon, Hash, Shield, ChevronRight
 } from 'lucide-react';
 import { socket } from './socket';
-import { ChatMessage, Room, User as UserType, Gender } from './types';
+import { ChatMessage, Room, Gender } from './types';
 
 interface ChatInterfaceProps {
-  user: { nickname: string; id: string; gender?: Gender };
+  user: { nickname: string; id: string; gender?: Gender; interests: string[] };
 }
 
-type Tab = 'Rooms' | 'People' | 'Messages';
+type Tab = 'Rooms' | 'Messages' | 'People';
+type SortOption = 'alphabet' | 'gender';
+type SortOrder = 'asc' | 'desc';
+
+const CATEGORIES = [
+  { id: 'local', name: 'Connect Locally', icon: Globe },
+  { id: 'global', name: 'Connect Globally', icon: Globe },
+];
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
   const [activeTab, setActiveTab] = useState<Tab>('Rooms');
   const [currentRoom, setCurrentRoom] = useState<string>('lobby');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [onlineUsers, setOnlineUsers] = useState<{ id: string; nickname: string; gender?: Gender }[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<{ id: string; nickname: string; gender?: Gender; isDND?: boolean }[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [collapsedCategories, setCollapsedCategories] = useState<string[]>(['global']);
+  const [peopleSortBy, setPeopleSortBy] = useState<SortOption>('alphabet');
+  const [peopleSortOrder, setPeopleSortOrder] = useState<SortOrder>('asc');
   const [inputText, setInputText] = useState('');
   const [isDND, setIsDND] = useState(false);
-  const [activePrivateChat, setActivePrivateChat] = useState<string | null>(null); // userId
+  const [activePrivateChat, setActivePrivateChat] = useState<string | null>(null);
   const [privateThreads, setPrivateThreads] = useState<Record<string, ChatMessage[]>>({});
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -45,13 +56,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
     socket.on('users:list', (list) => setOnlineUsers(list));
     socket.on('user:joined', (u) => setOnlineUsers(prev => [...prev, u]));
     socket.on('user:left', (uid) => setOnlineUsers(prev => prev.filter(u => u.id !== uid)));
-    
     socket.on('rooms:updated' as any, (updatedRooms: Room[]) => setRooms(updatedRooms));
-    
-    socket.on('error', (msg) => alert(msg));
-    socket.on('ban', (hours) => {
-      alert(`You have been banned for ${hours} hours due to multiple reports.`);
-      window.location.reload();
+    socket.on('status:update', ({ userId, isDND }) => {
+      setOnlineUsers(prev => prev.map(u => u.id === userId ? { ...u, isDND } : u));
     });
 
     return () => {
@@ -61,8 +68,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
       socket.off('user:joined');
       socket.off('user:left');
       socket.off('rooms:updated' as any);
-      socket.off('error');
-      socket.off('ban');
     };
   }, [currentRoom]);
 
@@ -87,19 +92,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
   const switchRoom = (roomId: string) => {
     setCurrentRoom(roomId);
     setActivePrivateChat(null);
-    setMessages([]); // Clear for fresh load from server (if server sent history)
+    setMessages([]);
     socket.emit('join:room', roomId);
-  };
-
-  const startPrivateChat = (targetUser: { id: string; nickname: string }) => {
-    setActivePrivateChat(targetUser.id);
-    setActiveTab('Messages');
-  };
-
-  const reportUser = (userId: string) => {
-    if (confirm("Report this user for abuse? 5 unique reports result in a temporary ban.")) {
-      socket.emit('report:user', userId);
-    }
   };
 
   const toggleDND = () => {
@@ -108,315 +102,370 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
     socket.emit('toggle:dnd', newVal);
   };
 
+  const toggleCategory = (id: string) => {
+    setCollapsedCategories(prev => 
+      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+    );
+  };
+
+  const currentRoomData = rooms.find(r => r.id === currentRoom);
   const currentChatName = activePrivateChat 
-    ? onlineUsers.find(u => u.id === activePrivateChat)?.nickname || "Private Chat"
-    : rooms.find(r => r.id === currentRoom)?.name || "Lobby";
+    ? onlineUsers.find(u => u.id === activePrivateChat)?.nickname || 
+      (privateThreads[activePrivateChat]?.length > 0
+        ? (privateThreads[activePrivateChat][0].senderId === activePrivateChat 
+            ? privateThreads[activePrivateChat][0].senderName 
+            : "Private Chat")
+        : "Private Chat")
+    : currentRoomData?.name || "The Lobby";
 
   return (
-    <div className="h-screen flex bg-bg relative font-sans text-text overflow-hidden">
+    <div className="h-screen flex flex-col bg-[#1a1625] text-white overflow-hidden font-sans">
       
-      {/* MOBILE OVERLAY */}
-      <AnimatePresence>
-        {isSidebarOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setIsSidebarOpen(false)}
-            className="fixed inset-0 bg-black/60 z-30 lg:hidden backdrop-blur-sm"
-          />
-        )}
-      </AnimatePresence>
-      
-      {/* LEFT AD (300x600) */}
-      <div className="hidden xl:flex w-[300px] h-full items-center justify-center p-4">
-        <div className="w-[300px] h-[600px] bg-white/5 border border-border flex items-center justify-center rounded-2xl relative overflow-hidden group">
-           <span className="text-text-muted text-xs font-bold tracking-widest rotate-90 whitespace-nowrap opacity-20">ADVERTISEMENT</span>
-           <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center space-y-4">
-              <div className="w-12 h-12 bg-brand/20 rounded-xl" />
-              <div className="h-4 w-24 bg-white/10 rounded" />
-              <div className="h-4 w-32 bg-white/10 rounded" />
-           </div>
-        </div>
+      {/* TOP PRIVACY BAR */}
+      <div className="bg-[#241d33] py-2 px-4 flex items-center justify-center gap-2 border-b border-white/5 shrink-0">
+        <Lock size={12} className="text-[#a855f7]" />
+        <span className="text-[10px] uppercase font-black tracking-widest text-white/40">
+          Your conversations stay private. No personal data stored.
+        </span>
       </div>
 
-      {/* SIDEBAR */}
-      <aside className={`fixed lg:relative w-80 h-full border-r border-border flex flex-col bg-surface shadow-2xl z-40 transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-        <div className="p-6 flex items-center justify-between">
-           <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-brand rounded-xl flex items-center justify-center shadow-lg shadow-brand/20">
-                 <MessageSquare size={20} className="text-white" />
-              </div>
-              <h2 className="text-xl font-bold tracking-tight">ChatBubble</h2>
-           </div>
-           <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden p-2 text-text-muted">
-              <X size={20} />
-           </button>
-        </div>
-        <div className="px-6">
-           <div className="flex bg-bg rounded-xl p-1 mb-6">
-              {(['Rooms', 'People', 'Messages'] as Tab[]).map(tab => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
-                    activeTab === tab ? 'bg-surface text-brand-light shadow-md' : 'text-text-muted hover:text-text'
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
-           </div>
+      {/* MAIN HEADER */}
+      <header className="h-16 flex-shrink-0 flex items-center justify-between px-10 bg-[#1a1625] border-b border-white/5">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center">
+            <MessageSquare size={18} className="text-white" />
+          </div>
+          <h1 className="text-xl font-black tracking-tight text-white/90">ChatSpace</h1>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-2 space-y-1 pb-6">
-           {activeTab === 'Rooms' && rooms.map(room => (
-             <button
-               key={room.id}
-               onClick={() => switchRoom(room.id)}
-               className={`w-full flex items-center justify-between p-4 rounded-xl transition-all group ${
-                 currentRoom === room.id && !activePrivateChat ? 'bg-brand/10 text-brand-light' : 'hover:bg-white/5'
-               }`}
+        <div className="flex items-center gap-8">
+          <div className="flex items-center gap-3">
+             <span className="text-[10px] font-black uppercase text-white/30 tracking-widest flex items-center gap-1.5">
+               {isDND ? <BellOff size={12} /> : <Bell size={12} />} DND
+             </span>
+             <button 
+               onClick={toggleDND}
+               className={`w-10 h-5 rounded-full relative transition-all duration-300 ${isDND ? 'bg-[#9d367c]' : 'bg-white/10'}`}
              >
-               <div className="flex items-center gap-3 text-left">
-                  <div className={`p-2 rounded-lg ${currentRoom === room.id ? 'bg-brand/20' : 'bg-surface-hover'}`}>
-                    <Globe size={18} />
-                  </div>
-                  <div>
-                    <p className="font-bold text-sm">{room.name}</p>
-                    <p className="text-[10px] text-text-muted line-clamp-1">{room.description}</p>
-                  </div>
-               </div>
-               <div className="flex items-center gap-1.5 opacity-60">
-                 <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                 <span className="text-[10px] font-bold">{room.userCount}</span>
-               </div>
+                <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all duration-300 ${isDND ? 'left-6' : 'left-1'}`} />
              </button>
-           ))}
-
-           {activeTab === 'People' && onlineUsers.map(u => (
-              <div key={u.id} className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-white/5 group">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs ${
-                    u.gender === 'Male' ? 'bg-blue-500/20 text-blue-400' : 
-                    u.gender === 'Female' ? 'bg-pink-500/20 text-pink-400' : 'bg-gray-500/20 text-gray-400'
-                  }`}>
-                    {u.nickname.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <p className="font-bold text-sm">{u.nickname}</p>
-                    <span className="text-[10px] text-text-muted uppercase tracking-widest font-bold">{u.gender || 'Unknown'}</span>
-                  </div>
-                </div>
-                
-                {u.id !== socket.id && (
-                  <div className="relative group/menu">
-                    <button className="p-2 text-text-muted hover:text-text rounded-lg hover:bg-white/10">
-                      <MoreVertical size={18} />
-                    </button>
-                    <div className="absolute right-0 top-full mt-1 w-48 py-2 glass rounded-xl hidden group-hover/menu:block shadow-2xl z-50">
-                      <button onClick={() => startPrivateChat(u)} className="w-full text-left px-4 py-2 text-xs font-bold hover:bg-white/5 flex items-center gap-2">
-                        <MessageSquare size={14} /> Start Private Chat
-                      </button>
-                      <button onClick={() => reportUser(u.id)} className="w-full text-left px-4 py-2 text-xs font-bold hover:bg-red-500/10 text-red-400 flex items-center gap-2">
-                        <ShieldAlert size={14} /> Report User
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-           ))}
-
-           {activeTab === 'Messages' && Object.keys(privateThreads).map(otherId => {
-             const lastMsg = privateThreads[otherId][privateThreads[otherId].length - 1];
-             const otherUser = onlineUsers.find(u => u.id === otherId);
-             return (
-               <button
-                 key={otherId}
-                 onClick={() => {
-                   setActivePrivateChat(otherId);
-                   setActiveTab('Messages');
-                 }}
-                 className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all ${
-                   activePrivateChat === otherId ? 'bg-brand/10 text-brand-light' : 'hover:bg-white/5'
-                 }`}
-               >
-                 <div className="w-10 h-10 bg-surface-hover rounded-xl flex items-center justify-center font-bold">
-                    {otherId.charAt(0).toUpperCase()}
-                 </div>
-                 <div className="flex-1 text-left">
-                    <p className="font-bold text-sm">{otherUser?.nickname || 'Inactive User'}</p>
-                    <p className="text-[10px] text-text-muted line-clamp-1">{lastMsg.content}</p>
-                 </div>
-               </button>
-             );
-           })}
-        </div>
-
-        <div className="p-6 bg-surface-hover/50 border-t border-border mt-auto">
-           <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-brand/20 rounded-xl flex items-center justify-center">
-                 <User size={18} className="text-brand-light" />
-              </div>
-              <div className="flex-1 overflow-hidden">
-                 <p className="font-bold text-sm truncate">{user.nickname}</p>
-                 <p className="text-[10px] text-brand-light uppercase font-bold tracking-widest">Active Session</p>
-              </div>
-              <button 
-                onClick={() => window.location.reload()}
-                className="p-2 text-text-muted hover:text-red-400 rounded-lg transition-colors"
-                title="Leave Session"
-              >
-                <DoorOpen size={20} />
-              </button>
-           </div>
-        </div>
-      </aside>
-
-      {/* MAIN CHAT AREA */}
-      <main className="flex-1 flex flex-col relative h-full bg-bg shadow-inner">
-        
-        {/* TOP AD (728x90) */}
-        <div className="w-full flex items-center justify-center p-4 bg-surface/50 border-b border-border">
-          <div className="w-full max-w-[728px] h-20 bg-white/3 rounded-xl border border-border flex items-center justify-center overflow-hidden relative group">
-             <span className="text-text-muted text-[10px] font-bold tracking-[0.2em] opacity-20">TOP BANNER ADS</span>
-             <div className="absolute inset-0 flex items-center justify-center gap-8 opacity-40">
-                <div className="w-8 h-8 rounded-full bg-brand/20" />
-                <div className="h-2 w-32 bg-white/5 rounded" />
-                <div className="w-12 h-12 rounded-lg bg-brand-light/10" />
-             </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-white/40">Welcome, <span className="text-white font-black">{user.nickname}</span></span>
           </div>
         </div>
+      </header>
 
-        {/* HEADER */}
-        <header className="px-5 lg:px-8 py-4 lg:py-6 border-b border-border flex items-center justify-between bg-surface/30 backdrop-blur-md">
-           <div className="flex items-center gap-4">
-              <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 bg-white/5 rounded-lg text-text">
-                 <Users size={20} />
-              </button>
-              <div>
-                 <h2 className="text-lg lg:text-2xl font-black tracking-tighter flex items-center gap-2 lg:gap-3">
-                    <span className="text-brand-light">#</span> {currentChatName}
-                 </h2>
-                 {!activePrivateChat && (
-                   <p className="hidden md:block text-[10px] lg:text-xs text-text-muted mt-0.5">A place for open, respectful conversations.</p>
+      {/* MAIN LAYOUT CONTENT */}
+      <div className="flex-1 flex overflow-hidden max-w-6xl w-full mx-auto px-6 py-6 gap-6">
+        
+        {/* LEFT SIDEBAR CATEGORIES */}
+        <aside className="w-72 flex flex-col gap-4 flex-shrink-0">
+           {/* Navigation Tabs */}
+           <div className="flex bg-white/5 p-1 rounded-xl">
+              {(['Rooms', 'Messages', 'People'] as Tab[]).map(tab => {
+                let count = 0;
+                if (tab === 'Messages') count = Object.keys(privateThreads).length;
+                if (tab === 'People') count = onlineUsers.filter(u => u.currentRoom === currentRoom).length;
+
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-2 ${
+                      activeTab === tab ? 'bg-white/10 text-white shadow-xl' : 'text-white/30 hover:text-white/60'
+                    }`}
+                  >
+                    <div className={`px-1.5 py-0.5 rounded-full text-[8px] flex items-center justify-center font-black ${
+                      activeTab === tab ? 'bg-[#9d367c] text-white' : 'bg-white/10 text-white/40'
+                    }`}>
+                      {count}
+                    </div>
+                    {tab}
+                  </button>
+                );
+              })}
+           </div>
+
+           {/* Content List Card */}
+           <div className="flex-1 bg-[#241d33]/40 rounded-[2rem] border border-white/5 flex flex-col overflow-hidden">
+              <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-hide">
+                 {activeTab === 'Rooms' && (
+                   <div className="space-y-6">
+                     {/* THE LOBBY - SPECIAL ITEM */}
+                     <div className="space-y-2">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-[#a855f7] px-2">The Lobby</span>
+                        <button 
+                          onClick={() => switchRoom('lobby')}
+                          className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all ${
+                            currentRoom === 'lobby' ? 'bg-[#9d367c]/20 text-[#ff8ac8]' : 'hover:bg-white/5 text-white/40'
+                          }`}
+                        >
+                           <div className="flex items-center gap-3">
+                             <MessageSquare size={16} className={currentRoom === 'lobby' ? 'text-[#ff8ac8]' : 'opacity-40'} />
+                             <span className="text-xs font-bold truncate max-w-[140px] tracking-tight">General Lobby</span>
+                           </div>
+                           <div className="flex items-center gap-1.5">
+                              <div className={`w-1 h-1 rounded-full ${currentRoom === 'lobby' ? 'bg-[#ff8ac8]' : 'bg-white/20'}`} />
+                              <span className="text-[9px] font-black opacity-60 font-mono">
+                                {rooms.find(r => r.id === 'lobby')?.userCount || 0}
+                              </span>
+                           </div>
+                        </button>
+                     </div>
+
+                     {CATEGORIES.map(category => {
+                       const isCollapsed = collapsedCategories.includes(category.id);
+                       const filteredRooms = rooms.filter(r => {
+                         if (r.id === 'lobby') return false; // Handled separately
+                         if (category.id === 'local') {
+                           return ['mumbai', 'delhi', 'bangalore', 'hyderabad', 'chennai', 'kolkata', 'pune', 'ahmedabad', 'thiruvananthapuram', 'lucknow', 'jaipur', 'chandigarh'].includes(r.id);
+                         }
+                         if (category.id === 'global') {
+                           return ['usa', 'uk', 'canada', 'australia', 'germany', 'france', 'uae', 'saudi', 'qatar', 'singapore', 'japan', 'south_korea', 'thailand', 'philippines', 'malaysia', 'bahrain'].includes(r.id);
+                         }
+                         return false;
+                       }).sort((a, b) => a.name.localeCompare(b.name));
+
+                       return (
+                         <div key={category.id} className="space-y-2">
+                            <div 
+                              onClick={() => toggleCategory(category.id)}
+                              className="flex items-center justify-between group cursor-pointer px-2"
+                            >
+                              <div className="flex items-center gap-2">
+                                 <ChevronDown 
+                                   size={14} 
+                                   className={`text-white/20 transition-transform ${isCollapsed ? '-rotate-90' : ''}`} 
+                                 />
+                                 <span className="text-[10px] font-black uppercase tracking-widest text-[#a855f7]">{category.name}</span>
+                              </div>
+                              <Plus size={14} className="text-white/10 group-hover:text-white/40 transition-colors" />
+                            </div>
+                            
+                            {!isCollapsed && (
+                              <div className="space-y-1">
+                                {filteredRooms.map(room => (
+                                  <button 
+                                    key={room.id}
+                                    onClick={() => switchRoom(room.id)}
+                                    className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all ${
+                                      currentRoom === room.id ? 'bg-[#9d367c]/20 text-[#ff8ac8]' : 'hover:bg-white/5 text-white/40'
+                                    }`}
+                                  >
+                                     <div className="flex items-center gap-3">
+                                       <Hash size={16} className={currentRoom === room.id ? 'text-[#ff8ac8]' : 'opacity-40'} />
+                                       <span className="text-xs font-bold truncate max-w-[140px] tracking-tight">{room.name}</span>
+                                     </div>
+                                     <div className="flex items-center gap-1.5">
+                                        <div className={`w-1 h-1 rounded-full ${currentRoom === room.id ? 'bg-[#ff8ac8]' : 'bg-white/20'}`} />
+                                        <span className="text-[9px] font-black opacity-60 font-mono">{room.userCount || 0}</span>
+                                     </div>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                         </div>
+                       );
+                     })}
+                   </div>
                  )}
+                 
+                 {activeTab === 'People' && (
+                    <div className="space-y-4">
+                      {/* Sort Controls */}
+                      <div className="flex items-center justify-between px-2 pb-2 border-b border-white/5">
+                        <div className="flex gap-2">
+                           <button 
+                             onClick={() => setPeopleSortBy('alphabet')}
+                             className={`text-[8px] font-black uppercase tracking-tighter px-2 py-1 rounded ${peopleSortBy === 'alphabet' ? 'bg-[#9d367c] text-white' : 'bg-white/5 text-white/30'}`}
+                           >A-Z</button>
+                           <button 
+                             onClick={() => setPeopleSortBy('gender')}
+                             className={`text-[8px] font-black uppercase tracking-tighter px-2 py-1 rounded ${peopleSortBy === 'gender' ? 'bg-[#9d367c] text-white' : 'bg-white/5 text-white/30'}`}
+                           >Gender</button>
+                        </div>
+                        <button 
+                          onClick={() => setPeopleSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                          className="text-[8px] font-black uppercase tracking-tighter text-[#a855f7] hover:text-[#ff8ac8]"
+                        >
+                          {peopleSortOrder === 'asc' ? 'Ascending ↑' : 'Descending ↓'}
+                        </button>
+                      </div>
+
+                      <div className="space-y-1">
+                        {onlineUsers
+                          .filter(u => u.currentRoom === currentRoom && u.id !== socket.id)
+                          .sort((a, b) => {
+                            let comparison = 0;
+                            if (peopleSortBy === 'alphabet') {
+                              comparison = a.nickname.localeCompare(b.nickname);
+                            } else {
+                              comparison = (a.gender || '').localeCompare(b.gender || '');
+                            }
+                            return peopleSortOrder === 'asc' ? comparison : -comparison;
+                          })
+                          .map(u => (
+                          <button 
+                            key={u.id} 
+                            onClick={() => setActivePrivateChat(u.id)}
+                            className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/5 transition-all text-left"
+                          >
+                             <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-[#ff8ac8]">
+                                {u.nickname.charAt(0)}
+                             </div>
+                             <div>
+                                <div className="flex items-center gap-2">
+                                  <p className="text-xs font-bold tracking-tight">{u.nickname}</p>
+                                  {u.isDND && <BellOff size={10} className="text-[#a855f7]" title="DND Enabled" />}
+                                </div>
+                                <p className="text-[9px] text-[#a855f7] uppercase font-black tracking-widest">{u.gender || 'Private'}</p>
+                             </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                 )}
+                 
+                 {activeTab === 'Messages' && Object.keys(privateThreads).map(otherId => {
+                    const thread = privateThreads[otherId];
+                    const lastMsg = thread[thread.length - 1];
+                    const otherUser = onlineUsers.find(u => u.id === otherId);
+                    
+                    // Fallback to name from the last message sent by them or to them
+                    const displayName = otherUser?.nickname || 
+                      (lastMsg.senderId === otherId ? lastMsg.senderName : "Chat Partner");
+
+                    return (
+                      <button 
+                        key={otherId} 
+                        onClick={() => setActivePrivateChat(otherId)}
+                        className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all text-left ${activePrivateChat === otherId ? 'bg-white/10' : 'hover:bg-white/5'}`}
+                      >
+                         <div className="w-8 h-8 rounded-lg bg-[#9d367c]/20 flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-[#ff8ac8]">
+                            {displayName.charAt(0)}
+                         </div>
+                         <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-center">
+                               <p className="text-xs font-bold tracking-tight truncate">{displayName}</p>
+                               <span className="text-[8px] opacity-30">{new Date(lastMsg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                            <p className="text-[10px] text-white/40 truncate">{lastMsg.content}</p>
+                         </div>
+                      </button>
+                    );
+                 })}
+              </div>
+           </div>
+        </aside>
+
+        {/* CENTER CHAT DISPLAY WINDOW */}
+        <main className="flex-1 bg-[#241d33]/30 rounded-[2.5rem] border border-white/5 flex flex-col overflow-hidden relative">
+           {/* Window Header */}
+           <div className="p-6 flex items-center gap-4 border-b border-white/5 bg-white/[0.02]">
+              <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center">
+                 <MessageSquare size={24} className="text-[#ff8ac8]" />
+              </div>
+              <div>
+                 <h2 className="text-lg font-black tracking-tight">{currentChatName}</h2>
+                 <p className="text-[11px] text-white/40 font-medium">
+                    {currentRoomData?.description || "A place for open, respectful conversations"}
+                 </p>
               </div>
            </div>
 
-           <div className="flex items-center gap-4">
-              <button 
-                onClick={toggleDND}
-                className={`flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-full transition-all border ${
-                  isDND 
-                    ? 'bg-red-500/10 border-red-500/20 text-red-400' 
-                    : 'bg-green-500/10 border-green-500/20 text-green-400'
-                }`}
-              >
-                {isDND ? <BellOff size={12} /> : <Bell size={12} />}
-                DND: {isDND ? 'ON' : 'OFF'}
-              </button>
-           </div>
-        </header>
+           {/* Message Buffer Flow */}
+           <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide">
+              <div className="flex justify-center mb-8">
+                 <div className="bg-white/5 px-4 py-1.5 rounded-full text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] border border-white/5">
+                   Welcome to {currentChatName}!
+                 </div>
+              </div>
 
-        {/* MESSAGES */}
-        <div 
-          ref={scrollRef}
-          className="flex-1 overflow-y-auto p-8 space-y-8 scroll-smooth"
-        >
-           {/* Welcome Message */}
-           {!activePrivateChat && (
-             <div className="bg-brand/5 border border-brand/10 p-6 rounded-3xl mb-8">
-                <p className="text-sm font-bold text-brand-light mb-2">Welcome to {currentChatName}!</p>
-                <div className="space-y-1 text-xs text-text-muted">
-                   <p>• Be respectful to others</p>
-                   <p>• Multiples reports will result in automatic bans</p>
-                   <p>• Enjoy anonymous real-time conversations</p>
+              <div className="bg-[#ff8ac8]/5 border border-[#ff8ac8]/10 p-5 rounded-2xl mb-8 mx-auto max-w-[90%]">
+                 <p className="text-[11px] text-[#ff8ac8]/60 text-center leading-relaxed font-medium">
+                   Please be respectful. Treat others kindly and keep conversations appropriate. Indecent behavior can be anonymously reported (long press/click user). 
+                   <br/><br/>
+                   <span className="text-white/80 font-black">RULES:</span> 
+                   <br/>
+                   1. 5 reports result in an <span className="text-white">IP & Nickname ban for 30 minutes</span>.
+                   <br/>
+                   2. Enable <span className="text-white">DND</span> (top right) to block incoming private messages.
+                 </p>
+              </div>
+
+              {messages.length === 0 && (
+                <div className="flex flex-col gap-6">
+                   <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2 ml-4">
+                         <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Wanderer_42</span>
+                         <span className="text-[8px] text-white/10 font-bold">13:18</span>
+                      </div>
+                      <div className="bg-white/5 text-white/90 self-start rounded-2xl rounded-tl-none px-5 py-3 text-sm border border-white/5 font-medium shadow-lg backdrop-blur-sm">
+                        Hey everyone! How is it going?
+                      </div>
+                   </div>
+                   <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2 ml-4">
+                         <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">NightOwl</span>
+                         <span className="text-[8px] text-white/10 font-bold">13:19</span>
+                      </div>
+                      <div className="bg-white/5 text-white/90 self-start rounded-2xl rounded-tl-none px-5 py-3 text-sm border border-white/5 font-medium shadow-lg backdrop-blur-sm">
+                        Just vibing here, you?
+                      </div>
+                   </div>
                 </div>
-             </div>
-           )}
+              )}
 
-           {(activePrivateChat ? (privateThreads[activePrivateChat] || []) : messages).map((msg) => (
-              <motion.div 
-                key={msg.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`flex items-start gap-4 ${msg.senderId === socket.id ? 'flex-row-reverse' : ''}`}
-              >
-                 <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-sm flex-shrink-0 ${
-                   msg.senderId === socket.id ? 'bg-brand text-white shadow-lg shadow-brand/20' : 'bg-surface-hover text-text'
-                 }`}>
-                    {msg.senderName.charAt(0).toUpperCase()}
+              {messages.map((msg, idx) => (
+                <div key={msg.id} className="flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2">
+                   <div className={`flex items-center gap-2 ${msg.senderId === socket.id ? 'justify-end mr-4' : 'ml-4'}`}>
+                      <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">{msg.senderName}</span>
+                      <span className="text-[8px] text-white/10 font-bold">
+                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                   </div>
+                   <div className={`max-w-[80%] px-5 py-3 rounded-2xl text-sm leading-relaxed font-medium shadow-lg transition-all ${
+                     msg.senderId === socket.id 
+                       ? 'bg-[#9d367c] text-white self-end rounded-tr-none' 
+                       : 'bg-white/5 text-white/90 self-start rounded-tl-none border border-white/5'
+                   }`}>
+                     {msg.content}
+                   </div>
+                </div>
+              ))}
+           </div>
+
+           {/* Message Input Container */}
+           <div className="p-6 pt-0">
+              {activePrivateChat && onlineUsers.find(u => u.id === activePrivateChat)?.isDND && (
+                <div className="mb-2 text-center">
+                   <span className="text-[10px] font-black text-[#a855f7] uppercase tracking-widest bg-[#a855f7]/10 px-3 py-1 rounded-full border border-[#a855f7]/20">
+                     Recipient has DND enabled
+                   </span>
+                </div>
+              )}
+              <form onSubmit={handleSendMessage} className="flex gap-3">
+                 <div className="flex-1 relative group">
+                    <input 
+                      type="text" 
+                      value={inputText}
+                      onChange={(e) => setInputText(e.target.value)}
+                      placeholder={`Message ${currentChatName}...`} 
+                      className="w-full bg-white/5 rounded-xl py-4 px-6 text-sm focus:outline-none border border-white/5 focus:border-[#9d367c]/40 transition-all font-medium placeholder:text-white/20 shadow-inner"
+                    />
                  </div>
-                 <div className={`max-w-[70%] space-y-1 ${msg.senderId === socket.id ? 'items-end' : ''} flex flex-col`}>
-                    <div className="flex items-center gap-2">
-                       <span className={`text-[10px] font-black uppercase tracking-[0.15em] ${
-                         msg.senderGender === 'Female' ? 'text-pink-400' :
-                         msg.senderGender === 'Male' ? 'text-blue-400' : 'text-text-muted'
-                       }`}>
-                         {msg.senderName}
-                       </span>
-                       <span className="text-[9px] font-bold text-text-muted/50">
-                         {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                       </span>
-                    </div>
-                    <div className={`px-5 py-3 rounded-2xl text-sm leading-relaxed ${
-                      msg.senderId === socket.id ? 'chat-bubble-user text-white' : 'chat-bubble-other text-text-muted'
-                    }`}>
-                       {msg.content}
-                    </div>
-                 </div>
-              </motion.div>
-           ))}
-        </div>
-
-        {/* INPUT AREA */}
-        <div className="p-8 pt-4">
-           <form onSubmit={handleSendMessage} className="bg-surface glass p-2 rounded-2xl flex items-center gap-2 group ring-brand/20 transition-all focus-within:ring-2">
-              <input
-                type="text"
-                placeholder={`Message ${activePrivateChat ? 'privately...' : 'in #' + currentChatName + '...'}`}
-                className="flex-1 bg-transparent border-none px-4 py-3 text-sm focus:outline-none"
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                maxLength={500}
-              />
-              <button 
-                type="submit"
-                disabled={!inputText.trim()}
-                className="w-12 h-12 bg-brand hover:bg-brand-light text-white rounded-xl flex items-center justify-center transition-all disabled:opacity-20 shadow-lg shadow-brand/20"
-              >
-                <Send size={20} />
-              </button>
-           </form>
-           <p className="text-[9px] text-center mt-4 uppercase font-black tracking-[0.3em] text-text-muted/30">Anonymous Messaging Powered by ChatBubble</p>
-        </div>
-      </main>
-
-      {/* RIGHT AD PANEL (300x600 in Chatroom) */}
-      <div className="hidden lg:flex w-80 h-full border-l border-border bg-surface/20 flex-col p-6">
-         <div className="mb-4 flex items-center justify-between text-xs font-black uppercase tracking-widest text-text-muted/50">
-            <span>Safety System</span>
-            <ShieldAlert size={14} />
-         </div>
-         <div className="space-y-4">
-            <div className="p-4 bg-white/5 rounded-2xl border border-border">
-               <p className="text-[10px] font-bold text-text-muted leading-relaxed">
-                  Your session is anonymous. Abuse reports are processed in real-time.
-               </p>
-            </div>
-            
-            {/* Vertical Ad in sidebar */}
-            <div className="flex-1 h-96 mt-8 rounded-2xl bg-brand-dark/10 border border-brand/10 flex flex-col items-center justify-center p-8 space-y-4 relative overflow-hidden grayscale group hover:grayscale-0 transition-all">
-                <span className="absolute top-4 left-4 text-[9px] font-black opacity-20">VERTICAL AD</span>
-                <div className="w-16 h-1 w-full bg-white/5 rounded" />
-                <div className="w-24 h-24 bg-brand/20 rounded-2xl rotate-12" />
-                <div className="h-4 w-32 bg-white/5 rounded" />
-                <div className="h-4 w-24 bg-white/5 rounded" />
-            </div>
-         </div>
+                 <button 
+                   type="submit"
+                   disabled={!inputText.trim()}
+                   className="w-14 h-14 bg-[#9d367c] hover:bg-[#b03d8b] disabled:opacity-30 rounded-xl flex items-center justify-center shadow-lg transition-all active:scale-95 text-white flex-shrink-0"
+                 >
+                    <Send size={20} />
+                 </button>
+              </form>
+           </div>
+        </main>
       </div>
-
     </div>
   );
 };
