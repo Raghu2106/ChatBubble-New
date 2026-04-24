@@ -171,7 +171,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit }) =>
           <div className="w-8 h-8 bg-brand/10 rounded-lg flex items-center justify-center">
             <MessageSquare size={18} className="text-brand" />
           </div>
-          <h1 className="text-xl font-black tracking-tight text-text">ChatSpace</h1>
+          <h1 className="text-xl font-black tracking-tight text-text">ChatBubble</h1>
         </div>
 
         {/* Centered Welcome Message */}
