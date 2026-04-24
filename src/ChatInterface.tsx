@@ -4,7 +4,7 @@ import {
   Users, MessageSquare, Globe, User, MoreVertical, 
   Send, ShieldAlert, DoorOpen, Bell, BellOff, RefreshCw,
   Lock, Search, Plus, ChevronDown, Music, Code, Film, Zap,
-  Moon, Hash, Shield, ChevronRight, Mars, Venus
+  Moon, Hash, Shield, ChevronRight, Mars, Venus, X
 } from 'lucide-react';
 import { socket } from './socket';
 import { ChatMessage, Room, Gender } from './types';
@@ -50,6 +50,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   const [privateThreads, setPrivateThreads] = useState<Record<string, ChatMessage[]>>({});
   const [blockedUsers, setBlockedUsers] = useState<Set<string>>(new Set());
   const [globalStatuses, setGlobalStatuses] = useState<Record<string, { isDND?: boolean }>>({});
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   
@@ -146,6 +147,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
     setActivePrivateChat(null);
     setMessages([]);
     socket.emit('join:room', roomId);
+    setMobileSidebarOpen(false);
   };
 
   const toggleDND = () => {
@@ -215,24 +217,33 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
       </div>
 
       {/* MAIN HEADER */}
-      <header className="h-16 flex-shrink-0 flex items-center justify-between px-10 bg-surface/80 backdrop-blur-md border-b border-border shadow-sm sticky top-0 z-10 relative">
+      <header className="h-16 flex-shrink-0 flex items-center justify-between px-4 md:px-10 bg-surface/80 backdrop-blur-md border-b border-border shadow-sm sticky top-0 z-40 relative">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-brand/10 rounded-lg flex items-center justify-center">
-            <MessageSquare size={18} className="text-brand" />
+          <button 
+            onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+            className="md:hidden p-2 hover:bg-surface-hover rounded-lg text-text-muted"
+            aria-label="Toggle Menu"
+          >
+            <MoreVertical size={20} className={mobileSidebarOpen ? 'rotate-90 transition-transform' : 'transition-transform'} />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-brand/10 rounded-lg flex items-center justify-center shrink-0">
+              <MessageSquare size={18} className="text-brand" />
+            </div>
+            <h1 className="text-lg md:text-xl font-black tracking-tight text-text">ChatBubble</h1>
           </div>
-          <h1 className="text-xl font-black tracking-tight text-text">ChatBubble</h1>
         </div>
 
-        {/* Centered Welcome Message */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        {/* Centered Welcome Message - Only show on desktop */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none hidden md:flex">
           <span className="text-sm font-medium text-text-muted pointer-events-auto">
             Welcome, <span className="text-text font-black">{user.nickname}</span>
           </span>
         </div>
 
-        <div className="flex items-center gap-8">
-          <div className="flex items-center gap-3">
-             <span className="text-[10px] font-black uppercase text-text-muted tracking-widest flex items-center gap-1.5">
+        <div className="flex items-center gap-2 md:gap-8">
+          <div className="flex items-center gap-2 md:gap-3">
+             <span className="text-[10px] font-black uppercase text-text-muted tracking-widest hidden sm:flex items-center gap-1.5">
                {isDND ? <BellOff size={12} /> : <Bell size={12} />} DND
              </span>
              <button 
@@ -245,20 +256,48 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
           <div className="flex items-center">
             <button 
               onClick={onExit}
-              className="flex items-center gap-2 px-4 py-2 bg-surface/50 hover:bg-red-500/10 text-text-muted hover:text-red-500 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest border border-border hover:border-red-500/20"
+              className="flex items-center gap-2 px-3 md:px-4 py-2 bg-surface/50 hover:bg-red-500/10 text-text-muted hover:text-red-500 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest border border-border hover:border-red-500/20"
             >
               <DoorOpen size={14} />
-              Exit Chat
+              <span className="hidden xs:inline">Exit</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* MAIN LAYOUT CONTENT */}
-      <div className="flex-1 flex overflow-hidden max-w-6xl w-full mx-auto px-6 py-6 gap-6">
+      <div className="flex-1 flex overflow-hidden w-full mx-auto md:px-6 md:py-6 gap-6 relative">
         
+        {/* Mobile Sidebar Overlay */}
+        <AnimatePresence>
+          {mobileSidebarOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileSidebarOpen(false)}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 md:hidden"
+            />
+          )}
+        </AnimatePresence>
+
         {/* LEFT SIDEBAR CATEGORIES */}
-        <aside className="w-72 flex flex-col gap-4 flex-shrink-0">
+        <aside className={`
+          fixed inset-y-0 left-0 top-16 md:static md:w-72 flex flex-col gap-4 flex-shrink-0 z-40 transition-transform duration-300 ease-in-out
+          bg-surface md:bg-transparent p-6 md:p-0 shadow-2xl md:shadow-none
+          ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+          w-[85%] sm:w-72
+        `}>
+           {/* Sidebar Close button for mobile */}
+           <div className="flex items-center justify-between md:hidden mb-2">
+              <span className="text-xs font-black uppercase tracking-widest text-brand">Menu</span>
+              <button 
+                onClick={() => setMobileSidebarOpen(false)}
+                className="p-2 hover:bg-surface-hover rounded-lg text-text-muted"
+              >
+                <X size={18} />
+              </button>
+           </div>
            {/* Navigation Tabs */}
            <div className="flex bg-border/20 p-1 rounded-xl">
               {(['Rooms', 'Messages', 'People'] as Tab[]).map(tab => {
@@ -408,7 +447,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                             className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-surface-hover transition-all group"
                           >
                               <button 
-                                onClick={() => setActivePrivateChat(u.id)}
+                                onClick={() => {
+                                  setActivePrivateChat(u.id);
+                                  setMobileSidebarOpen(false);
+                                }}
                                 className="flex items-center gap-3 flex-1 text-left"
                               >
                                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black uppercase tracking-widest shadow-sm ${
@@ -469,7 +511,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                         className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all group ${activePrivateChat === otherId ? 'bg-brand/10 shadow-sm' : 'hover:bg-surface-hover/50'}`}
                       >
                          <button 
-                           onClick={() => setActivePrivateChat(otherId)}
+                           onClick={() => {
+                             setActivePrivateChat(otherId);
+                             setMobileSidebarOpen(false);
+                           }}
                            className="flex items-center gap-3 flex-1 min-w-0 text-left"
                          >
                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black uppercase tracking-widest shadow-sm ${
@@ -523,9 +568,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         </aside>
 
         {/* CENTER CHAT DISPLAY WINDOW */}
-        <main className="flex-1 bg-surface rounded-[2.5rem] border border-border flex flex-col overflow-hidden relative shadow-sm">
+        <main className="flex-1 bg-surface md:rounded-[2.5rem] border-x md:border border-border flex flex-col overflow-hidden relative shadow-sm z-10 w-full">
            {/* Window Header */}
-           <div className="p-6 flex items-center gap-4 border-b border-border bg-surface-hover/20">
+           <div className="p-4 md:p-6 flex items-center gap-4 border-b border-border bg-surface-hover/20">
               <div className="w-12 h-12 bg-brand/10 rounded-2xl flex items-center justify-center border border-brand/5">
                  <MessageSquare size={24} className="text-brand" />
               </div>
