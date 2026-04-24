@@ -66,7 +66,7 @@ export interface ClientToServerEvents {
   'match:leave': () => void;
 }
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // In-memory Stores
 const users = new Map<string, User>();
