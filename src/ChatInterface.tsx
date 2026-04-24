@@ -49,6 +49,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   const [activePrivateChat, setActivePrivateChat] = useState<string | null>(null);
   const [privateThreads, setPrivateThreads] = useState<Record<string, ChatMessage[]>>({});
   const [blockedUsers, setBlockedUsers] = useState<Set<string>>(new Set());
+  const [globalStatuses, setGlobalStatuses] = useState<Record<string, { isDND?: boolean }>>({});
   
   const scrollRef = useRef<HTMLDivElement>(null);
   
@@ -67,15 +68,34 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
       }));
     });
 
-    socket.on('users:list', (list) => setOnlineUsers(list));
-    socket.on('user:joined', (u) => setOnlineUsers(prev => {
-      if (prev.some(existing => existing.id === u.id)) return prev;
-      return [...prev, u];
-    }));
+    socket.on('users:list', (list: any[]) => {
+      setOnlineUsers(list);
+      setGlobalStatuses(prev => {
+        const next = { ...prev };
+        list.forEach(u => {
+          next[u.id] = { ...next[u.id], isDND: u.isDND };
+        });
+        return next;
+      });
+    });
+    socket.on('user:joined', (u: any) => {
+      setOnlineUsers(prev => {
+        if (prev.some(existing => existing.id === u.id)) return prev;
+        return [...prev, u];
+      });
+      setGlobalStatuses(prev => ({
+        ...prev,
+        [u.id]: { ...prev[u.id], isDND: u.isDND }
+      }));
+    });
     socket.on('user:left', (uid) => setOnlineUsers(prev => prev.filter(u => u.id !== uid)));
     socket.on('rooms:updated' as any, (updatedRooms: Room[]) => setRooms(updatedRooms));
     socket.on('status:update', ({ userId, isDND }) => {
       setOnlineUsers(prev => prev.map(u => u.id === userId ? { ...u, isDND } : u));
+      setGlobalStatuses(prev => ({
+        ...prev,
+        [userId]: { ...prev[userId], isDND }
+      }));
     });
 
     // Request initial list/counts explicitly
@@ -88,6 +108,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
       socket.off('user:joined');
       socket.off('user:left');
       socket.off('rooms:updated' as any);
+      socket.off('status:update');
     };
   }, [currentRoom]);
 
@@ -143,7 +164,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
     });
     if (activePrivateChat === otherId) {
       setActivePrivateChat(null);
-      setCurrentRoom('lobby');
     }
   };
 
@@ -401,8 +421,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                                 <div>
                                    <div className="flex items-center gap-2">
                                      <p className="text-xs font-bold tracking-tight text-text">{u.nickname}</p>
-                                     {u.isDND && <BellOff size={10} className="text-brand" title="DND Enabled" />}
-                                     {blockedUsers.has(u.id) && <Shield size={10} className="text-red-500" title="Restricted" />}
+                                     {u.isDND && <BellOff size={12} className="text-orange-500 fill-orange-500/10" title="DND Enabled" />}
+                                     {blockedUsers.has(u.id) && <Shield size={12} className="text-red-500" title="Restricted" />}
                                    </div>
                                    <p className="text-[9px] text-text-muted uppercase font-black tracking-widest">{u.gender || 'Private'}</p>
                                 </div>
@@ -463,6 +483,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                                <div className="flex justify-between items-center">
                                   <div className="flex items-center gap-1.5 min-w-0">
                                     <p className="text-xs font-bold tracking-tight truncate text-text">{displayName}</p>
+                                    {globalStatuses[otherId]?.isDND && <BellOff size={11} className="text-orange-500 shrink-0" />}
                                     {blockedUsers.has(otherId) && <Shield size={10} className="text-red-500 shrink-0" />}
                                   </div>
                                   <span className="text-[8px] text-text-muted opacity-60">{new Date(lastMsg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
@@ -572,7 +593,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                    </span>
                 </div>
               )}
-              {activePrivateChat && onlineUsers.find(u => u.id === activePrivateChat)?.isDND && (
+              {activePrivateChat && globalStatuses[activePrivateChat]?.isDND && (
                 <div className="mb-2 text-center">
                    <span className="text-[10px] font-black text-brand uppercase tracking-widest bg-brand/10 px-3 py-1 rounded-full border border-brand/20">
                      Recipient has DND enabled
