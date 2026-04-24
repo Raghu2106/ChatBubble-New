@@ -51,6 +51,7 @@ export interface ClientToServerEvents {
   'send:private': (data: { recipientId: string; content: string }) => void;
   'report:user': (userId: string) => void;
   'block:user': (userId: string) => void;
+  'unblock:user': (userId: string) => void;
   'toggle:dnd': (isDND: boolean) => void;
   'match:find': () => void;
   'match:cancel': () => void;

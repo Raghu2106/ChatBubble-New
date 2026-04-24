@@ -246,6 +246,15 @@ async function startServer() {
       }
     });
 
+    socket.on('unblock:user', (targetUserId) => {
+      const userId = sessions.get(socket.id);
+      if (!userId) return;
+      const user = users.get(userId);
+      if (user) {
+        user.blockedUsers.delete(targetUserId);
+      }
+    });
+
     socket.on('match:find', () => {
       const userId = sessions.get(socket.id);
       if (!userId) return;

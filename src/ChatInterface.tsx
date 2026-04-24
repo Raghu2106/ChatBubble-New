@@ -35,6 +35,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
   const [isDND, setIsDND] = useState(false);
   const [activePrivateChat, setActivePrivateChat] = useState<string | null>(null);
   const [privateThreads, setPrivateThreads] = useState<Record<string, ChatMessage[]>>({});
+  const [blockedUsers, setBlockedUsers] = useState<Set<string>>(new Set());
   
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -106,6 +107,28 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
     setCollapsedCategories(prev => 
       prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
     );
+  };
+  
+  const handleBlock = (userId: string) => {
+    socket.emit('block:user', userId);
+    setBlockedUsers(prev => {
+      const next = new Set(prev);
+      next.add(userId);
+      return next;
+    });
+  };
+
+  const handleUnblock = (userId: string) => {
+    socket.emit('unblock:user', userId);
+    setBlockedUsers(prev => {
+      const next = new Set(prev);
+      next.delete(userId);
+      return next;
+    });
+  };
+
+  const handleReport = (userId: string) => {
+    socket.emit('report:user', userId);
   };
 
   const currentRoomData = rooms.find(r => r.id === currentRoom);
@@ -306,22 +329,44 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
                             return peopleSortOrder === 'asc' ? comparison : -comparison;
                           })
                           .map(u => (
-                          <button 
+                          <div 
                             key={u.id} 
-                            onClick={() => setActivePrivateChat(u.id)}
-                            className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/5 transition-all text-left"
+                            className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-white/5 transition-all group"
                           >
-                             <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-[#ff8ac8]">
-                                {u.nickname.charAt(0)}
-                             </div>
-                             <div>
-                                <div className="flex items-center gap-2">
-                                  <p className="text-xs font-bold tracking-tight">{u.nickname}</p>
-                                  {u.isDND && <BellOff size={10} className="text-[#a855f7]" title="DND Enabled" />}
+                             <button 
+                               onClick={() => setActivePrivateChat(u.id)}
+                               className="flex items-center gap-3 flex-1 text-left"
+                             >
+                                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-[#ff8ac8]">
+                                   {u.nickname.charAt(0)}
                                 </div>
-                                <p className="text-[9px] text-[#a855f7] uppercase font-black tracking-widest">{u.gender || 'Private'}</p>
+                                <div>
+                                   <div className="flex items-center gap-2">
+                                     <p className="text-xs font-bold tracking-tight">{u.nickname}</p>
+                                     {u.isDND && <BellOff size={10} className="text-[#a855f7]" title="DND Enabled" />}
+                                     {blockedUsers.has(u.id) && <Shield size={10} className="text-red-400" title="Restricted" />}
+                                   </div>
+                                   <p className="text-[9px] text-[#a855f7] uppercase font-black tracking-widest">{u.gender || 'Private'}</p>
+                                </div>
+                             </button>
+                             
+                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button 
+                                  onClick={() => blockedUsers.has(u.id) ? handleUnblock(u.id) : handleBlock(u.id)}
+                                  className={`p-1.5 rounded-lg transition-colors ${blockedUsers.has(u.id) ? 'bg-red-400/20 text-red-400' : 'bg-white/5 text-white/40 hover:text-white'}`}
+                                  title={blockedUsers.has(u.id) ? "Unrestrict" : "Restrict"}
+                                >
+                                   <Shield size={12} />
+                                </button>
+                                <button 
+                                  onClick={() => handleReport(u.id)}
+                                  className="p-1.5 rounded-lg bg-white/5 text-white/40 hover:text-red-400 hover:bg-red-400/10 transition-all"
+                                  title="Report"
+                                >
+                                   <ShieldAlert size={12} />
+                                </button>
                              </div>
-                          </button>
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -337,22 +382,39 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
                       (lastMsg.senderId === otherId ? lastMsg.senderName : "Chat Partner");
 
                     return (
-                      <button 
+                      <div 
                         key={otherId} 
-                        onClick={() => setActivePrivateChat(otherId)}
-                        className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all text-left ${activePrivateChat === otherId ? 'bg-white/10' : 'hover:bg-white/5'}`}
+                        className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all group ${activePrivateChat === otherId ? 'bg-white/10' : 'hover:bg-white/5'}`}
                       >
-                         <div className="w-8 h-8 rounded-lg bg-[#9d367c]/20 flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-[#ff8ac8]">
-                            {displayName.charAt(0)}
-                         </div>
-                         <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-center">
-                               <p className="text-xs font-bold tracking-tight truncate">{displayName}</p>
-                               <span className="text-[8px] opacity-30">{new Date(lastMsg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                         <button 
+                           onClick={() => setActivePrivateChat(otherId)}
+                           className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                         >
+                            <div className="w-8 h-8 rounded-lg bg-[#9d367c]/20 flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-[#ff8ac8]">
+                               {displayName.charAt(0)}
                             </div>
-                            <p className="text-[10px] text-white/40 truncate">{lastMsg.content}</p>
+                            <div className="flex-1 min-w-0">
+                               <div className="flex justify-between items-center">
+                                  <div className="flex items-center gap-1.5 min-w-0">
+                                    <p className="text-xs font-bold tracking-tight truncate">{displayName}</p>
+                                    {blockedUsers.has(otherId) && <Shield size={10} className="text-red-400 shrink-0" />}
+                                  </div>
+                                  <span className="text-[8px] opacity-30">{new Date(lastMsg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                               </div>
+                               <p className="text-[10px] text-white/40 truncate">{lastMsg.content}</p>
+                            </div>
+                         </button>
+                         
+                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2">
+                            <button 
+                              onClick={() => blockedUsers.has(otherId) ? handleUnblock(otherId) : handleBlock(otherId)}
+                              className={`p-1.5 rounded-lg transition-colors ${blockedUsers.has(otherId) ? 'bg-red-400/20 text-red-400' : 'bg-white/5 text-white/40 hover:text-white'}`}
+                              title={blockedUsers.has(otherId) ? "Unrestrict" : "Restrict"}
+                            >
+                               <Shield size={12} />
+                            </button>
                          </div>
-                      </button>
+                      </div>
                     );
                  })}
               </div>
@@ -384,13 +446,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user }) => {
 
               <div className="bg-[#ff8ac8]/5 border border-[#ff8ac8]/10 p-5 rounded-2xl mb-8 mx-auto max-w-[90%]">
                  <p className="text-[11px] text-[#ff8ac8]/60 text-center leading-relaxed font-medium">
-                   Please be respectful. Treat others kindly and keep conversations appropriate. Indecent behavior can be anonymously reported (long press/click user). 
+                   Please be respectful. Treat others kindly and keep conversations appropriate. Indecent behavior can be anonymously reported. 
                    <br/><br/>
                    <span className="text-white/80 font-black">RULES:</span> 
                    <br/>
                    1. 5 reports result in an <span className="text-white">IP & Nickname ban for 30 minutes</span>.
                    <br/>
                    2. Enable <span className="text-white">DND</span> (top right) to block incoming private messages.
+                   <br/>
+                   3. <span className="text-white">Restrict</span> annoying users to block their private messages.
                  </p>
               </div>
 
