@@ -9,6 +9,16 @@ import {
 import { socket } from './socket';
 import { ChatMessage, Room, Gender } from './types';
 
+// Helper to sanitize message content and strip clickable links/HTML
+const formatChatMessage = (content: string) => {
+  // We can't easily strip all text that looks like a URL without potentially breaking normal chat,
+  // but we can ensure they aren't rendered as links.
+  // By default, React renders strings safely, so as long as we don't use 'linkify' or similar libraries,
+  // URLs won't be clickable unless we explicitly make them so.
+  // However, we can also strip anything that looks like an HTML tag for extra safety.
+  return content.replace(/<[^>]*>/g, '');
+};
+
 interface ChatInterfaceProps {
   user: { nickname: string; id: string; gender?: Gender; interests: string[] };
   onExit: () => void;
@@ -530,7 +540,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit }) =>
                        ? 'bg-brand text-white self-end rounded-tr-none' 
                        : 'bg-bg/50 text-text self-start rounded-tl-none border border-border'
                    }`}>
-                     {msg.content}
+                     {formatChatMessage(msg.content)}
                    </div>
                 </div>
               ))}
