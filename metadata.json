@@ -1,0 +1,6 @@
+{
+  "name": "ChatBubble",
+  "description": "Anonymous real-time chat platform with public rooms, private DMs, and built-in moderation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
