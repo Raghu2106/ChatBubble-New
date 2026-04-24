@@ -14,6 +14,8 @@ import { Shield } from 'lucide-react';
 
 export default function App() {
   const [step, setStep] = useState<'landing' | 'entry' | 'chat'>('landing');
+  const stepRef = React.useRef(step);
+  stepRef.current = step;
   const [user, setUser] = useState<{ id: string; nickname: string; gender?: Gender; interests: string[] } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(window.location.pathname === '/admin');
@@ -24,7 +26,9 @@ export default function App() {
 
     socket.on('error', (msg) => {
       setError(msg);
-      setUser(null);
+      if (stepRef.current !== 'chat') {
+        setUser(null);
+      }
     });
 
     socket.on('registration:success' as any, ({ userId }: { userId: string }) => {

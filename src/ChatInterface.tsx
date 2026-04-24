@@ -231,7 +231,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit }) =>
               {(['Rooms', 'Messages', 'People'] as Tab[]).map(tab => {
                 let count = 0;
                 if (tab === 'Messages') count = Object.keys(privateThreads).length;
-                if (tab === 'People') count = onlineUsers.filter(u => u.id !== user.id).length;
+                if (tab === 'People') count = onlineUsers.length;
 
                 return (
                   <button
@@ -360,7 +360,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit }) =>
 
                       <div className="space-y-1">
                         {onlineUsers
-                          .filter(u => u.id !== user.id)
                           .sort((a, b) => {
                             let comparison = 0;
                             if (peopleSortBy === 'alphabet') {
