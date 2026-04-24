@@ -28,6 +28,7 @@ export default function App() {
     });
 
     socket.on('registration:success' as any, ({ userId }: { userId: string }) => {
+      setUser(prev => prev ? { ...prev, id: userId } : null);
       setStep('chat');
     });
 

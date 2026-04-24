@@ -49,7 +49,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit }) =>
   const [blockedUsers, setBlockedUsers] = useState<Set<string>>(new Set());
   
   const scrollRef = useRef<HTMLDivElement>(null);
-
+  
   useEffect(() => {
     socket.on('room:message', (msg) => {
       if (msg.roomId === currentRoom) {
@@ -58,7 +58,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit }) =>
     });
 
     socket.on('private:message', (msg) => {
-      const otherId = msg.senderId === socket.id ? msg.recipientId! : msg.senderId;
+      const otherId = msg.senderId === user.id ? msg.recipientId! : msg.senderId;
       setPrivateThreads(prev => ({
         ...prev,
         [otherId]: [...(prev[otherId] || []), msg]
@@ -75,6 +75,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit }) =>
     socket.on('status:update', ({ userId, isDND }) => {
       setOnlineUsers(prev => prev.map(u => u.id === userId ? { ...u, isDND } : u));
     });
+
+    // Request initial list/counts explicitly
+    socket.emit('join:room', currentRoom);
 
     return () => {
       socket.off('room:message');
@@ -228,7 +231,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit }) =>
               {(['Rooms', 'Messages', 'People'] as Tab[]).map(tab => {
                 let count = 0;
                 if (tab === 'Messages') count = Object.keys(privateThreads).length;
-                if (tab === 'People') count = onlineUsers.filter(u => u.currentRoom === currentRoom).length;
+                if (tab === 'People') count = onlineUsers.filter(u => u.currentRoom === currentRoom && u.id !== user.id).length;
 
                 return (
                   <button
@@ -357,7 +360,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit }) =>
 
                       <div className="space-y-1">
                         {onlineUsers
-                          .filter(u => u.currentRoom === currentRoom && u.id !== socket.id)
+                          .filter(u => u.currentRoom === currentRoom && u.id !== user.id)
                           .sort((a, b) => {
                             let comparison = 0;
                             if (peopleSortBy === 'alphabet') {

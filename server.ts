@@ -193,9 +193,7 @@ async function startServer() {
       sessions.set(socket.id, userId);
       
       socket.emit('registration:success' as any, { userId });
-
-      // Default join lobby
-      joinRoom(socket, 'lobby');
+      console.log(`User ${newUser.nickname} registered successfully.`);
     });
 
     socket.on('join:room', (roomId) => {
@@ -392,17 +390,24 @@ async function startServer() {
 
   function joinRoom(socket: any, roomId: string) {
     const userId = sessions.get(socket.id);
-    if (!userId) return;
+    if (!userId) {
+      console.log(`JoinRoom failed: No session for socket ${socket.id}`);
+      return;
+    }
     const user = users.get(userId);
-    if (!user) return;
+    if (!user) {
+      console.log(`JoinRoom failed: No user for userId ${userId}`);
+      return;
+    }
+
+    const previousRooms = Array.from(socket.rooms).filter(r => r !== socket.id);
+    console.log(`User ${user.nickname} leaving rooms:`, previousRooms);
 
     // Leave previous rooms
-    Array.from(socket.rooms).forEach((r: any) => {
-      if (r !== socket.id) {
-        socket.leave(r);
-        const roomObj = rooms.find(rm => rm.id === r);
-        if (roomObj) roomObj.userCount = Math.max(0, roomObj.userCount - 1);
-      }
+    previousRooms.forEach((r: any) => {
+      socket.leave(r);
+      const roomObj = rooms.find(rm => rm.id === r);
+      if (roomObj) roomObj.userCount = Math.max(0, roomObj.userCount - 1);
     });
 
     socket.join(roomId);
@@ -410,7 +415,9 @@ async function startServer() {
     const targetRoom = rooms.find(rm => rm.id === roomId);
     if (targetRoom) targetRoom.userCount++;
 
-    // Notify others
+    console.log(`User ${user.nickname} joined room ${roomId}. New count: ${targetRoom?.userCount}`);
+
+    // Notify others in the room
     socket.to(roomId).emit('user:joined', { 
       id: user.id, 
       nickname: user.nickname, 
@@ -419,8 +426,11 @@ async function startServer() {
       isDND: user.isDND
     });
     
+    // Get all members IDs in the room from adapter
+    const roomMemberSocketIds = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
+    
     // Send list of users in room
-    const members = Array.from(io.sockets.adapter.rooms.get(roomId) || [])
+    const members = roomMemberSocketIds
       .map(sid => {
         const uid = sessions.get(sid);
         const u = users.get(uid || '');
@@ -434,7 +444,9 @@ async function startServer() {
       })
       .filter(Boolean);
     
+    console.log(`Room ${roomId} members list generated: ${members.length} users`);
     socket.emit('users:list', members as any);
+    
     // Notify all about room counts
     io.emit('rooms:updated' as any, rooms);
   }
