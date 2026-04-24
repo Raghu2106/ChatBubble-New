@@ -66,6 +66,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         ...prev,
         [otherId]: [...(prev[otherId] || []), msg]
       }));
+      // If we receive a message for a chat that was closed (not in activePrivateChat),
+      // we don't necessarily need to set it active, but it will now appear in the Messages tab list.
     });
 
     socket.on('users:list', (list: any[]) => {
@@ -88,7 +90,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         [u.id]: { ...prev[u.id], isDND: u.isDND }
       }));
     });
-    socket.on('user:left', (uid) => setOnlineUsers(prev => prev.filter(u => u.id !== uid)));
+    socket.on('user:left', (uid) => {
+      setOnlineUsers(prev => prev.filter(u => u.id !== uid));
+    });
     socket.on('rooms:updated' as any, (updatedRooms: Room[]) => setRooms(updatedRooms));
     socket.on('status:update', ({ userId, isDND }) => {
       setOnlineUsers(prev => prev.map(u => u.id === userId ? { ...u, isDND } : u));
@@ -408,15 +412,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                                 className="flex items-center gap-3 flex-1 text-left"
                               >
                                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black uppercase tracking-widest shadow-sm ${
-                                   u.gender === 'male' ? 'bg-blue-500 text-white' :
-                                   u.gender === 'female' ? 'bg-pink-500 text-white' :
-                                   u.gender === 'non-binary' ? 'bg-indigo-500 text-white' :
+                                   u.gender === 'Male' ? 'bg-blue-500 text-white' :
+                                   u.gender === 'Female' ? 'bg-pink-500 text-white' :
+                                   u.gender === 'Non-binary' ? 'bg-indigo-500 text-white' :
                                    'bg-slate-500 text-white'
                                  }`}>
-                                    {u.gender === 'male' && <Mars size={16} />}
-                                    {u.gender === 'female' && <Venus size={16} />}
-                                    {u.gender === 'non-binary' && <span>NB</span>}
-                                    {(!u.gender || u.gender === 'private') && <span>P</span>}
+                                    {u.gender === 'Male' && <Mars size={16} />}
+                                    {u.gender === 'Female' && <Venus size={16} />}
+                                    {u.gender === 'Non-binary' && <span>NB</span>}
+                                    {(u.gender === 'Prefer not to say' || u.gender === 'Other' || !u.gender) && <span>P</span>}
                                 </div>
                                 <div>
                                    <div className="flex items-center gap-2">
@@ -468,16 +472,16 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                            onClick={() => setActivePrivateChat(otherId)}
                            className="flex items-center gap-3 flex-1 min-w-0 text-left"
                          >
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black uppercase tracking-widest shadow-sm ${
-                               otherUser?.gender === 'male' ? 'bg-blue-500 text-white' :
-                               otherUser?.gender === 'female' ? 'bg-pink-500 text-white' :
-                               otherUser?.gender === 'non-binary' ? 'bg-indigo-500 text-white' :
+                             <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black uppercase tracking-widest shadow-sm ${
+                               otherUser?.gender === 'Male' ? 'bg-blue-500 text-white' :
+                               otherUser?.gender === 'Female' ? 'bg-pink-500 text-white' :
+                               otherUser?.gender === 'Non-binary' ? 'bg-indigo-500 text-white' :
                                'bg-slate-500 text-white'
                              }`}>
-                                {otherUser?.gender === 'male' && <Mars size={16} />}
-                                {otherUser?.gender === 'female' && <Venus size={16} />}
-                                {otherUser?.gender === 'non-binary' && <span>NB</span>}
-                                {(!otherUser?.gender || otherUser?.gender === 'private') && <span>P</span>}
+                                {otherUser?.gender === 'Male' && <Mars size={16} />}
+                                {otherUser?.gender === 'Female' && <Venus size={16} />}
+                                {otherUser?.gender === 'Non-binary' && <span>NB</span>}
+                                {(otherUser?.gender === 'Prefer not to say' || otherUser?.gender === 'Other' || !otherUser?.gender) && <span>P</span>}
                             </div>
                             <div className="flex-1 min-w-0">
                                <div className="flex justify-between items-center">
@@ -526,9 +530,16 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                  <MessageSquare size={24} className="text-brand" />
               </div>
               <div>
-                 <h2 className="text-lg font-black tracking-tight text-text">{currentChatName}</h2>
+                 <div className="flex items-center gap-2">
+                   <h2 className="text-lg font-black tracking-tight text-text">{currentChatName}</h2>
+                   {activePrivateChat && globalStatuses[activePrivateChat]?.isDND && (
+                     <span className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest bg-orange-500/10 text-orange-500 px-1.5 py-0.5 rounded-md border border-orange-500/10">
+                       <BellOff size={8} /> DND
+                     </span>
+                   )}
+                 </div>
                  <p className="text-[11px] text-text-muted font-medium">
-                    {currentRoomData?.description || "A place for open, respectful conversations"}
+                    {activePrivateChat ? "Private Messaging" : (currentRoomData?.description || "A place for open, respectful conversations")}
                  </p>
               </div>
            </div>
@@ -555,17 +566,19 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                  </p>
               </div>
 
-              {messages.length === 0 && !activePrivateChat && (
-                <div className="flex flex-col items-center justify-center py-20 opacity-40 select-none pointer-events-none">
-                  <div className="w-16 h-16 bg-brand/10 rounded-full flex items-center justify-center mb-4">
-                    <MessageSquare size={32} className="text-brand" />
-                  </div>
-                  <p className="text-sm font-black uppercase tracking-widest text-text-muted">No messages yet</p>
-                  <p className="text-[10px] font-bold text-text-muted/60">Say hi to start the conversation!</p>
-                </div>
-              )}
+               {((activePrivateChat ? (privateThreads[activePrivateChat] || []) : messages) || []).length === 0 && (
+                 <div className="flex flex-col items-center justify-center py-20 opacity-40 select-none pointer-events-none">
+                   <div className="w-16 h-16 bg-brand/10 rounded-full flex items-center justify-center mb-4">
+                     <MessageSquare size={32} className="text-brand" />
+                   </div>
+                   <p className="text-sm font-black uppercase tracking-widest text-text-muted">No messages yet</p>
+                   <p className="text-[10px] font-bold text-text-muted/60">
+                     {activePrivateChat ? `Start a private conversation with ${currentChatName}` : 'Say hi to start the conversation!'}
+                   </p>
+                 </div>
+               )}
 
-              {messages.map((msg, idx) => (
+              {((activePrivateChat ? privateThreads[activePrivateChat] : messages) || []).map((msg, idx) => (
                 <div key={msg.id} className="flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2">
                    <div className={`flex items-center gap-2 ${msg.senderId === user.id ? 'justify-end mr-4' : 'ml-4'}`}>
                       <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">{msg.senderName}</span>
