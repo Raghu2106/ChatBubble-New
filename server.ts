@@ -378,11 +378,18 @@ async function startServer() {
         const user = users.get(userId);
         if (user) {
           // Decrement room counts
+          if (user.currentRoom) {
+            const roomObj = rooms.find(rm => rm.id === user.currentRoom);
+            if (roomObj) {
+              roomObj.userCount = Math.max(0, roomObj.userCount - 1);
+              io.emit('rooms:updated' as any, rooms);
+            }
+          }
+          
           io.emit('user:left', user.id);
-          // Optional: Clean up user from memory after some time?
-          // For now just keep or clean up on socket disconnect
           sessions.delete(socket.id);
           users.delete(userId);
+          console.log(`User ${user.nickname} disconnected and removed.`);
         }
       }
     });
@@ -409,6 +416,10 @@ async function startServer() {
       const roomObj = rooms.find(rm => rm.id === r);
       if (roomObj) roomObj.userCount = Math.max(0, roomObj.userCount - 1);
     });
+    
+    if (previousRooms.length > 0) {
+      io.emit('rooms:updated' as any, rooms);
+    }
 
     socket.join(roomId);
     user.currentRoom = roomId;

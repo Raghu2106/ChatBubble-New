@@ -231,7 +231,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit }) =>
               {(['Rooms', 'Messages', 'People'] as Tab[]).map(tab => {
                 let count = 0;
                 if (tab === 'Messages') count = Object.keys(privateThreads).length;
-                if (tab === 'People') count = onlineUsers.filter(u => u.currentRoom === currentRoom && u.id !== user.id).length;
+                if (tab === 'People') count = onlineUsers.filter(u => u.id !== user.id).length;
 
                 return (
                   <button
@@ -360,7 +360,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit }) =>
 
                       <div className="space-y-1">
                         {onlineUsers
-                          .filter(u => u.currentRoom === currentRoom && u.id !== user.id)
+                          .filter(u => u.id !== user.id)
                           .sort((a, b) => {
                             let comparison = 0;
                             if (peopleSortBy === 'alphabet') {
@@ -522,14 +522,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit }) =>
 
               {messages.map((msg, idx) => (
                 <div key={msg.id} className="flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2">
-                   <div className={`flex items-center gap-2 ${msg.senderId === socket.id ? 'justify-end mr-4' : 'ml-4'}`}>
+                   <div className={`flex items-center gap-2 ${msg.senderId === user.id ? 'justify-end mr-4' : 'ml-4'}`}>
                       <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">{msg.senderName}</span>
                       <span className="text-[8px] text-text-muted/40 font-bold">
                         {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                    </div>
                    <div className={`max-w-[80%] px-5 py-3 rounded-2xl text-sm leading-relaxed font-medium shadow-sm transition-all ${
-                     msg.senderId === socket.id 
+                     msg.senderId === user.id 
                        ? 'bg-brand text-white self-end rounded-tr-none' 
                        : 'bg-bg/50 text-text self-start rounded-tl-none border border-border'
                    }`}>
