@@ -22,6 +22,8 @@ const formatChatMessage = (content: string) => {
 interface ChatInterfaceProps {
   user: { nickname: string; id: string; gender?: Gender; interests: string[] };
   onExit: () => void;
+  error?: string | null;
+  setError: (err: string | null) => void;
 }
 
 type Tab = 'Rooms' | 'Messages' | 'People';
@@ -33,7 +35,7 @@ const CATEGORIES = [
   { id: 'global', name: 'Connect Globally', icon: Globe },
 ];
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit }) => {
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, error, setError }) => {
   const [activeTab, setActiveTab] = useState<Tab>('Rooms');
   const [currentRoom, setCurrentRoom] = useState<string>('lobby');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -95,10 +97,17 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit }) =>
     }
   }, [messages, activePrivateChat, privateThreads]);
 
+  useEffect(() => {
+    if (activePrivateChat) {
+      setError(null);
+    }
+  }, [activePrivateChat, setError]);
+
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim()) return;
 
+    setError(null);
     if (activePrivateChat) {
       socket.emit('send:private', { recipientId: activePrivateChat, content: inputText });
     } else {
@@ -540,6 +549,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit }) =>
 
            {/* Message Input Container */}
            <div className="p-6 pt-0">
+              {error && (
+                <div className="mb-2 text-center animate-in fade-in slide-in-from-top-2">
+                   <span className="text-[10px] font-black text-red-500 uppercase tracking-widest bg-red-500/10 px-3 py-1 rounded-full border border-red-500/20">
+                     {error}
+                   </span>
+                </div>
+              )}
               {activePrivateChat && onlineUsers.find(u => u.id === activePrivateChat)?.isDND && (
                 <div className="mb-2 text-center">
                    <span className="text-[10px] font-black text-brand uppercase tracking-widest bg-brand/10 px-3 py-1 rounded-full border border-brand/20">
@@ -552,7 +568,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit }) =>
                     <input 
                       type="text" 
                       value={inputText}
-                      onChange={(e) => setInputText(e.target.value)}
+                      onChange={(e) => {
+                        setInputText(e.target.value);
+                        if (error) setError(null);
+                      }}
                       placeholder={`Message ${currentChatName}...`} 
                       className="w-full bg-bg/50 rounded-xl py-4 px-6 text-sm focus:outline-none border border-border focus:border-brand transition-all font-medium placeholder:text-text-muted/30 shadow-inner"
                     />

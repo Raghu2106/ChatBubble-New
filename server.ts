@@ -230,19 +230,20 @@ async function startServer() {
 
       const recipient = users.get(data.recipientId);
       if (!recipient) {
+        console.log(`Private send failed: Recipient ${data.recipientId} not found`);
         socket.emit('error', 'User is no longer online.');
         return;
       }
 
       if (recipient.isDND) {
+        console.log(`Private send failed: Recipient ${recipient.nickname} has DND on`);
         socket.emit('error', 'User has DND enabled.');
         return;
       }
 
       if (recipient.blockedUsers.has(user.id)) {
+        console.log(`Private send blocked by recipient: ${recipient.nickname} blocked ${user.nickname}`);
         // Silent fail as per spec "Silent (no notification to blocked user)"
-        // But usually we don't even send the event. 
-        // Here we just return.
         return;
       }
 
