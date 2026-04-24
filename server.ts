@@ -143,10 +143,26 @@ async function startServer() {
 
     // Custom entry signal
     socket.on('register' as any, (data: { nickname: string, gender?: any, interests?: string[] }) => {
-      // Check if nickname is already taken
-      const isTaken = Array.from(users.values()).some(u => u.nickname.toLowerCase() === data.nickname.toLowerCase());
+      const cleanNickname = (data.nickname || '').trim();
+      
+      if (!cleanNickname) {
+        socket.emit('error', 'Nickname cannot be empty.');
+        return;
+      }
+
+      // Check if nickname is already taken across all active users
+      const isTaken = Array.from(users.values()).some(u => 
+        u.nickname.trim().toLowerCase() === cleanNickname.toLowerCase()
+      );
+
       if (isTaken) {
         socket.emit('error', 'This nickname is already in use. Please choose another one.');
+        return;
+      }
+
+      // Check if socket is already registered
+      if (sessions.has(socket.id)) {
+        socket.emit('error', 'You are already registered.');
         return;
       }
 

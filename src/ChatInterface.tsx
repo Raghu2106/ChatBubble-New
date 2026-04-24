@@ -66,7 +66,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit }) =>
     });
 
     socket.on('users:list', (list) => setOnlineUsers(list));
-    socket.on('user:joined', (u) => setOnlineUsers(prev => [...prev, u]));
+    socket.on('user:joined', (u) => setOnlineUsers(prev => {
+      if (prev.some(existing => existing.id === u.id)) return prev;
+      return [...prev, u];
+    }));
     socket.on('user:left', (uid) => setOnlineUsers(prev => prev.filter(u => u.id !== uid)));
     socket.on('rooms:updated' as any, (updatedRooms: Room[]) => setRooms(updatedRooms));
     socket.on('status:update', ({ userId, isDND }) => {
