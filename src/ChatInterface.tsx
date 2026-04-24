@@ -4,7 +4,7 @@ import {
   Users, MessageSquare, Globe, User, MoreVertical, 
   Send, ShieldAlert, DoorOpen, Bell, BellOff, RefreshCw,
   Lock, Search, Plus, ChevronDown, Music, Code, Film, Zap,
-  Moon, Hash, Shield, ChevronRight
+  Moon, Hash, Shield, ChevronRight, Mars, Venus
 } from 'lucide-react';
 import { socket } from './socket';
 import { ChatMessage, Room, Gender } from './types';
@@ -383,12 +383,20 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                             key={u.id} 
                             className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-surface-hover transition-all group"
                           >
-                             <button 
-                               onClick={() => setActivePrivateChat(u.id)}
-                               className="flex items-center gap-3 flex-1 text-left"
-                             >
-                                <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-brand">
-                                   {u.nickname.charAt(0)}
+                              <button 
+                                onClick={() => setActivePrivateChat(u.id)}
+                                className="flex items-center gap-3 flex-1 text-left"
+                              >
+                                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black uppercase tracking-widest shadow-sm ${
+                                   u.gender === 'male' ? 'bg-blue-500 text-white' :
+                                   u.gender === 'female' ? 'bg-pink-500 text-white' :
+                                   u.gender === 'non-binary' ? 'bg-indigo-500 text-white' :
+                                   'bg-slate-500 text-white'
+                                 }`}>
+                                    {u.gender === 'male' && <Mars size={16} />}
+                                    {u.gender === 'female' && <Venus size={16} />}
+                                    {u.gender === 'non-binary' && <span>NB</span>}
+                                    {(!u.gender || u.gender === 'private') && <span>P</span>}
                                 </div>
                                 <div>
                                    <div className="flex items-center gap-2">
@@ -440,8 +448,16 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                            onClick={() => setActivePrivateChat(otherId)}
                            className="flex items-center gap-3 flex-1 min-w-0 text-left"
                          >
-                            <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-brand">
-                               {displayName.charAt(0)}
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black uppercase tracking-widest shadow-sm ${
+                               otherUser?.gender === 'male' ? 'bg-blue-500 text-white' :
+                               otherUser?.gender === 'female' ? 'bg-pink-500 text-white' :
+                               otherUser?.gender === 'non-binary' ? 'bg-indigo-500 text-white' :
+                               'bg-slate-500 text-white'
+                             }`}>
+                                {otherUser?.gender === 'male' && <Mars size={16} />}
+                                {otherUser?.gender === 'female' && <Venus size={16} />}
+                                {otherUser?.gender === 'non-binary' && <span>NB</span>}
+                                {(!otherUser?.gender || otherUser?.gender === 'private') && <span>P</span>}
                             </div>
                             <div className="flex-1 min-w-0">
                                <div className="flex justify-between items-center">
