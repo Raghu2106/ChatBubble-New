@@ -4,7 +4,7 @@ import { Server } from "socket.io";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
-import { 
+import type { 
   ChatMessage, 
   Room, 
   User, 
