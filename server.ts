@@ -153,16 +153,28 @@ async function startServer() {
         return;
       }
 
-      // Check if nickname is already taken across all active users
+      // Check if nickname is already taken across all users
       const allUsers = Array.from(users.values());
-      const isTaken = allUsers.some(u => 
+      const existingUser = allUsers.find(u => 
         (u.nickname || '').trim().toLowerCase() === cleanNickname.toLowerCase()
       );
 
-      if (isTaken) {
-        console.log(`Registration failed: Nickname "${cleanNickname}" is already taken.`);
-        socket.emit('error', 'This nickname is already in use. Please choose another one.');
-        return;
+      if (existingUser) {
+        // If the existing user is in grace period (disconnected), we can take the name
+        const isActive = Array.from(sessions.values()).includes(existingUser.id);
+        if (isActive) {
+          console.log(`Registration failed: Nickname "${cleanNickname}" is actively in use.`);
+          socket.emit('error', 'This nickname is already in use. Please choose another one.');
+          return;
+        } else {
+          // Evict the stale user
+          console.log(`Evicting stale user ${existingUser.nickname} for new registration.`);
+          if (userTimers.has(existingUser.id)) {
+            clearTimeout(userTimers.get(existingUser.id)!);
+            userTimers.delete(existingUser.id);
+          }
+          users.delete(existingUser.id);
+        }
       }
 
       // Check if socket is already registered
@@ -483,22 +495,26 @@ async function startServer() {
     // Get all members IDs in the room from adapter
     const roomMemberSocketIds = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
     
-    // Send list of users in room
-    const members = roomMemberSocketIds
-      .map(sid => {
-        const uid = sessions.get(sid);
-        const u = users.get(uid || '');
-        return u ? { 
+    // Map to ensure absolute uniqueness by userId (prevents clones during refresh/reconnect)
+    const membersMap = new Map<string, any>();
+    
+    roomMemberSocketIds.forEach(sid => {
+      const uid = sessions.get(sid);
+      const u = users.get(uid || '');
+      if (u && !membersMap.has(u.id)) {
+        membersMap.set(u.id, { 
           id: u.id, 
           nickname: u.nickname, 
           gender: u.gender, 
           currentRoom: u.currentRoom,
           isDND: u.isDND
-        } : null;
-      })
-      .filter(Boolean);
+        });
+      }
+    });
     
-    console.log(`Room ${roomId} members list generated: ${members.length} users`);
+    const members = Array.from(membersMap.values());
+    
+    console.log(`Room ${roomId} members list generated: ${members.length} unique users`);
     socket.emit('users:list', members as any);
     
     // Notify all about room counts

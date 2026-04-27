@@ -40,7 +40,10 @@ export default function App() {
 
     socket.on('error', (msg) => {
       setError(msg);
-      if (stepRef.current !== 'chat') {
+      // If session expired, force logout regardless of current step
+      if (msg.toLowerCase().includes('session expired')) {
+        handleExit();
+      } else if (stepRef.current !== 'chat') {
         setUser(null);
         localStorage.removeItem('chatbubble_session');
       }
