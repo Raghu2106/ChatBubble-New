@@ -536,7 +536,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                     return (
                       <div 
                         key={otherId} 
-                        className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all group relative ${activePrivateChat === otherId ? 'bg-brand/10 shadow-sm' : 'hover:bg-surface-hover/50'}`}
+                        className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all group relative ${activePrivateChat === otherId ? 'bg-brand/10 shadow-sm' : unreadThreads.has(otherId) ? 'bg-brand/5 border border-brand/10' : 'hover:bg-surface-hover/50'}`}
                       >
                          {unreadThreads.has(otherId) && (
                            <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-6 bg-brand rounded-full" />
@@ -626,7 +626,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
            <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6">
               <div className="flex justify-center mb-8">
                  <div className="bg-border/30 px-4 py-1.5 rounded-full text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] border border-border">
-                    Welcome to {currentChatName}!
+                    Welcome to {currentChatName}
                  </div>
               </div>
 

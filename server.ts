@@ -267,9 +267,9 @@ async function startServer() {
 
       if (recipientSocketId) {
         io.to(recipientSocketId).emit('private:message', message);
-        // Also send back to sender for their DM UI
-        socket.emit('private:message', message);
       }
+      // Always send back to sender for their DM UI as long as recipient exists in system
+      socket.emit('private:message', message);
     });
 
     socket.on('toggle:dnd', (isDND) => {
@@ -388,7 +388,7 @@ async function startServer() {
             clearTimeout(userTimers.get(userId)!);
           }
 
-          // Start a grace period (60s) before final removal
+          // Start a grace period (10m) before final removal
           const timer = setTimeout(() => {
             const finalUser = users.get(userId);
             if (finalUser) {
@@ -406,7 +406,7 @@ async function startServer() {
               userTimers.delete(userId);
               console.log(`User ${finalUser.nickname} removed after grace period.`);
             }
-          }, 60000);
+          }, 600000);
 
           userTimers.set(userId, timer);
           console.log(`User ${user.nickname} disconnected, grace period started.`);
