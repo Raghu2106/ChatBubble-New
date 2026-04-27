@@ -49,6 +49,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   const [activePrivateChat, setActivePrivateChat] = useState<string | null>(null);
   const [privateThreads, setPrivateThreads] = useState<Record<string, ChatMessage[]>>({});
   const [unreadThreads, setUnreadThreads] = useState<Set<string>>(new Set());
+
+  // Clear all history on mount to be absolutely safe
+  useEffect(() => {
+    setMessages([]);
+    setPrivateThreads({});
+    setUnreadThreads(new Set());
+  }, []);
   
   const activePrivateChatRef = useRef(activePrivateChat);
   useEffect(() => {
