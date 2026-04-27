@@ -37,7 +37,7 @@ const CATEGORIES = [
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, error, setError }) => {
   const [activeTab, setActiveTab] = useState<Tab>('Rooms');
-  const [currentRoom, setCurrentRoom] = useState<string>('lobby');
+  const [currentRoom, setCurrentRoom] = useState<string>(() => localStorage.getItem('chatbubble_current_room') || 'lobby');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<{ id: string; nickname: string; gender?: Gender; isDND?: boolean; currentRoom?: string }[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -47,7 +47,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   const [inputText, setInputText] = useState('');
   const [isDND, setIsDND] = useState(false);
   const [activePrivateChat, setActivePrivateChat] = useState<string | null>(null);
-  const [privateThreads, setPrivateThreads] = useState<Record<string, ChatMessage[]>>({});
+  const [privateThreads, setPrivateThreads] = useState<Record<string, ChatMessage[]>>(() => {
+    const saved = localStorage.getItem('chatbubble_threads');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) { return {}; }
+    }
+    return {};
+  });
+  const [unreadThreads, setUnreadThreads] = useState<Set<string>>(new Set());
   const [blockedUsers, setBlockedUsers] = useState<Set<string>>(new Set());
   const [globalStatuses, setGlobalStatuses] = useState<Record<string, { isDND?: boolean }>>({});
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -63,12 +70,22 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
 
     socket.on('private:message', (msg) => {
       const otherId = msg.senderId === user.id ? msg.recipientId! : msg.senderId;
-      setPrivateThreads(prev => ({
-        ...prev,
-        [otherId]: [...(prev[otherId] || []), msg]
-      }));
-      // If we receive a message for a chat that was closed (not in activePrivateChat),
-      // we don't necessarily need to set it active, but it will now appear in the Messages tab list.
+      setPrivateThreads(prev => {
+        const updated = {
+          ...prev,
+          [otherId]: [...(prev[otherId] || []), msg]
+        };
+        localStorage.setItem('chatbubble_threads', JSON.stringify(updated));
+        return updated;
+      });
+      
+      if (activePrivateChat !== otherId && msg.senderId !== user.id) {
+        setUnreadThreads(prev => {
+          const next = new Set(prev);
+          next.add(otherId);
+          return next;
+        });
+      }
     });
 
     socket.on('users:list', (list: any[]) => {
@@ -126,6 +143,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   useEffect(() => {
     if (activePrivateChat) {
       setError(null);
+      setUnreadThreads(prev => {
+        if (!prev.has(activePrivateChat)) return prev;
+        const next = new Set(prev);
+        next.delete(activePrivateChat);
+        return next;
+      });
     }
   }, [activePrivateChat, setError]);
 
@@ -144,6 +167,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
 
   const switchRoom = (roomId: string) => {
     setCurrentRoom(roomId);
+    localStorage.setItem('chatbubble_current_room', roomId);
     setActivePrivateChat(null);
     setMessages([]);
     socket.emit('join:room', roomId);
@@ -203,7 +227,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
             ? privateThreads[activePrivateChat][0].senderName 
             : "Private Chat")
         : "Private Chat")
-    : currentRoomData?.name || "The Lobby";
+    : currentRoom === 'lobby' ? 'General Lobby' : (currentRoomData?.name || "The Lobby");
 
   return (
     <div className="h-screen flex flex-col bg-bg text-text overflow-hidden font-sans">
@@ -304,6 +328,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                 let count = 0;
                 if (tab === 'Messages') count = Object.keys(privateThreads).length;
                 if (tab === 'People') count = onlineUsers.length;
+                const hasUnread = tab === 'Messages' && unreadThreads.size > 0;
 
                 return (
                   <button
@@ -313,10 +338,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                       activeTab === tab ? 'bg-surface text-text shadow-sm' : 'text-text-muted hover:text-text'
                     }`}
                   >
-                    <div className={`px-1.5 py-0.5 rounded-full text-[8px] flex items-center justify-center font-black ${
+                    <div className={`px-1.5 py-0.5 rounded-full text-[8px] flex items-center justify-center font-black relative ${
                       activeTab === tab ? 'bg-brand text-white' : 'bg-surface-hover text-text-muted'
                     }`}>
                       {count}
+                      {hasUnread && (
+                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border border-white animate-pulse" />
+                      )}
                     </div>
                     {tab}
                   </button>
@@ -508,8 +536,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                     return (
                       <div 
                         key={otherId} 
-                        className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all group ${activePrivateChat === otherId ? 'bg-brand/10 shadow-sm' : 'hover:bg-surface-hover/50'}`}
+                        className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all group relative ${activePrivateChat === otherId ? 'bg-brand/10 shadow-sm' : 'hover:bg-surface-hover/50'}`}
                       >
+                         {unreadThreads.has(otherId) && (
+                           <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-6 bg-brand rounded-full" />
+                         )}
                          <button 
                            onClick={() => {
                              setActivePrivateChat(otherId);
@@ -531,13 +562,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                             <div className="flex-1 min-w-0">
                                <div className="flex justify-between items-center">
                                   <div className="flex items-center gap-1.5 min-w-0">
-                                    <p className="text-xs font-bold tracking-tight truncate text-text">{displayName}</p>
+                                    <p className={`text-xs font-bold tracking-tight truncate ${unreadThreads.has(otherId) ? 'text-brand' : 'text-text'}`}>{displayName}</p>
                                     {globalStatuses[otherId]?.isDND && <BellOff size={11} className="text-orange-500 shrink-0" />}
                                     {blockedUsers.has(otherId) && <Shield size={10} className="text-red-500 shrink-0" />}
                                   </div>
-                                  <span className="text-[8px] text-text-muted opacity-60">{new Date(lastMsg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                  <span className={`text-[8px] opacity-60 ${unreadThreads.has(otherId) ? 'text-brand font-black' : 'text-text-muted'}`}>
+                                    {new Date(lastMsg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  </span>
                                </div>
-                               <p className="text-[10px] text-text-muted truncate">{lastMsg.content}</p>
+                               <p className={`text-[10px] truncate ${unreadThreads.has(otherId) ? 'text-text font-bold' : 'text-text-muted'}`}>{lastMsg.content}</p>
                             </div>
                          </button>
                          

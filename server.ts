@@ -71,6 +71,7 @@ const PORT = Number(process.env.PORT) || 3000;
 // In-memory Stores
 const users = new Map<string, User>();
 const sessions = new Map<string, string>(); // socketId -> userId
+const userTimers = new Map<string, NodeJS.Timeout>();
 const rooms: Room[] = [
   { id: 'lobby', name: 'The Lobby', description: 'A place for open, respectful conversations.', userCount: 0 },
   // Indian Cities
@@ -114,7 +115,9 @@ async function startServer() {
   const app = express();
   const httpServer = createServer(app);
   const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
-    cors: { origin: "*" }
+    cors: { origin: "*" },
+    pingTimeout: 60000,
+    pingInterval: 25000
   });
 
   // Admin middleware or routes can go here
@@ -378,20 +381,60 @@ async function startServer() {
       if (userId) {
         const user = users.get(userId);
         if (user) {
-          // Decrement room counts
-          if (user.currentRoom) {
-            const roomObj = rooms.find(rm => rm.id === user.currentRoom);
-            if (roomObj) {
-              roomObj.userCount = Math.max(0, roomObj.userCount - 1);
-              io.emit('rooms:updated' as any, rooms);
-            }
-          }
-          
-          io.emit('user:left', user.id);
           sessions.delete(socket.id);
-          users.delete(userId);
-          console.log(`User ${user.nickname} disconnected and removed.`);
+          
+          // Clear any existing timer for this user
+          if (userTimers.has(userId)) {
+            clearTimeout(userTimers.get(userId)!);
+          }
+
+          // Start a grace period (60s) before final removal
+          const timer = setTimeout(() => {
+            const finalUser = users.get(userId);
+            if (finalUser) {
+              // Decrement room counts
+              if (finalUser.currentRoom) {
+                const roomObj = rooms.find(rm => rm.id === finalUser.currentRoom);
+                if (roomObj) {
+                  roomObj.userCount = Math.max(0, roomObj.userCount - 1);
+                  io.emit('rooms:updated' as any, rooms);
+                }
+              }
+              
+              io.emit('user:left', finalUser.id);
+              users.delete(userId);
+              userTimers.delete(userId);
+              console.log(`User ${finalUser.nickname} removed after grace period.`);
+            }
+          }, 60000);
+
+          userTimers.set(userId, timer);
+          console.log(`User ${user.nickname} disconnected, grace period started.`);
         }
+      }
+    });
+
+    // Add session resumption event
+    socket.on('resume:session' as any, (data: { userId: string }) => {
+      const user = users.get(data.userId);
+      if (user) {
+        // Clear cleanup timer
+        if (userTimers.has(data.userId)) {
+          clearTimeout(userTimers.get(data.userId)!);
+          userTimers.delete(data.userId);
+          console.log(`User ${user.nickname} resumed session.`);
+        }
+        
+        // Re-link socket
+        sessions.set(socket.id, data.userId);
+        socket.emit('registration:success' as any, { userId: data.userId });
+        
+        // If they were in a room, re-join them actually
+        if (user.currentRoom) {
+          joinRoom(socket, user.currentRoom);
+        }
+      } else {
+        socket.emit('error', 'Session expired. Please join again.');
       }
     });
   });
