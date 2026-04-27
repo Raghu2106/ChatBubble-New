@@ -87,6 +87,7 @@ export default function App() {
     localStorage.removeItem('chatbubble_session');
     localStorage.removeItem('chatbubble_threads');
     localStorage.removeItem('chatbubble_current_room');
+    localStorage.removeItem('chatbubble_unread');
     setStep('landing');
   };
 

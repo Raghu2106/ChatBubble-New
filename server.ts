@@ -427,7 +427,7 @@ async function startServer() {
         
         // Re-link socket
         sessions.set(socket.id, data.userId);
-        socket.emit('registration:success' as any, { userId: data.userId });
+        socket.emit('registration:success' as any, { userId: user.id });
         
         // If they were in a room, re-join them actually
         if (user.currentRoom) {
@@ -451,18 +451,14 @@ async function startServer() {
       return;
     }
 
-    const previousRooms = Array.from(socket.rooms).filter(r => r !== socket.id);
-    console.log(`User ${user.nickname} leaving rooms:`, previousRooms);
-
-    // Leave previous rooms
-    previousRooms.forEach((r: any) => {
-      socket.leave(r);
-      const roomObj = rooms.find(rm => rm.id === r);
-      if (roomObj) roomObj.userCount = Math.max(0, roomObj.userCount - 1);
-    });
-    
-    if (previousRooms.length > 0) {
-      io.emit('rooms:updated' as any, rooms);
+    // Leave previous room (using user state instead of socket state to handle resumes)
+    const previousRoomId = user.currentRoom;
+    if (previousRoomId) {
+      socket.leave(previousRoomId);
+      const roomObj = rooms.find(rm => rm.id === previousRoomId);
+      if (roomObj) {
+        roomObj.userCount = Math.max(0, roomObj.userCount - 1);
+      }
     }
 
     socket.join(roomId);
@@ -471,6 +467,9 @@ async function startServer() {
     if (targetRoom) targetRoom.userCount++;
 
     console.log(`User ${user.nickname} joined room ${roomId}. New count: ${targetRoom?.userCount}`);
+
+    // Notify all about room counts immediately to reflect changes accurately
+    io.emit('rooms:updated' as any, rooms);
 
     // Notify others in the room
     socket.to(roomId).emit('user:joined', { 

@@ -67,6 +67,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
     }
     return new Set();
   });
+  
+  const activePrivateChatRef = useRef(activePrivateChat);
+  useEffect(() => {
+    activePrivateChatRef.current = activePrivateChat;
+  }, [activePrivateChat]);
+
   const [blockedUsers, setBlockedUsers] = useState<Set<string>>(new Set());
   const [globalStatuses, setGlobalStatuses] = useState<Record<string, { isDND?: boolean }>>({});
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -95,7 +101,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         return updated;
       });
       
-      if (activePrivateChat !== otherId && msg.senderId !== user.id) {
+      if (activePrivateChatRef.current !== otherId && msg.senderId !== user.id) {
         setUnreadThreads(prev => {
           const next = new Set(prev);
           next.add(otherId);
