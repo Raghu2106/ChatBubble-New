@@ -37,14 +37,8 @@ const CATEGORIES = [
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, error, setError }) => {
   const [activeTab, setActiveTab] = useState<Tab>('Rooms');
-  const [currentRoom, setCurrentRoom] = useState<string>(() => localStorage.getItem('chatbubble_current_room') || 'lobby');
-  const [messages, setMessages] = useState<ChatMessage[]>(() => {
-    const saved = sessionStorage.getItem('chatbubble_room_messages');
-    if (saved) {
-      try { return JSON.parse(saved); } catch (e) { return []; }
-    }
-    return [];
-  });
+  const [currentRoom, setCurrentRoom] = useState<string>('lobby');
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<{ id: string; nickname: string; gender?: Gender; isDND?: boolean; currentRoom?: string }[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [collapsedCategories, setCollapsedCategories] = useState<string[]>(['global']);
@@ -53,20 +47,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   const [inputText, setInputText] = useState('');
   const [isDND, setIsDND] = useState(false);
   const [activePrivateChat, setActivePrivateChat] = useState<string | null>(null);
-  const [privateThreads, setPrivateThreads] = useState<Record<string, ChatMessage[]>>(() => {
-    const saved = localStorage.getItem('chatbubble_threads');
-    if (saved) {
-      try { return JSON.parse(saved); } catch (e) { return {}; }
-    }
-    return {};
-  });
-  const [unreadThreads, setUnreadThreads] = useState<Set<string>>(() => {
-    const saved = localStorage.getItem('chatbubble_unread');
-    if (saved) {
-      try { return new Set(JSON.parse(saved)); } catch (e) { return new Set(); }
-    }
-    return new Set();
-  });
+  const [privateThreads, setPrivateThreads] = useState<Record<string, ChatMessage[]>>({});
+  const [unreadThreads, setUnreadThreads] = useState<Set<string>>(new Set());
   
   const activePrivateChatRef = useRef(activePrivateChat);
   useEffect(() => {
@@ -82,30 +64,21 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   useEffect(() => {
     socket.on('room:message', (msg) => {
       if (msg.roomId === currentRoom) {
-        setMessages(prev => {
-          const updated = [...prev, msg].slice(-100); // Keep last 100
-          sessionStorage.setItem('chatbubble_room_messages', JSON.stringify(updated));
-          return updated;
-        });
+        setMessages(prev => [...prev, msg].slice(-100));
       }
     });
 
     socket.on('private:message', (msg) => {
       const otherId = msg.senderId === user.id ? msg.recipientId! : msg.senderId;
-      setPrivateThreads(prev => {
-        const updated = {
-          ...prev,
-          [otherId]: [...(prev[otherId] || []), msg]
-        };
-        localStorage.setItem('chatbubble_threads', JSON.stringify(updated));
-        return updated;
-      });
+      setPrivateThreads(prev => ({
+        ...prev,
+        [otherId]: [...(prev[otherId] || []), msg]
+      }));
       
       if (activePrivateChatRef.current !== otherId && msg.senderId !== user.id) {
         setUnreadThreads(prev => {
           const next = new Set(prev);
           next.add(otherId);
-          localStorage.setItem('chatbubble_unread', JSON.stringify(Array.from(next)));
           return next;
         });
       }
@@ -170,7 +143,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         if (!prev.has(activePrivateChat)) return prev;
         const next = new Set(prev);
         next.delete(activePrivateChat);
-        localStorage.setItem('chatbubble_unread', JSON.stringify(Array.from(next)));
         return next;
       });
     }
@@ -195,10 +167,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
       return;
     }
     setCurrentRoom(roomId);
-    localStorage.setItem('chatbubble_current_room', roomId);
     setActivePrivateChat(null);
     setMessages([]);
-    sessionStorage.removeItem('chatbubble_room_messages');
     socket.emit('join:room', roomId);
     setMobileSidebarOpen(false);
   };
@@ -578,7 +548,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                                if (!prev.has(otherId)) return prev;
                                const next = new Set(prev);
                                next.delete(otherId);
-                               localStorage.setItem('chatbubble_unread', JSON.stringify(Array.from(next)));
                                return next;
                              });
                            }}

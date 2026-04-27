@@ -207,6 +207,36 @@ async function startServer() {
       users.set(userId, newUser);
       sessions.set(socket.id, userId);
       
+      // AUTO-EXPIRY: 60 minutes hard limit
+      const expiryTimer = setTimeout(() => {
+        const expiringUser = users.get(userId);
+        if (expiringUser) {
+           console.log(`User ${expiringUser.nickname} session EXPIRED (60m limit).`);
+           
+           if (expiringUser.currentRoom) {
+             const roomObj = rooms.find(rm => rm.id === expiringUser.currentRoom);
+             if (roomObj) roomObj.userCount = Math.max(0, roomObj.userCount - 1);
+           }
+
+           io.emit('user:left', expiringUser.id);
+           users.delete(userId);
+           userTimers.delete(userId);
+           
+           // Try to notify the specific socket
+           const userSocketId = Array.from(sessions.entries()).find(([sid, uid]) => uid === userId)?.[0];
+           if (userSocketId) {
+             const sock = io.sockets.sockets.get(userSocketId);
+             if (sock) {
+               sock.emit('error', 'Session Expired. Please join again.');
+               sock.disconnect();
+             }
+           }
+           io.emit('rooms:updated' as any, rooms);
+        }
+      }, 3600000); // 60 minutes
+
+      userTimers.set(userId, expiryTimer);
+      
       socket.emit('registration:success' as any, { userId });
       console.log(`User ${newUser.nickname} registered successfully.`);
     });
@@ -395,58 +425,25 @@ async function startServer() {
         if (user) {
           sessions.delete(socket.id);
           
-          // Clear any existing timer for this user
+          // Immediate removal since "reload = expired"
+          if (user.currentRoom) {
+            const roomObj = rooms.find(rm => rm.id === user.currentRoom);
+            if (roomObj) {
+              roomObj.userCount = Math.max(0, roomObj.userCount - 1);
+              io.emit('rooms:updated' as any, rooms);
+            }
+          }
+          
+          io.emit('user:left', user.id);
+          
           if (userTimers.has(userId)) {
             clearTimeout(userTimers.get(userId)!);
+            userTimers.delete(userId);
           }
-
-          // Start a grace period (2h) before final removal
-          const timer = setTimeout(() => {
-            const finalUser = users.get(userId);
-            if (finalUser) {
-              // Decrement room counts
-              if (finalUser.currentRoom) {
-                const roomObj = rooms.find(rm => rm.id === finalUser.currentRoom);
-                if (roomObj) {
-                  roomObj.userCount = Math.max(0, roomObj.userCount - 1);
-                  io.emit('rooms:updated' as any, rooms);
-                }
-              }
-              
-              io.emit('user:left', finalUser.id);
-              users.delete(userId);
-              userTimers.delete(userId);
-              console.log(`User ${finalUser.nickname} removed after grace period.`);
-            }
-          }, 7200000); // 2 hours in ms
-
-          userTimers.set(userId, timer);
-          console.log(`User ${user.nickname} disconnected, grace period started.`);
+          
+          users.delete(userId);
+          console.log(`User ${user.nickname} removed immediately on disconnect.`);
         }
-      }
-    });
-
-    // Add session resumption event
-    socket.on('resume:session' as any, (data: { userId: string }) => {
-      const user = users.get(data.userId);
-      if (user) {
-        // Clear cleanup timer
-        if (userTimers.has(data.userId)) {
-          clearTimeout(userTimers.get(data.userId)!);
-          userTimers.delete(data.userId);
-          console.log(`User ${user.nickname} resumed session.`);
-        }
-        
-        // Re-link socket
-        sessions.set(socket.id, data.userId);
-        socket.emit('registration:success' as any, { userId: user.id });
-        
-        // If they were in a room, re-join them actually
-        if (user.currentRoom) {
-          joinRoom(socket, user.currentRoom);
-        }
-      } else {
-        socket.emit('error', 'Session expired. Please join again.');
       }
     });
   });
