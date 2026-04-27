@@ -388,7 +388,7 @@ async function startServer() {
             clearTimeout(userTimers.get(userId)!);
           }
 
-          // Start a grace period (10m) before final removal
+          // Start a grace period (2h) before final removal
           const timer = setTimeout(() => {
             const finalUser = users.get(userId);
             if (finalUser) {
@@ -406,7 +406,7 @@ async function startServer() {
               userTimers.delete(userId);
               console.log(`User ${finalUser.nickname} removed after grace period.`);
             }
-          }, 600000);
+          }, 7200000); // 2 hours in ms
 
           userTimers.set(userId, timer);
           console.log(`User ${user.nickname} disconnected, grace period started.`);

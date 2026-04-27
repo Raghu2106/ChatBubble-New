@@ -38,7 +38,13 @@ const CATEGORIES = [
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, error, setError }) => {
   const [activeTab, setActiveTab] = useState<Tab>('Rooms');
   const [currentRoom, setCurrentRoom] = useState<string>(() => localStorage.getItem('chatbubble_current_room') || 'lobby');
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    const saved = sessionStorage.getItem('chatbubble_room_messages');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) { return []; }
+    }
+    return [];
+  });
   const [onlineUsers, setOnlineUsers] = useState<{ id: string; nickname: string; gender?: Gender; isDND?: boolean; currentRoom?: string }[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [collapsedCategories, setCollapsedCategories] = useState<string[]>(['global']);
@@ -54,7 +60,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
     }
     return {};
   });
-  const [unreadThreads, setUnreadThreads] = useState<Set<string>>(new Set());
+  const [unreadThreads, setUnreadThreads] = useState<Set<string>>(() => {
+    const saved = localStorage.getItem('chatbubble_unread');
+    if (saved) {
+      try { return new Set(JSON.parse(saved)); } catch (e) { return new Set(); }
+    }
+    return new Set();
+  });
   const [blockedUsers, setBlockedUsers] = useState<Set<string>>(new Set());
   const [globalStatuses, setGlobalStatuses] = useState<Record<string, { isDND?: boolean }>>({});
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -64,7 +76,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   useEffect(() => {
     socket.on('room:message', (msg) => {
       if (msg.roomId === currentRoom) {
-        setMessages(prev => [...prev, msg]);
+        setMessages(prev => {
+          const updated = [...prev, msg].slice(-100); // Keep last 100
+          sessionStorage.setItem('chatbubble_room_messages', JSON.stringify(updated));
+          return updated;
+        });
       }
     });
 
@@ -83,6 +99,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         setUnreadThreads(prev => {
           const next = new Set(prev);
           next.add(otherId);
+          localStorage.setItem('chatbubble_unread', JSON.stringify(Array.from(next)));
           return next;
         });
       }
@@ -147,6 +164,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         if (!prev.has(activePrivateChat)) return prev;
         const next = new Set(prev);
         next.delete(activePrivateChat);
+        localStorage.setItem('chatbubble_unread', JSON.stringify(Array.from(next)));
         return next;
       });
     }
@@ -166,10 +184,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   };
 
   const switchRoom = (roomId: string) => {
+    if (activePrivateChat === null && roomId === currentRoom) {
+      setMobileSidebarOpen(false);
+      return;
+    }
     setCurrentRoom(roomId);
     localStorage.setItem('chatbubble_current_room', roomId);
     setActivePrivateChat(null);
     setMessages([]);
+    sessionStorage.removeItem('chatbubble_room_messages');
     socket.emit('join:room', roomId);
     setMobileSidebarOpen(false);
   };
@@ -545,6 +568,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                            onClick={() => {
                              setActivePrivateChat(otherId);
                              setMobileSidebarOpen(false);
+                             setUnreadThreads(prev => {
+                               if (!prev.has(otherId)) return prev;
+                               const next = new Set(prev);
+                               next.delete(otherId);
+                               localStorage.setItem('chatbubble_unread', JSON.stringify(Array.from(next)));
+                               return next;
+                             });
                            }}
                            className="flex items-center gap-3 flex-1 min-w-0 text-left"
                          >
@@ -626,7 +656,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
            <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6">
               <div className="flex justify-center mb-8">
                  <div className="bg-border/30 px-4 py-1.5 rounded-full text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] border border-border">
-                    Welcome to {currentChatName}
+                    {currentRoom === 'lobby' ? 'Welcome to General Lobby' : `Welcome to ${currentChatName}`}
                  </div>
               </div>
 
