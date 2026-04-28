@@ -207,36 +207,6 @@ async function startServer() {
       users.set(userId, newUser);
       sessions.set(socket.id, userId);
       
-      // AUTO-EXPIRY: 60 minutes hard limit
-      const expiryTimer = setTimeout(() => {
-        const expiringUser = users.get(userId);
-        if (expiringUser) {
-           console.log(`User ${expiringUser.nickname} session EXPIRED (60m limit).`);
-           
-           if (expiringUser.currentRoom) {
-             const roomObj = rooms.find(rm => rm.id === expiringUser.currentRoom);
-             if (roomObj) roomObj.userCount = Math.max(0, roomObj.userCount - 1);
-           }
-
-           io.emit('user:left', expiringUser.id);
-           users.delete(userId);
-           userTimers.delete(userId);
-           
-           // Try to notify the specific socket
-           const userSocketId = Array.from(sessions.entries()).find(([sid, uid]) => uid === userId)?.[0];
-           if (userSocketId) {
-             const sock = io.sockets.sockets.get(userSocketId);
-             if (sock) {
-               sock.emit('error', 'Session Expired. Please join again.');
-               sock.disconnect();
-             }
-           }
-           io.emit('rooms:updated' as any, rooms);
-        }
-      }, 3600000); // 60 minutes
-
-      userTimers.set(userId, expiryTimer);
-      
       socket.emit('registration:success' as any, { userId });
       console.log(`User ${newUser.nickname} registered successfully.`);
     });
