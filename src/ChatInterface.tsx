@@ -308,7 +308,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
               className="flex items-center gap-2 px-3 md:px-4 py-2 bg-surface/50 hover:bg-red-500/10 text-text-muted hover:text-red-500 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest border border-border hover:border-red-500/20"
             >
               <DoorOpen size={14} />
-              <span className="hidden xs:inline">Exit</span>
+              <span>Exit</span>
             </button>
           </div>
         </div>

@@ -2,14 +2,19 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Users, MessageCircle, Shield } from 'lucide-react';
 import { PolicyModal } from './components/PolicyModal';
-import { PrivacyPolicyContent, TermsOfServiceContent } from './constants/policyContent';
+import { 
+  PrivacyPolicyContent, 
+  TermsOfServiceContent, 
+  AboutUsContent, 
+  ContactUsContent 
+} from './constants/policyContent';
 
 interface LandingPageProps {
   onStart: () => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
-  const [modalType, setModalType] = useState<'privacy' | 'terms' | null>(null);
+  const [modalType, setModalType] = useState<'privacy' | 'terms' | 'about' | 'contact' | null>(null);
 
   return (
     <div className="min-h-screen bg-bg text-text flex flex-col items-center justify-between font-sans relative overflow-hidden">
@@ -101,6 +106,41 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
             </motion.div>
           ))}
         </div>
+
+        {/* FAQ Section for SEO Value */}
+        <div className="mt-24 w-full max-w-4xl relative z-10 px-4">
+          <h2 className="text-2xl md:text-3xl font-black text-center mb-12 tracking-tight">Frequently Asked Questions</h2>
+          <div className="grid gap-6">
+            {[
+              {
+                q: "Is ChatBubble really free to use?",
+                a: "Yes, ChatBubble is a completely free online chat platform. We don't have subscription fees or hidden costs."
+              },
+              {
+                q: "Do I need to create an account to chat?",
+                a: "No signup is required. We believe in anonymity and simplicity. Just choose a nickname and you're ready to go."
+              },
+              {
+                q: "How does the moderation system work?",
+                a: "We use a community-driven moderation system. If a user receives multiple reports, they are automatically restricted for a period of time to ensure a safe environment."
+              },
+              {
+                q: "Is my data safe on ChatBubble?",
+                a: "We don't store chat history or personal profile information. Once you leave the site, your session data is automatically cleared."
+              }
+            ].map((item, idx) => (
+              <div key={idx} className="p-6 bg-surface/40 backdrop-blur-sm border border-border rounded-2xl">
+                <h4 className="text-sm font-black text-text mb-2 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-brand rounded-full" />
+                  {item.q}
+                </h4>
+                <p className="text-[13px] text-text-muted leading-relaxed font-medium pl-3.5">
+                  {item.a}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Footer */}
@@ -113,10 +153,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
             <span className="font-black tracking-tight text-text">ChatBubble</span>
           </div>
 
-          <div className="flex items-center gap-8 text-[13px] font-bold text-text-muted">
+          <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-4 text-[13px] font-bold text-text-muted">
+            <button onClick={() => setModalType('about')} className="hover:text-brand transition-colors">About Us</button>
+            <button onClick={() => setModalType('contact')} className="hover:text-brand transition-colors">Contact Us</button>
             <button onClick={() => setModalType('privacy')} className="hover:text-brand transition-colors">Privacy Policy</button>
             <button onClick={() => setModalType('terms')} className="hover:text-brand transition-colors">Terms of Service</button>
-            <a href="mailto:support@chatbubble.me" className="hover:text-brand transition-colors">Contact Us</a>
           </div>
 
           <div className="text-[12px] text-text-muted/60 font-medium whitespace-nowrap">
@@ -139,6 +180,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
         title="Terms of Service"
       >
         <TermsOfServiceContent />
+      </PolicyModal>
+
+      <PolicyModal 
+        isOpen={modalType === 'about'} 
+        onClose={() => setModalType(null)} 
+        title="About ChatBubble"
+      >
+        <AboutUsContent />
+      </PolicyModal>
+
+      <PolicyModal 
+        isOpen={modalType === 'contact'} 
+        onClose={() => setModalType(null)} 
+        title="Contact Us"
+      >
+        <ContactUsContent />
       </PolicyModal>
     </div>
   );
