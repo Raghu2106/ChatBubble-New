@@ -722,8 +722,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                    </span>
                 </div>
               )}
-              <form onSubmit={handleSendMessage} className="flex gap-3 relative">
-                 <div className="flex-1 relative group flex items-center">
+              <form onSubmit={handleSendMessage} className="flex gap-3 items-end">
+                 <div className="flex-1 relative group">
                     <input 
                       type="text" 
                       value={inputText}
@@ -732,36 +732,37 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                         if (error) setError(null);
                       }}
                       placeholder={`Message ${currentChatName}...`} 
-                      className="w-full bg-bg/50 rounded-xl py-4 pl-6 pr-14 text-sm focus:outline-none border border-border focus:border-brand transition-all font-medium placeholder:text-text-muted/30 shadow-inner"
+                      className="w-full bg-bg/50 rounded-xl py-4 px-6 text-sm focus:outline-none border border-border focus:border-brand transition-all font-medium placeholder:text-text-muted/30 shadow-inner"
                     />
-                    <div className="absolute right-3 flex items-center" ref={emojiPickerRef}>
-                       <button 
-                         type="button"
-                         onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                         className={`p-2 rounded-lg transition-all ${showEmojiPicker ? 'text-brand bg-brand/10' : 'text-text-muted hover:text-text hover:bg-surface-hover'}`}
-                       >
-                         <Smile size={20} />
-                       </button>
-                       
-                       <AnimatePresence>
-                         {showEmojiPicker && (
-                           <motion.div 
-                             initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                             animate={{ opacity: 1, y: 0, scale: 1 }}
-                             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                             className="absolute bottom-full right-0 mb-4 z-50 shadow-2xl rounded-2xl overflow-hidden border border-border"
-                           >
-                              <EmojiPicker 
-                                onEmojiClick={onEmojiClick}
-                                autoFocusSearch={false}
-                                theme={Theme.LIGHT}
-                                width={320}
-                                height={400}
-                              />
-                           </motion.div>
-                         )}
-                       </AnimatePresence>
-                    </div>
+                 </div>
+                 <div className="relative" ref={emojiPickerRef}>
+                    <button 
+                      type="button"
+                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      className={`w-14 h-14 rounded-xl flex items-center justify-center transition-all border ${showEmojiPicker ? 'bg-brand/10 border-brand/20 text-brand' : 'bg-surface border-border text-text-muted hover:text-brand hover:border-brand/30 shadow-sm'}`}
+                      title="Add emoji"
+                    >
+                      <Smile size={24} strokeWidth={2} />
+                    </button>
+                    
+                    <AnimatePresence>
+                      {showEmojiPicker && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          className="absolute bottom-full right-0 mb-4 z-50 shadow-2xl rounded-2xl overflow-hidden border border-border"
+                        >
+                           <EmojiPicker 
+                             onEmojiClick={onEmojiClick}
+                             autoFocusSearch={false}
+                             theme={Theme.LIGHT}
+                             width={320}
+                             height={400}
+                           />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                  </div>
                  <button 
                    type="submit"
