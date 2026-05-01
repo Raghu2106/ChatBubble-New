@@ -548,85 +548,102 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                       </div>
                     </div>
                  )}
-                 
-                 {activeTab === 'Messages' && Object.keys(privateThreads).map(otherId => {
-                    const thread = privateThreads[otherId];
-                    const lastMsg = thread[thread.length - 1];
-                    const otherUser = onlineUsers.find(u => u.id === otherId);
-                    
-                    // Fallback to name from the last message sent by them or to them
-                    const displayName = otherUser?.nickname || 
-                      (lastMsg.senderId === otherId ? lastMsg.senderName : "Chat Partner");
+                                {activeTab === 'Messages' && (
+                    <div className="space-y-1">
+                      {Object.keys(privateThreads).length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+                          <div className="w-12 h-12 bg-surface-hover rounded-full flex items-center justify-center mb-3">
+                            <Plus size={20} className="text-text-muted/40" />
+                          </div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">No conversations yet</p>
+                          <p className="text-[9px] text-text-muted/60 mt-1">Select a user from the People tab to start a private chat.</p>
+                        </div>
+                      ) : (
+                        Object.keys(privateThreads).map(otherId => {
+                          const thread = privateThreads[otherId];
+                          const lastMsg = thread[thread.length - 1];
+                          const otherUser = onlineUsers.find(u => u.id === otherId);
+                          
+                          // Fallback to name from the last message sent by them or to them
+                          const displayName = otherUser?.nickname || 
+                            (lastMsg.senderId === otherId ? lastMsg.senderName : "Chat Partner");
 
-                    return (
-                      <div 
-                        key={otherId} 
-                        className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all group relative ${activePrivateChat === otherId ? 'bg-brand/10 shadow-sm' : unreadThreads.has(otherId) ? 'bg-brand/5 border border-brand/10' : 'hover:bg-surface-hover/50'}`}
-                      >
-                         {unreadThreads.has(otherId) && (
-                           <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-6 bg-brand rounded-full" />
-                         )}
-                         <button 
-                           onClick={() => {
-                             setActivePrivateChat(otherId);
-                             setMobileSidebarOpen(false);
-                             setUnreadThreads(prev => {
-                               if (!prev.has(otherId)) return prev;
-                               const next = new Set(prev);
-                               next.delete(otherId);
-                               return next;
-                             });
-                           }}
-                           className="flex items-center gap-3 flex-1 min-w-0 text-left"
-                         >
-                             <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black uppercase tracking-widest shadow-sm ${
-                               otherUser?.gender === 'Male' ? 'bg-blue-500 text-white' :
-                               otherUser?.gender === 'Female' ? 'bg-pink-500 text-white' :
-                               otherUser?.gender === 'Non-binary' ? 'bg-indigo-500 text-white' :
-                               'bg-slate-500 text-white'
-                             }`}>
-                                {otherUser?.gender === 'Male' && <Mars size={16} />}
-                                {otherUser?.gender === 'Female' && <Venus size={16} />}
-                                {otherUser?.gender === 'Non-binary' && <span>NB</span>}
-                                {(otherUser?.gender === 'Prefer not to say' || otherUser?.gender === 'Other' || !otherUser?.gender) && <span>P</span>}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                               <div className="flex justify-between items-center">
-                                  <div className="flex items-center gap-1.5 min-w-0">
-                                    <p className={`text-xs font-bold tracking-tight truncate ${unreadThreads.has(otherId) ? 'text-brand' : 'text-text'}`}>{displayName}</p>
-                                    {globalStatuses[otherId]?.isDND && <BellOff size={11} className="text-orange-500 shrink-0" />}
-                                    {blockedUsers.has(otherId) && <Shield size={10} className="text-red-500 shrink-0" />}
+                          return (
+                            <div 
+                              key={otherId} 
+                              className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all group relative ${activePrivateChat === otherId ? 'bg-brand/10 shadow-sm' : unreadThreads.has(otherId) ? 'bg-brand/5 border border-brand/10' : 'hover:bg-surface-hover/50'}`}
+                            >
+                               {unreadThreads.has(otherId) && (
+                                 <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-6 bg-brand rounded-full" />
+                               )}
+                               <button 
+                                 onClick={() => {
+                                   setActivePrivateChat(otherId);
+                                   setMobileSidebarOpen(false);
+                                   setUnreadThreads(prev => {
+                                     if (!prev.has(otherId)) return prev;
+                                     const next = new Set(prev);
+                                     next.delete(otherId);
+                                     return next;
+                                   });
+                                 }}
+                                 className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                               >
+                                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black uppercase tracking-widest shadow-sm relative ${
+                                     otherUser?.gender === 'Male' ? 'bg-blue-500 text-white' :
+                                     otherUser?.gender === 'Female' ? 'bg-pink-500 text-white' :
+                                     otherUser?.gender === 'Non-binary' ? 'bg-indigo-500 text-white' :
+                                     'bg-slate-500 text-white'
+                                   }`}>
+                                      {otherUser?.gender === 'Male' && <Mars size={16} />}
+                                      {otherUser?.gender === 'Female' && <Venus size={16} />}
+                                      {otherUser?.gender === 'Non-binary' && <span>NB</span>}
+                                      {(otherUser?.gender === 'Prefer not to say' || otherUser?.gender === 'Other' || !otherUser?.gender) && <span>P</span>}
+                                      {otherUser && <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-green-500 border border-white rounded-full" title="Online in this room" />}
                                   </div>
-                                  <span className={`text-[8px] opacity-60 ${unreadThreads.has(otherId) ? 'text-brand font-black' : 'text-text-muted'}`}>
-                                    {new Date(lastMsg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                  </span>
+                                  <div className="flex-1 min-w-0">
+                                     <div className="flex justify-between items-center">
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                          <p className={`text-xs font-bold tracking-tight truncate ${unreadThreads.has(otherId) ? 'text-brand' : 'text-text'}`}>{displayName}</p>
+                                          {globalStatuses[otherId]?.isDND && <BellOff size={11} className="text-orange-500 shrink-0" />}
+                                          {blockedUsers.has(otherId) && <Shield size={10} className="text-red-500 shrink-0" />}
+                                        </div>
+                                        <span className={`text-[8px] opacity-60 ${unreadThreads.has(otherId) ? 'text-brand font-black' : 'text-text-muted'}`}>
+                                          {new Date(lastMsg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                     </div>
+                                     <p className={`text-[10px] truncate ${unreadThreads.has(otherId) ? 'text-text font-bold' : 'text-text-muted'}`}>{lastMsg.content}</p>
+                                  </div>
+                               </button>
+                               
+                               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2">
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleClosePrivateChat(otherId);
+                                    }}
+                                    className="p-1.5 rounded-lg bg-surface-hover text-text-muted hover:text-text"
+                                    title="Close Chat"
+                                  >
+                                     <Plus size={12} className="rotate-45" />
+                                  </button>
+                                   <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      blockedUsers.has(otherId) ? handleUnblock(otherId) : handleBlock(otherId);
+                                    }}
+                                    className={`p-1.5 rounded-lg transition-colors ${blockedUsers.has(otherId) ? 'bg-red-500/10 text-red-500' : 'bg-surface-hover text-text-muted hover:text-text'}`}
+                                    title={blockedUsers.has(otherId) ? "Unrestrict" : "Restrict"}
+                                  >
+                                     <Shield size={12} />
+                                  </button>
                                </div>
-                               <p className={`text-[10px] truncate ${unreadThreads.has(otherId) ? 'text-text font-bold' : 'text-text-muted'}`}>{lastMsg.content}</p>
                             </div>
-                         </button>
-                         
-                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2">
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleClosePrivateChat(otherId);
-                              }}
-                              className="p-1.5 rounded-lg bg-surface-hover text-text-muted hover:text-text"
-                              title="Close Chat"
-                            >
-                               <Plus size={12} className="rotate-45" />
-                            </button>
-                             <button 
-                              onClick={() => blockedUsers.has(otherId) ? handleUnblock(otherId) : handleBlock(otherId)}
-                              className={`p-1.5 rounded-lg transition-colors ${blockedUsers.has(otherId) ? 'bg-red-500/10 text-red-500' : 'bg-surface-hover text-text-muted hover:text-text'}`}
-                              title={blockedUsers.has(otherId) ? "Unrestrict" : "Restrict"}
-                            >
-                               <Shield size={12} />
-                            </button>
-                         </div>
-                      </div>
-                    );
-                 })}
+                          );
+                        })
+                      )}
+                    </div>
+                  )}
               </div>
            </div>
         </aside>
