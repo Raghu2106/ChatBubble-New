@@ -4,8 +4,10 @@ import {
   Users, MessageSquare, Globe, User, MoreVertical, 
   Send, ShieldAlert, DoorOpen, Bell, BellOff, RefreshCw,
   Lock, Search, Plus, ChevronDown, Music, Code, Film, Zap,
-  Moon, Hash, Shield, ChevronRight, Mars, Venus, X
+  Moon, Hash, Shield, ChevronRight, Mars, Venus, X,
+  Smile
 } from 'lucide-react';
+import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 import { socket } from './socket';
 import { ChatMessage, Room, Gender } from './types';
 
@@ -49,7 +51,24 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   const [activePrivateChat, setActivePrivateChat] = useState<string | null>(null);
   const [privateThreads, setPrivateThreads] = useState<Record<string, ChatMessage[]>>({});
   const [unreadThreads, setUnreadThreads] = useState<Set<string>>(new Set());
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
 
+  // Close emoji picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+        setShowEmojiPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const onEmojiClick = (emojiData: EmojiClickData) => {
+    setInputText(prev => prev + emojiData.emoji);
+  };
+  
   // Clear all history on mount to be absolutely safe
   useEffect(() => {
     setMessages([]);
@@ -703,8 +722,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                    </span>
                 </div>
               )}
-              <form onSubmit={handleSendMessage} className="flex gap-3">
-                 <div className="flex-1 relative group">
+              <form onSubmit={handleSendMessage} className="flex gap-3 relative">
+                 <div className="flex-1 relative group flex items-center">
                     <input 
                       type="text" 
                       value={inputText}
@@ -713,8 +732,36 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                         if (error) setError(null);
                       }}
                       placeholder={`Message ${currentChatName}...`} 
-                      className="w-full bg-bg/50 rounded-xl py-4 px-6 text-sm focus:outline-none border border-border focus:border-brand transition-all font-medium placeholder:text-text-muted/30 shadow-inner"
+                      className="w-full bg-bg/50 rounded-xl py-4 pl-6 pr-14 text-sm focus:outline-none border border-border focus:border-brand transition-all font-medium placeholder:text-text-muted/30 shadow-inner"
                     />
+                    <div className="absolute right-3 flex items-center" ref={emojiPickerRef}>
+                       <button 
+                         type="button"
+                         onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                         className={`p-2 rounded-lg transition-all ${showEmojiPicker ? 'text-brand bg-brand/10' : 'text-text-muted hover:text-text hover:bg-surface-hover'}`}
+                       >
+                         <Smile size={20} />
+                       </button>
+                       
+                       <AnimatePresence>
+                         {showEmojiPicker && (
+                           <motion.div 
+                             initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                             animate={{ opacity: 1, y: 0, scale: 1 }}
+                             exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                             className="absolute bottom-full right-0 mb-4 z-50 shadow-2xl rounded-2xl overflow-hidden border border-border"
+                           >
+                              <EmojiPicker 
+                                onEmojiClick={onEmojiClick}
+                                autoFocusSearch={false}
+                                theme={Theme.LIGHT}
+                                width={320}
+                                height={400}
+                              />
+                           </motion.div>
+                         )}
+                       </AnimatePresence>
+                    </div>
                  </div>
                  <button 
                    type="submit"
