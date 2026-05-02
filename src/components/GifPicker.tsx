@@ -7,7 +7,7 @@ interface GifPickerProps {
   onClose: () => void;
 }
 
-const GIPHY_API_KEY = 'LIVD7S7p03cE0GBy6g1bA0Xn425jX4S5'; // More robust public key
+const GIPHY_API_KEY = 'dc6zaTOxFJmzC';
 
 export const GifPicker: React.FC<GifPickerProps> = ({ onSelect, onClose }) => {
   const [query, setQuery] = useState('');
@@ -32,8 +32,14 @@ export const GifPicker: React.FC<GifPickerProps> = ({ onSelect, onClose }) => {
     fetchTrending();
   }, []);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSearchKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSearch();
+    }
+  };
+
+  const handleSearch = async () => {
     if (!query.trim()) return;
     
     setLoading(true);
@@ -41,8 +47,11 @@ export const GifPicker: React.FC<GifPickerProps> = ({ onSelect, onClose }) => {
     try {
       const res = await fetch(`https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_API_KEY}&q=${encodeURIComponent(query)}&limit=20&rating=g`);
       const data = await res.json();
+      if (data.meta && data.meta.status !== 200) {
+        throw new Error(data.meta.msg || 'API Error');
+      }
       setGifs(data.data || []);
-      if (data.data.length === 0) setError('No GIFs found');
+      if (!data.data || data.data.length === 0) setError('No GIFs found');
     } catch (err) {
       setError('Search failed');
     } finally {
@@ -51,7 +60,7 @@ export const GifPicker: React.FC<GifPickerProps> = ({ onSelect, onClose }) => {
   };
 
   return (
-    <div className="flex flex-col h-[450px] w-[300px] sm:w-[400px] bg-surface border border-border shadow-2xl rounded-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="flex flex-col h-[480px] w-[320px] sm:w-[420px] bg-surface border border-border shadow-2xl rounded-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
       <div className="p-3 border-b border-border bg-surface-hover/20 flex items-center justify-between">
         <h3 className="text-[10px] font-black uppercase tracking-widest text-brand">Search GIFs</h3>
         <button onClick={onClose} className="p-1 hover:bg-surface-hover rounded-lg text-text-muted">
@@ -59,18 +68,19 @@ export const GifPicker: React.FC<GifPickerProps> = ({ onSelect, onClose }) => {
         </button>
       </div>
       
-      <form onSubmit={handleSearch} className="p-3">
+      <div className="p-3">
         <div className="relative">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input 
             type="text" 
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleSearchKeyPress}
             placeholder="Search Giphy..."
             className="w-full bg-bg border border-border rounded-xl py-2.5 pl-9 pr-4 text-xs focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all font-medium"
           />
         </div>
-      </form>
+      </div>
 
       <div className="flex-1 overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-border">
         {loading ? (

@@ -196,6 +196,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
     }
   }, [activePrivateChat, setError]);
 
+  useEffect(() => {
+    if (activePrivateChat?.startsWith('dummy-') && error?.toLowerCase().includes('online')) {
+      setError(null);
+    }
+  }, [activePrivateChat, error, setError]);
+
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim()) return;
