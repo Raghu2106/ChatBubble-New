@@ -846,18 +846,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
           <Users size={20} className={activeTab === 'People' && mobileSidebarOpen ? 'stroke-[3px]' : ''} />
           <span className="text-[10px] font-black uppercase tracking-widest">People</span>
         </button>
-
-        <button
-          onClick={() => {
-            setMobileSidebarOpen(!mobileSidebarOpen);
-          }}
-          className={`flex flex-col items-center gap-1 transition-all ${
-            mobileSidebarOpen ? 'text-brand' : 'text-text-muted hover:text-text'
-          }`}
-        >
-          <Search size={20} />
-          <span className="text-[10px] font-black uppercase tracking-widest">Menu</span>
-        </button>
       </nav>
     </div>
   );
