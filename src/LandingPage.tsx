@@ -8,6 +8,7 @@ import {
   AboutUsContent, 
   ContactUsContent 
 } from './constants/policyContent';
+import { AdUnit } from './components/AdUnit';
 
 interface LandingPageProps {
   onStart: () => void;
@@ -139,6 +140,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                 </p>
               </div>
             ))}
+          </div>
+
+          {/* Adsterra 300x250 Banner in FAQ Section */}
+          <div className="mt-12 flex justify-center">
+            <AdUnit id="b4df80321991ad2e3e953641360223af" format="300x250" className="rounded-2xl border border-border bg-surface/20 p-4" />
           </div>
         </div>
       </div>

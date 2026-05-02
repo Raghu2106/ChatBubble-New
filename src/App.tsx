@@ -11,6 +11,7 @@ import { ChatInterface } from './ChatInterface';
 import { AdminPanel } from './AdminPanel';
 import { Gender } from './types';
 import { Shield } from 'lucide-react';
+import { GlobalAds, AdUnit } from './components/AdUnit';
 
 export default function App() {
   const [step, setStep] = useState<'landing' | 'entry' | 'chat'>('landing');
@@ -64,17 +65,44 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-bg overflow-x-hidden relative">
-      {step === 'chat' && user ? (
-        <ChatInterface user={user} onExit={handleExit} error={error} setError={setError} />
-      ) : (
-        <>
-          <LandingPage onStart={() => setStep('entry')} />
-          {step === 'entry' && (
-            <EntryScreen onJoin={handleJoin} onClose={() => setStep('landing')} error={error} />
+    <div className="min-h-screen bg-bg overflow-x-hidden relative flex flex-col">
+      <GlobalAds />
+      
+      {/* GLOBAL TOP AD SLOT */}
+      <div className="w-full flex justify-center py-1 bg-surface/50 border-b border-border z-50 shrink-0">
+        <div className="hidden md:block">
+          <AdUnit id="e09cae3901da8691e785bc3a6fb53b5f" format="728x90" />
+        </div>
+        <div className="md:hidden">
+          <AdUnit id="b4f39cdd8d2c49287bc15b998684cb7e" format="320x50" />
+        </div>
+      </div>
+
+      <div className="flex flex-1 relative overflow-hidden">
+        {/* GLOBAL LEFT SKYSCRAPER */}
+        <aside className="hidden lg:flex w-[160px] shrink-0 items-start justify-center py-2 border-r border-border bg-surface/5">
+          <AdUnit id="1792c7f73f1077081cad03590a1a650d" format="160x600" className="sticky top-2" />
+        </aside>
+
+        {/* MAIN CONTENT AREA */}
+        <main className="flex-1 relative overflow-hidden flex flex-col">
+          {step === 'chat' && user ? (
+            <ChatInterface user={user} onExit={handleExit} error={error} setError={setError} />
+          ) : (
+            <div className="flex-1 overflow-y-auto">
+              <LandingPage onStart={() => setStep('entry')} />
+              {step === 'entry' && (
+                <EntryScreen onJoin={handleJoin} onClose={() => setStep('landing')} error={error} />
+              )}
+            </div>
           )}
-        </>
-      )}
+        </main>
+
+        {/* GLOBAL RIGHT SKYSCRAPER */}
+        <aside className="hidden lg:flex w-[160px] shrink-0 items-start justify-center py-2 border-l border-border bg-surface/5">
+          <AdUnit id="1792c7f73f1077081cad03590a1a650d" format="160x600" className="sticky top-2" />
+        </aside>
+      </div>
 
     </div>
   );

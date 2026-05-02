@@ -10,6 +10,7 @@ import {
 import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 import { socket } from './socket';
 import { ChatMessage, Room, Gender } from './types';
+import { AdUnit } from './components/AdUnit';
 
 // Helper to sanitize message content and strip clickable links/HTML
 const formatChatMessage = (content: string) => {
@@ -257,57 +258,57 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   return (
     <div className="h-screen flex flex-col bg-bg text-text overflow-hidden font-sans">
       
-      {/* TOP PRIVACY BAR */}
-      <div className="bg-surface py-2 px-4 flex items-center justify-center gap-2 border-b border-border shrink-0">
-        <Lock size={12} className="text-brand" />
-        <span className="text-[10px] uppercase font-black tracking-widest text-text-muted">
+      {/* TOP PRIVACY BAR - CONDENSED */}
+      <div className="bg-surface py-1 text-center border-b border-border shrink-0">
+        <span className="text-[9px] uppercase font-black tracking-widest text-text-muted flex items-center justify-center gap-1.5">
+          <Lock size={10} className="text-brand" />
           Your conversations stay private. No personal data stored.
         </span>
       </div>
 
-      {/* MAIN HEADER */}
-      <header className="h-16 flex-shrink-0 flex items-center justify-between px-4 md:px-10 bg-surface/80 backdrop-blur-md border-b border-border shadow-sm sticky top-0 z-40 relative">
+      {/* MAIN HEADER - CONDENSED */}
+      <header className="h-10 flex-shrink-0 flex items-center justify-between px-4 md:px-10 bg-surface/80 backdrop-blur-md border-b border-border shadow-sm sticky top-0 z-40 relative">
         <div className="flex items-center gap-2">
           <button 
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="md:hidden p-2 hover:bg-surface-hover rounded-lg text-text-muted"
+            className="md:hidden p-1.5 hover:bg-surface-hover rounded-lg text-text-muted"
             aria-label="Toggle Menu"
           >
-            <MoreVertical size={20} className={mobileSidebarOpen ? 'rotate-90 transition-transform' : 'transition-transform'} />
+            <MoreVertical size={18} className={mobileSidebarOpen ? 'rotate-90 transition-transform' : 'transition-transform'} />
           </button>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-brand/10 rounded-lg flex items-center justify-center shrink-0">
-              <MessageSquare size={18} className="text-brand" />
+          <div className="flex items-center gap-1.5">
+            <div className="w-6 h-6 bg-brand/10 rounded-lg flex items-center justify-center shrink-0">
+              <MessageSquare size={14} className="text-brand" />
             </div>
-            <h1 className="text-lg md:text-xl font-black tracking-tight text-text">ChatBubble</h1>
+            <h1 className="text-base md:text-lg font-black tracking-tight text-text">ChatBubble</h1>
           </div>
         </div>
 
         {/* Centered Welcome Message - Only show on desktop */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none hidden md:flex">
-          <span className="text-sm font-medium text-text-muted pointer-events-auto">
+          <span className="text-xs font-medium text-text-muted pointer-events-auto">
             Welcome, <span className="text-text font-black">{user.nickname}</span>
           </span>
         </div>
 
-        <div className="flex items-center gap-2 md:gap-8">
-          <div className="flex items-center gap-2 md:gap-3">
-             <span className="text-[10px] font-black uppercase text-text-muted tracking-widest hidden sm:flex items-center gap-1.5">
-               {isDND ? <BellOff size={12} /> : <Bell size={12} />} DND
+        <div className="flex items-center gap-2 md:gap-6">
+          <div className="flex items-center gap-1.5 md:gap-2">
+             <span className="text-[9px] font-black uppercase text-text-muted tracking-widest hidden sm:flex items-center gap-1">
+               {isDND ? <BellOff size={10} /> : <Bell size={10} />} DND
              </span>
              <button 
                onClick={toggleDND}
-               className={`w-10 h-5 rounded-full relative transition-all duration-300 ${isDND ? 'bg-brand' : 'bg-border'}`}
+               className={`w-8 h-4 rounded-full relative transition-all duration-300 ${isDND ? 'bg-brand' : 'bg-border'}`}
              >
-                <div className={`absolute top-1 w-3 h-3 rounded-full bg-white shadow-sm transition-all duration-300 ${isDND ? 'left-6' : 'left-1'}`} />
+                <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-all duration-300 ${isDND ? 'left-4.5' : 'left-0.5'}`} />
              </button>
           </div>
           <div className="flex items-center">
             <button 
               onClick={onExit}
-              className="flex items-center gap-2 px-3 md:px-4 py-2 bg-surface/50 hover:bg-red-500/10 text-text-muted hover:text-red-500 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest border border-border hover:border-red-500/20"
+              className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 bg-surface/50 hover:bg-red-500/10 text-text-muted hover:text-red-500 rounded-lg transition-all font-black text-[9px] uppercase tracking-widest border border-border hover:border-red-500/20"
             >
-              <DoorOpen size={14} />
+              <DoorOpen size={12} />
               <span>Exit</span>
             </button>
           </div>
@@ -332,23 +333,23 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
 
         {/* LEFT SIDEBAR CATEGORIES */}
         <aside className={`
-          fixed inset-y-0 left-0 top-16 md:static md:w-72 flex flex-col gap-4 flex-shrink-0 z-40 transition-transform duration-300 ease-in-out
-          bg-surface md:bg-transparent p-6 md:p-0 shadow-2xl md:shadow-none
+          fixed inset-y-0 left-0 top-10 md:static md:w-64 flex flex-col gap-2 flex-shrink-0 z-40 transition-transform duration-300 ease-in-out
+          bg-surface md:bg-transparent p-3 md:p-0 shadow-2xl md:shadow-none
           ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-          w-[85%] sm:w-72
+          w-[80%] sm:w-64
         `}>
            {/* Sidebar Close button for mobile */}
-           <div className="flex items-center justify-between md:hidden mb-2">
-              <span className="text-xs font-black uppercase tracking-widest text-brand">Menu</span>
+           <div className="flex items-center justify-between md:hidden mb-1">
+              <span className="text-xs font-black uppercase tracking-widest text-brand border-b-2 border-brand/20">Menu</span>
               <button 
                 onClick={() => setMobileSidebarOpen(false)}
-                className="p-2 hover:bg-surface-hover rounded-lg text-text-muted"
+                className="p-1 hover:bg-surface-hover rounded-lg text-text-muted"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
            </div>
-           {/* Navigation Tabs */}
-           <div className="flex bg-border/20 p-1 rounded-xl">
+           {/* Navigation Tabs - COMPACT */}
+           <div className="flex bg-border/20 p-0.5 rounded-lg border border-border/10">
               {(['Rooms', 'Messages', 'People'] as Tab[]).map(tab => {
                 let count = 0;
                 if (tab === 'Messages') count = Object.keys(privateThreads).length;
@@ -359,16 +360,16 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-2 ${
+                    className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-md transition-all flex items-center justify-center gap-1.5 ${
                       activeTab === tab ? 'bg-surface text-text shadow-sm' : 'text-text-muted hover:text-text'
                     }`}
                   >
-                    <div className={`px-1.5 py-0.5 rounded-full text-[8px] flex items-center justify-center font-black relative ${
+                    <div className={`px-1 rounded-sm text-[7px] flex items-center justify-center font-black relative ${
                       activeTab === tab ? 'bg-brand text-white' : 'bg-surface-hover text-text-muted'
                     }`}>
                       {count}
                       {hasUnread && (
-                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border border-white animate-pulse" />
+                        <div className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-red-500 rounded-full border border-white animate-pulse" />
                       )}
                     </div>
                     {tab}
@@ -644,6 +645,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                       )}
                     </div>
                   )}
+                  
+                  {/* Adsterra Native Banner in Sidebar Bottom */}
+                  <div className="mt-auto p-2">
+                    <AdUnit id="1418012d844b1648216870293d3858dc" format="native" className="rounded-xl border border-border bg-surface-hover/20" />
+                  </div>
               </div>
            </div>
         </aside>
