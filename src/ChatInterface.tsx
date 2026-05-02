@@ -249,12 +249,21 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
 
   const roomCounts = React.useMemo(() => {
     const counts: Record<string, number> = {};
+    
+    // Initialize with server counts
     rooms.forEach(r => {
-      counts[r.id] = r.userCount || 0;
+      counts[r.id.toLowerCase()] = r.userCount || 0;
     });
+
+    // Add online real users (if not handled by server userCount)
+    // Actually server userCount should be the source for real users.
+    
+    // Add dummy users (they are always local)
     dummyUsers.forEach(u => {
-      counts[u.currentRoom] = (counts[u.currentRoom] || 0) + 1;
+      const roomKey = (u.currentRoom || 'lobby').toLowerCase();
+      counts[roomKey] = (counts[roomKey] || 0) + 1;
     });
+    
     return counts;
   }, [rooms, dummyUsers]);
 
@@ -366,7 +375,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
               {(['Rooms', 'Messages', 'People'] as Tab[]).map(tab => {
                 let count = 0;
                 if (tab === 'Messages') count = Object.keys(privateThreads).length;
-                if (tab === 'People') count = onlineUsers.length + dummyUsers.length;
+                if (tab === 'Rooms') count = rooms.length;
+                if (tab === 'People') {
+                  count = [...onlineUsers, ...dummyUsers].filter(u => 
+                    (u.currentRoom?.toLowerCase() === currentRoom.toLowerCase()) || 
+                    (!u.currentRoom && currentRoom === 'lobby') ||
+                    (u.id === user.id)
+                  ).length;
+                }
                 const hasUnread = tab === 'Messages' && unreadThreads.size > 0;
 
                 return (
@@ -412,7 +428,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                            <div className="flex items-center gap-1.5">
                               <div className={`w-1 h-1 rounded-full ${currentRoom === 'lobby' ? 'bg-brand' : 'bg-slate-300'}`} />
                               <span className="text-[9px] font-black opacity-60 font-mono">
-                                {roomCounts['lobby'] || 0}
+                                {roomCounts['lobby']}
                               </span>
                            </div>
                         </button>
@@ -463,7 +479,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                                      </div>
                                      <div className="flex items-center gap-1.5">
                                         <div className={`w-1 h-1 rounded-full ${currentRoom === room.id ? 'bg-brand' : 'bg-slate-300'}`} />
-                                        <span className="text-[9px] font-black opacity-60 font-mono text-text-muted">{roomCounts[room.id] || 0}</span>
+                                        <span className="text-[9px] font-black opacity-60 font-mono text-text-muted">{roomCounts[room.id.toLowerCase()] || 0}</span>
                                      </div>
                                   </button>
                                 ))}
@@ -499,6 +515,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
 
                       <div className="space-y-1">
                         {[...onlineUsers, ...dummyUsers]
+                          .filter(u => 
+                            (u.currentRoom?.toLowerCase() === currentRoom.toLowerCase()) || 
+                            (!u.currentRoom && currentRoom === 'lobby') ||
+                            (u.id === user.id)
+                          )
                           .sort((a, b) => {
                             let comparison = 0;
                             if (peopleSortBy === 'alphabet') {
