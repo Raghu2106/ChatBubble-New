@@ -936,7 +936,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                       className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all border ${showGifPicker ? 'bg-brand/10 border-brand/20 text-brand' : 'bg-surface border-border text-text-muted hover:text-brand hover:border-brand/30 shadow-sm'}`}
                       title="Add GIF"
                     >
-                      <Film size={24} strokeWidth={2} />
+                      <div className="flex flex-col items-center">
+                        <Film size={20} className="mb-1" />
+                        <span className="text-[8px] font-black leading-none">GIF</span>
+                      </div>
                     </button>
                     
                     <AnimatePresence>

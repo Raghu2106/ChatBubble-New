@@ -73,6 +73,7 @@ export default function App() {
         handleExit();
       } else if (stepRef.current !== 'chat') {
         setUser(null);
+        setStep('entry');
       }
     });
 
