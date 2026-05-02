@@ -93,5 +93,25 @@ export const AdUnit: React.FC<AdUnitProps> = ({ id, format, className }) => {
 };
 
 export const GlobalAds: React.FC = () => {
+  useEffect(() => {
+    // Prevent multiple injections
+    if (document.getElementById('adsterra-social-bar')) return;
+
+    // Social Bar (Active)
+    const socialBar = document.createElement('script');
+    socialBar.id = 'adsterra-social-bar';
+    socialBar.src = 'https://pl29314389.profitablecpmratenetwork.com/b7/7d/e0/b77de04459ba8a2434cbfca7573c5395.js';
+    socialBar.async = true;
+    document.body.appendChild(socialBar);
+
+    /* 
+      Popunder (Anti-Adblock) - CURRENTLY DISABLED PER USER REQUEST
+      const popunder = document.createElement('script');
+      popunder.src = 'https://eternalwheeled.com/98/f8/23/98f82357b06f6ce777367f18e5f869fe.js';
+      popunder.async = true;
+      document.body.appendChild(popunder);
+    */
+  }, []);
+
   return null;
 };
