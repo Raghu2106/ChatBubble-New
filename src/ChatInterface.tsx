@@ -316,7 +316,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
       </header>
 
       {/* MAIN LAYOUT CONTENT */}
-      <div className="flex-1 flex overflow-hidden md:px-4 md:py-3 gap-3 relative">
+      <div className="flex-1 flex overflow-hidden md:px-4 md:py-3 gap-3 relative pb-16 md:pb-0">
         
         {/* Mobile Sidebar Overlay */}
         <AnimatePresence>
@@ -798,6 +798,67 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
            </div>
         </main>
       </div>
+
+      {/* MOBILE BOTTOM NAVIGATION - FIXED AT BOTTOM */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-surface border-t border-border flex items-center justify-around px-4 z-[45] shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+        <button
+          onClick={() => {
+            setActiveTab('Rooms');
+            setMobileSidebarOpen(true);
+          }}
+          className={`flex flex-col items-center gap-1 transition-all ${
+            activeTab === 'Rooms' && mobileSidebarOpen ? 'text-brand' : 'text-text-muted hover:text-text'
+          }`}
+        >
+          <Globe size={20} className={activeTab === 'Rooms' && mobileSidebarOpen ? 'stroke-[3px]' : ''} />
+          <span className="text-[10px] font-black uppercase tracking-widest">Rooms</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab('Messages');
+            setMobileSidebarOpen(true);
+          }}
+          className={`flex flex-col items-center gap-1 transition-all relative ${
+            activeTab === 'Messages' && mobileSidebarOpen ? 'text-brand' : 'text-text-muted hover:text-text'
+          }`}
+        >
+          <div className="relative">
+            <MessageSquare size={20} className={activeTab === 'Messages' && mobileSidebarOpen ? 'stroke-[3px]' : ''} />
+            {unreadThreads.size > 0 && (
+              <span className="absolute -top-1 -right-1.5 bg-red-500 text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-surface animate-pulse">
+                {unreadThreads.size}
+              </span>
+            )}
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-widest">Messages</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab('People');
+            setMobileSidebarOpen(true);
+          }}
+          className={`flex flex-col items-center gap-1 transition-all ${
+            activeTab === 'People' && mobileSidebarOpen ? 'text-brand' : 'text-text-muted hover:text-text'
+          }`}
+        >
+          <Users size={20} className={activeTab === 'People' && mobileSidebarOpen ? 'stroke-[3px]' : ''} />
+          <span className="text-[10px] font-black uppercase tracking-widest">People</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setMobileSidebarOpen(!mobileSidebarOpen);
+          }}
+          className={`flex flex-col items-center gap-1 transition-all ${
+            mobileSidebarOpen ? 'text-brand' : 'text-text-muted hover:text-text'
+          }`}
+        >
+          <Search size={20} />
+          <span className="text-[10px] font-black uppercase tracking-widest">Menu</span>
+        </button>
+      </nav>
     </div>
   );
 };
