@@ -263,11 +263,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
     
     // For General Lobby, we want to show the TOTAL global count (Real + Dummies)
     // as it represents the overall community
-    counts['lobby'] = onlineUsers.length + dummyUsers.length + 1; // +1 for the user themselves if not in onlineUsers
+    const globalRealUsers = rooms.reduce((acc, r) => acc + (r.userCount || 0), 0);
+    // Note: server userCount usually already includes the current user in their respective room
+    counts['lobby'] = globalRealUsers + dummyUsers.length;
     
-    // Check if user is already in onlineUsers to avoid double counting
-    const isUserInList = onlineUsers.some(u => u.id === user.id);
-    counts['lobby'] = onlineUsers.length + dummyUsers.length + (isUserInList ? 0 : 1);
+    // Ensure it's at least 1 (the current user)
+    if (counts['lobby'] < 1) counts['lobby'] = 1;
 
     return counts;
   }, [rooms, dummyUsers, onlineUsers, user.id]);
@@ -403,12 +404,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                       activeTab === tab ? 'bg-surface text-text shadow-sm' : 'text-text-muted hover:text-text'
                     }`}
                   >
-                    <div className={`px-1 rounded-sm text-[7px] flex items-center justify-center font-black relative ${
-                      activeTab === tab ? 'bg-brand text-white' : 'bg-surface-hover text-text-muted'
+                    <div className={`px-2 py-0.5 rounded-full text-[9px] flex items-center justify-center font-black shadow-sm relative ${
+                      activeTab === tab ? 'bg-brand text-white' : 'bg-brand/10 text-brand'
                     }`}>
                       {count}
                       {hasUnread && (
-                        <div className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-red-500 rounded-full border border-white animate-pulse" />
+                        <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full border-2 border-surface animate-pulse" />
                       )}
                     </div>
                     {tab}
@@ -435,11 +436,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                              <MessageSquare size={16} className={currentRoom === 'lobby' ? 'text-brand' : 'opacity-40'} />
                              <span className="text-xs font-bold truncate max-w-[140px] tracking-tight">General Lobby</span>
                            </div>
-                           <div className="flex items-center gap-1.5">
-                              <div className={`w-1 h-1 rounded-full ${currentRoom === 'lobby' ? 'bg-brand' : 'bg-slate-300'}`} />
-                              <span className="text-[9px] font-black opacity-60 font-mono">
+                           <div className="flex items-center gap-1.5 shrink-0">
+                              <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${currentRoom === 'lobby' ? 'bg-white' : 'bg-brand'}`} />
+                              <div className={`px-2 py-0.5 rounded-full text-[10px] font-black shadow-sm flex items-center justify-center min-w-[24px] ${
+                                currentRoom === 'lobby' ? 'bg-white text-brand' : 'bg-brand text-white'
+                              }`}>
                                 {roomCounts['lobby']}
-                              </span>
+                              </div>
                            </div>
                         </button>
                      </div>
@@ -487,9 +490,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                                         <Hash size={16} className={currentRoom === room.id ? 'text-brand' : 'opacity-40'} />
                                         <span className="text-xs font-bold truncate max-w-[140px] tracking-tight text-text">{room.name}</span>
                                      </div>
-                                     <div className="flex items-center gap-1.5">
+                                     <div className="flex items-center gap-1.5 shrink-0">
                                         <div className={`w-1 h-1 rounded-full ${currentRoom === room.id ? 'bg-brand' : 'bg-slate-300'}`} />
-                                        <span className="text-[9px] font-black opacity-60 font-mono text-text-muted">{roomCounts[room.id.toLowerCase()] || 0}</span>
+                                        <div className={`px-2 py-0.5 rounded-full text-[10px] font-black shadow-sm flex items-center justify-center min-w-[24px] ${
+                                          currentRoom === room.id ? 'bg-brand text-white' : 'bg-surface-hover text-text-muted'
+                                        }`}>
+                                          {roomCounts[room.id.toLowerCase()] || 0}
+                                        </div>
                                      </div>
                                   </button>
                                 ))}
