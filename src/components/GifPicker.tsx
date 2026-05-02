@@ -47,7 +47,7 @@ export const GifPicker: React.FC<GifPickerProps> = ({ onSelect, onClose }) => {
   };
 
   return (
-    <div className="flex flex-col h-[400px] w-full max-w-[350px] bg-surface border border-border shadow-2xl rounded-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="flex flex-col h-[400px] w-[280px] sm:w-[350px] bg-surface border border-border shadow-2xl rounded-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
       <div className="p-3 border-b border-border bg-surface-hover/20 flex items-center justify-between">
         <h3 className="text-[10px] font-black uppercase tracking-widest text-brand">Search GIFs</h3>
         <button onClick={onClose} className="p-1 hover:bg-surface-hover rounded-lg text-text-muted">
@@ -102,9 +102,9 @@ export const GifPicker: React.FC<GifPickerProps> = ({ onSelect, onClose }) => {
         )}
       </div>
       
-      <div className="p-2 border-t border-border bg-surface-hover/10 flex justify-center">
-        <img src="https://micro-assets.giphy.com/assets/pixel.gif" alt="Powered by Giphy" className="h-4 opacity-50 grayscale" />
-        <span className="text-[8px] font-bold text-text-muted">via GIPHY</span>
+      <div className="p-2 border-t border-border bg-surface-hover/10 flex items-center justify-center gap-2">
+        <div className="text-[10px] font-black italic text-text-muted opacity-50">GIPHY</div>
+        <span className="text-[8px] font-bold text-text-muted">POWERED BY GIPHY</span>
       </div>
     </div>
   );

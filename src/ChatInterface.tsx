@@ -202,7 +202,26 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
 
     setError(null);
     if (activePrivateChat) {
-      socket.emit('send:private', { recipientId: activePrivateChat, content: inputText });
+      if (activePrivateChat.startsWith('dummy-')) {
+        // Handle dummy user message locally
+        const dummyUser = dummyUsers.find(u => u.id === activePrivateChat);
+        const newMessage = {
+          id: `local-${Date.now()}`,
+          senderId: user.id,
+          senderName: user.nickname,
+          senderGender: user.gender,
+          content: inputText,
+          timestamp: Date.now(),
+          recipientId: activePrivateChat,
+          type: 'private' as const
+        };
+        setPrivateThreads(prev => ({
+          ...prev,
+          [activePrivateChat]: [...(prev[activePrivateChat] || []), newMessage]
+        }));
+      } else {
+        socket.emit('send:private', { recipientId: activePrivateChat, content: inputText });
+      }
     } else {
       socket.emit('send:message', { roomId: currentRoom, content: inputText });
     }
@@ -212,7 +231,25 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   const handleSendGif = (url: string) => {
     setError(null);
     if (activePrivateChat) {
-      socket.emit('send:private', { recipientId: activePrivateChat, content: url });
+      if (activePrivateChat.startsWith('dummy-')) {
+        // Handle dummy user GIF locally
+        const newMessage = {
+          id: `local-${Date.now()}`,
+          senderId: user.id,
+          senderName: user.nickname,
+          senderGender: user.gender,
+          content: url,
+          timestamp: Date.now(),
+          recipientId: activePrivateChat,
+          type: 'private' as const
+        };
+        setPrivateThreads(prev => ({
+          ...prev,
+          [activePrivateChat]: [...(prev[activePrivateChat] || []), newMessage]
+        }));
+      } else {
+        socket.emit('send:private', { recipientId: activePrivateChat, content: url });
+      }
     } else {
       socket.emit('send:message', { roomId: currentRoom, content: url });
     }
