@@ -378,8 +378,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                 if (tab === 'Rooms') count = rooms.length;
                 if (tab === 'People') {
                   count = [...onlineUsers, ...dummyUsers].filter(u => 
+                    currentRoom === 'lobby' ||
                     (u.currentRoom?.toLowerCase() === currentRoom.toLowerCase()) || 
-                    (!u.currentRoom && currentRoom === 'lobby') ||
                     (u.id === user.id)
                   ).length;
                 }
@@ -516,8 +516,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                       <div className="space-y-1">
                         {[...onlineUsers, ...dummyUsers]
                           .filter(u => 
+                            currentRoom === 'lobby' ||
                             (u.currentRoom?.toLowerCase() === currentRoom.toLowerCase()) || 
-                            (!u.currentRoom && currentRoom === 'lobby') ||
                             (u.id === user.id)
                           )
                           .sort((a, b) => {

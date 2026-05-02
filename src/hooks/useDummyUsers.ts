@@ -50,48 +50,86 @@ const FEMALE_NAMES = [
   'Urvashi', 'Usha', 'Vaishali', 'Varsha', 'Vidya', 'Vinita', 'Yamini'
 ];
 
-const TOTAL_DUMMIES = 45;
+const TOTAL_DUMMIES = 123;
 const MALE_PROBABILITY = 0.85;
-const CYCLE_INTERVAL_MS = (2 * 60 * 60 * 1000) / TOTAL_DUMMIES; // Total 2 hours divided by 45 users
+const CYCLE_INTERVAL_MS = (2 * 60 * 60 * 1000) / TOTAL_DUMMIES;
+
+const ROOM_DATA = [
+  { id: 'lobby', weight: 30, names: 'indian' },
+  { id: 'mumbai', weight: 15, names: 'indian' },
+  { id: 'delhi', weight: 12, names: 'indian' },
+  { id: 'bangalore', weight: 10, names: 'indian' },
+  { id: 'usa', weight: 8, names: 'western' },
+  { id: 'uk', weight: 6, names: 'western' },
+  { id: 'canada', weight: 5, names: 'western' },
+  { id: 'australia', weight: 4, names: 'western' },
+  { id: 'uae', weight: 3, names: 'arabic' },
+  { id: 'singapore', weight: 2, names: 'east_asian' },
+  { id: 'germany', weight: 2, names: 'western' },
+  { id: 'france', weight: 1, names: 'western' },
+  { id: 'saudi', weight: 2, names: 'arabic' },
+  { id: 'japan', weight: 1, names: 'east_asian' },
+  { id: 'hyderabad', weight: 2, names: 'indian' },
+];
+
+const NAME_POOLS: Record<string, { male: string[], female: string[] }> = {
+  indian: {
+    male: ['Arjun', 'Ayaan', 'Advait', 'Kabir', 'Rohan', 'Ishaan', 'Aarav', 'Vihaan', 'Aryan', 'Krishna', 'Abhishek', 'Akash', 'Aman', 'Aniket', 'Ankit', 'Gaurav', 'Hardik', 'Kunal', 'Mohit', 'Nikhil', 'Parth', 'Pranav', 'Raghav', 'Rajat', 'Sahil', 'Sanket', 'Shubham', 'Sumit', 'Suraj', 'Vaibhav', 'Vikas', 'Vishal', 'Yuvraj'],
+    female: ['Ananya', 'Diya', 'Ishani', 'Kiara', 'Myra', 'Navya', 'Pari', 'Riya', 'Saisha', 'Vanya', 'Zoya', 'Aditi', 'Ishika', 'Kavya', 'Meera', 'Sara', 'Anjali', 'Ankita', 'Deepali', 'Disha', 'Kajal', 'Komal', 'Neha', 'Pooja', 'Priyanka', 'Sakshi', 'Sanjana', 'Sneha', 'Tanvi']
+  },
+  western: {
+    male: ['James', 'Robert', 'John', 'Michael', 'David', 'William', 'Richard', 'Joseph', 'Thomas', 'Christopher', 'Charles', 'Daniel', 'Matthew', 'Anthony', 'Mark', 'Donald', 'Steven', 'Paul', 'Andrew', 'Joshua', 'Kevin', 'Brian', 'George', 'Timothy', 'Ronald', 'Edward'],
+    female: ['Mary', 'Patricia', 'Jennifer', 'Linda', 'Elizabeth', 'Barbara', 'Susan', 'Jessica', 'Sarah', 'Karen', 'Lisa', 'Nancy', 'Betty', 'Margaret', 'Sandra', 'Ashley', 'Kimberly', 'Emily', 'Donna', 'Michelle', 'Dorothy', 'Carol', 'Amanda', 'Melissa', 'Deborah']
+  },
+  arabic: {
+    male: ['Ahmed', 'Mohammed', 'Omar', 'Ali', 'Hassan', 'Ibrahim', 'Mustafa', 'Youssef', 'Zaid', 'Kareem', 'Hamza', 'Fareed', 'Bilal'],
+    female: ['Fatima', 'Layla', 'Aisha', 'Amira', 'Zahra', 'Noor', 'Mariam', 'Salma', 'Habiba', 'Rania', 'Dina', 'Yasmeen']
+  },
+  east_asian: {
+    male: ['Wei', 'Li', 'Min', 'Hiroshi', 'Kenji', 'Jae', 'Sang', 'Takumi', 'Yuki', 'Chen', 'Bo', 'Jun', 'Ji'],
+    female: ['Mei', 'Lin', 'Sakura', 'Hana', 'Ji-won', 'Su-bin', 'Yuna', 'Aimi', 'Xia', 'Fan', 'Ying']
+  }
+};
 
 export const useDummyUsers = () => {
   const [activeDummies, setActiveDummies] = useState<DummyUser[]>([]);
 
-  const generateNickname = (isMale: boolean, existingNames: Set<string>) => {
-    const namePool = isMale ? MALE_NAMES : FEMALE_NAMES;
+  const getRandomRoomId = () => {
+    const totalWeight = ROOM_DATA.reduce((acc, r) => acc + r.weight, 0);
+    let random = Math.random() * totalWeight;
+    for (const room of ROOM_DATA) {
+      if (random < room.weight) return room.id;
+      random -= room.weight;
+    }
+    return 'lobby';
+  };
+
+  const generateNickname = (isMale: boolean, roomId: string, existingNames: Set<string>) => {
+    const roomInfo = ROOM_DATA.find(r => r.id === roomId) || ROOM_DATA[0];
+    const pool = NAME_POOLS[roomInfo.names] || NAME_POOLS.indian;
+    const nameList = isMale ? pool.male : pool.female;
+    
     let baseName = '';
     let nickname = '';
     let attempts = 0;
 
-    // Try to find a base name that isn't already used in the current batch
     do {
-      baseName = namePool[Math.floor(Math.random() * namePool.length)];
+      baseName = nameList[Math.floor(Math.random() * nameList.length)];
       attempts++;
     } while (existingNames.has(baseName) && attempts < 20);
 
     const rand = Math.random();
-    if (rand < 0.7) {
-      // 70% pure name
+    if (rand < 0.75) {
       nickname = baseName;
-    } else if (rand < 0.85) {
-      // 15% name with simple number
-      const num = Math.floor(Math.random() * 99) + 1;
-      nickname = `${baseName}${num}`;
-    } else if (rand < 0.95) {
-      // 10% name with underscore and number
-      const num = Math.floor(Math.random() * 999);
-      nickname = `${baseName}_${num}`;
+    } else if (rand < 0.9) {
+      nickname = `${baseName}${Math.floor(Math.random() * 99) + 1}`;
     } else {
-      // 5% with "cool" suffix
-      const suffixes = ['_vibe', '_king', '_heart', '_rocks', '_star', '007', '_bot'];
-      const suf = suffixes[Math.floor(Math.random() * suffixes.length)];
-      nickname = `${baseName}${suf}`;
+      nickname = `${baseName}_${Math.floor(Math.random() * 9)}`;
     }
 
     return nickname;
   };
   
-  // Initialize or maintain dummy pool
   useEffect(() => {
     const generateInitialDummies = () => {
       const dummies: DummyUser[] = [];
@@ -99,9 +137,8 @@ export const useDummyUsers = () => {
 
       for (let i = 0; i < TOTAL_DUMMIES; i++) {
         const isMale = Math.random() < MALE_PROBABILITY;
-        const nickname = generateNickname(isMale, usedBaseNames);
-        
-        // Extract base name to track it
+        const roomId = getRandomRoomId();
+        const nickname = generateNickname(isMale, roomId, usedBaseNames);
         const baseName = nickname.split(/[0-9_]/)[0];
         usedBaseNames.add(baseName);
         
@@ -110,7 +147,7 @@ export const useDummyUsers = () => {
           nickname,
           gender: isMale ? 'Male' : 'Female',
           isDummy: true,
-          currentRoom: 'lobby'
+          currentRoom: roomId
         });
       }
       return dummies;
@@ -119,7 +156,6 @@ export const useDummyUsers = () => {
     setActiveDummies(generateInitialDummies());
   }, []);
 
-  // Cycling mechanism
   useEffect(() => {
     if (activeDummies.length === 0) return;
 
@@ -127,19 +163,18 @@ export const useDummyUsers = () => {
       setActiveDummies(prev => {
         const next = [...prev];
         const indexToReplace = Math.floor(Math.random() * next.length);
-        
-        // Track currently used base names to avoid duplicates
         const currentBaseNames = new Set(next.map(u => u.nickname.split(/[0-9_]/)[0]));
         
         const isMale = Math.random() < MALE_PROBABILITY;
-        const nickname = generateNickname(isMale, currentBaseNames);
+        const roomId = getRandomRoomId();
+        const nickname = generateNickname(isMale, roomId, currentBaseNames);
 
         next[indexToReplace] = {
           id: `dummy-${Date.now()}-${Math.random()}`,
           nickname,
           gender: isMale ? 'Male' : 'Female',
           isDummy: true,
-          currentRoom: 'lobby'
+          currentRoom: roomId
         };
         
         return next;
