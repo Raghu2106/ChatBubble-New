@@ -438,8 +438,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                            </div>
                            <div className="flex items-center gap-1.5 shrink-0">
                               <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${currentRoom === 'lobby' ? 'bg-white' : 'bg-brand'}`} />
-                              <div className={`px-2 py-0.5 rounded-full text-[10px] font-black shadow-sm flex items-center justify-center min-w-[24px] ${
-                                currentRoom === 'lobby' ? 'bg-white text-brand' : 'bg-brand text-white'
+                              <div className={`px-2.5 py-1 rounded-full text-[10px] font-black shadow-[0_2px_10px_-3px_rgba(0,0,0,0.2)] flex items-center justify-center min-w-[32px] transition-all ${
+                                currentRoom === 'lobby' ? 'bg-white text-brand transform scale-110' : 'bg-brand/10 text-brand'
                               }`}>
                                 {roomCounts['lobby']}
                               </div>
@@ -492,8 +492,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                                      </div>
                                      <div className="flex items-center gap-1.5 shrink-0">
                                         <div className={`w-1 h-1 rounded-full ${currentRoom === room.id ? 'bg-brand' : 'bg-slate-300'}`} />
-                                        <div className={`px-2 py-0.5 rounded-full text-[10px] font-black shadow-sm flex items-center justify-center min-w-[24px] ${
-                                          currentRoom === room.id ? 'bg-brand text-white' : 'bg-surface-hover text-text-muted'
+                                        <div className={`px-2 py-0.5 rounded-full text-[10px] font-black shadow-sm flex items-center justify-center min-w-[28px] transition-all ${
+                                          currentRoom === room.id ? 'bg-brand text-white transform scale-110' : 'bg-surface-hover text-text-muted hover:bg-brand/5 hover:text-brand'
                                         }`}>
                                           {roomCounts[room.id.toLowerCase()] || 0}
                                         </div>
