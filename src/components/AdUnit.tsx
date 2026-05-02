@@ -46,27 +46,41 @@ export const AdUnit: React.FC<AdUnitProps> = ({ id, format, className }) => {
       iframe.style.border = 'none';
       iframe.style.overflow = 'hidden';
       
+      adRef.current.innerHTML = ''; // Clear any previous attempts
       adRef.current.appendChild(iframe);
       
-      const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-      if (iframeDoc) {
-        iframeDoc.open();
-        iframeDoc.write(`
-          <body style="margin:0;padding:0;display:flex;justify-content:center;align-items:center;">
-            <script type="text/javascript">
-              atOptions = {
-                'key' : '${id}',
-                'format' : 'iframe',
-                'height' : ${dimensions.height},
-                'width' : ${dimensions.width},
-                'params' : {}
-              };
-              document.write('<scr' + 'ipt type="text/javascript" src="https://www.highperformanceformat.com/${id}/invoke.js"></scr' + 'ipt>');
-            </script>
-          </body>
-        `);
-        iframeDoc.close();
-      }
+      const setupIframe = () => {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (iframeDoc) {
+          iframeDoc.open();
+          iframeDoc.write(`
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <style>
+                  body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; overflow: hidden; height: ${dimensions.height}px; }
+                </style>
+              </head>
+              <body>
+                <script type="text/javascript">
+                  atOptions = {
+                    'key' : '${id}',
+                    'format' : 'iframe',
+                    'height' : ${dimensions.height},
+                    'width' : ${dimensions.width},
+                    'params' : {}
+                  };
+                  document.write('<scr' + 'ipt type="text/javascript" src="https://www.highperformanceformat.com/${id}/invoke.js"></scr' + 'ipt>');
+                </script>
+              </body>
+            </html>
+          `);
+          iframeDoc.close();
+        }
+      };
+
+      // Use a small timeout to ensure iframe is fully inserted and contentWindow is available
+      setTimeout(setupIframe, 50);
     }
   }, [id, format]);
 

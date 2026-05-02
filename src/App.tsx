@@ -69,7 +69,7 @@ export default function App() {
       <GlobalAds />
       
       {/* GLOBAL TOP AD SLOT */}
-      <div className="w-full flex justify-center py-1 bg-surface/50 border-b border-border z-50 shrink-0">
+      <div className="w-full flex justify-center py-1 bg-surface/50 border-b border-border z-50 shrink-0 min-h-[50px] md:min-h-[92px]">
         <div className="hidden md:block">
           <AdUnit id="e09cae3901da8691e785bc3a6fb53b5f" format="728x90" />
         </div>
@@ -78,18 +78,20 @@ export default function App() {
         </div>
       </div>
 
-      <div className="flex flex-1 relative overflow-hidden">
+      <div className="flex flex-1 relative overflow-hidden h-full">
         {/* GLOBAL LEFT SKYSCRAPER */}
-        <aside className="hidden lg:flex w-[160px] shrink-0 items-start justify-center py-2 border-r border-border bg-surface/5">
+        <aside className="hidden lg:flex w-[165px] shrink-0 items-start justify-center py-2 border-r border-border bg-surface/5">
           <AdUnit id="1792c7f73f1077081cad03590a1a650d" format="160x600" className="sticky top-2" />
         </aside>
 
         {/* MAIN CONTENT AREA */}
-        <main className="flex-1 relative overflow-hidden flex flex-col">
+        <main className="flex-1 relative overflow-hidden flex flex-col h-full">
           {step === 'chat' && user ? (
-            <ChatInterface user={user} onExit={handleExit} error={error} setError={setError} />
+            <div className="flex-1 h-full">
+              <ChatInterface user={user} onExit={handleExit} error={error} setError={setError} />
+            </div>
           ) : (
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto h-full">
               <LandingPage onStart={() => setStep('entry')} />
               {step === 'entry' && (
                 <EntryScreen onJoin={handleJoin} onClose={() => setStep('landing')} error={error} />
@@ -99,7 +101,7 @@ export default function App() {
         </main>
 
         {/* GLOBAL RIGHT SKYSCRAPER */}
-        <aside className="hidden lg:flex w-[160px] shrink-0 items-start justify-center py-2 border-l border-border bg-surface/5">
+        <aside className="hidden lg:flex w-[165px] shrink-0 items-start justify-center py-2 border-l border-border bg-surface/5">
           <AdUnit id="1792c7f73f1077081cad03590a1a650d" format="160x600" className="sticky top-2" />
         </aside>
       </div>

@@ -256,7 +256,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
     : currentRoom === 'lobby' ? 'General Lobby' : (currentRoomData?.name || "The Lobby");
 
   return (
-    <div className="h-screen flex flex-col bg-bg text-text overflow-hidden font-sans">
+    <div className="h-full flex flex-col bg-bg text-text overflow-hidden font-sans">
       
       {/* TOP PRIVACY BAR - CONDENSED */}
       <div className="bg-surface py-1 text-center border-b border-border shrink-0">
@@ -316,7 +316,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
       </header>
 
       {/* MAIN LAYOUT CONTENT */}
-      <div className="flex-1 flex overflow-hidden w-full mx-auto md:px-6 md:py-6 gap-6 relative">
+      <div className="flex-1 flex overflow-hidden md:px-6 md:py-6 gap-6 relative">
         
         {/* Mobile Sidebar Overlay */}
         <AnimatePresence>
