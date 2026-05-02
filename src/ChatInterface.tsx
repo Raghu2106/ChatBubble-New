@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   Users, MessageSquare, Globe, User, MoreVertical, 
   Send, ShieldAlert, DoorOpen, Bell, BellOff, RefreshCw,
-  Lock, Search, Plus, ChevronDown, Music, Code, Film, Zap,
+  Lock, Search, Plus, ChevronDown, Music, Code, Zap,
   Moon, Hash, Shield, ChevronRight, Mars, Venus, X,
   Smile
 } from 'lucide-react';
@@ -13,14 +13,8 @@ import { ChatMessage, Room, Gender } from './types';
 import { AdUnit } from './components/AdUnit';
 import { useDummyUsers } from './hooks/useDummyUsers';
 
-import { GifPicker } from './components/GifPicker';
-
 // Helper to sanitize message content and strip clickable links/HTML
 const formatChatMessage = (content: string) => {
-  // Check if content is a direct GIF link from Giphy
-  if (content.includes('giphy.com/media/') || content.match(/\.(jpeg|jpg|gif|png)$/) != null) {
-    return content; // Return as is, we'll handle rendering below
-  }
   return content.replace(/<[^>]*>/g, '');
 };
 
@@ -56,18 +50,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   const [privateThreads, setPrivateThreads] = useState<Record<string, ChatMessage[]>>({});
   const [unreadThreads, setUnreadThreads] = useState<Set<string>>(new Set());
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [showGifPicker, setShowGifPicker] = useState(false);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
-  const gifPickerRef = useRef<HTMLDivElement>(null);
 
   // Close pickers when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
         setShowEmojiPicker(false);
-      }
-      if (gifPickerRef.current && !gifPickerRef.current.contains(event.target as Node)) {
-        setShowGifPicker(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -232,34 +221,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
       socket.emit('send:message', { roomId: currentRoom, content: inputText });
     }
     setInputText('');
-  };
-
-  const handleSendGif = (url: string) => {
-    setError(null);
-    if (activePrivateChat) {
-      if (activePrivateChat.startsWith('dummy-')) {
-        // Handle dummy user GIF locally
-        const newMessage = {
-          id: `local-${Date.now()}`,
-          senderId: user.id,
-          senderName: user.nickname,
-          senderGender: user.gender,
-          content: url,
-          timestamp: Date.now(),
-          recipientId: activePrivateChat,
-          type: 'private' as const
-        };
-        setPrivateThreads(prev => ({
-          ...prev,
-          [activePrivateChat]: [...(prev[activePrivateChat] || []), newMessage]
-        }));
-      } else {
-        socket.emit('send:private', { recipientId: activePrivateChat, content: url });
-      }
-    } else {
-      socket.emit('send:message', { roomId: currentRoom, content: url });
-    }
-    setShowGifPicker(false);
   };
 
   const switchRoom = (roomId: string) => {
@@ -857,18 +818,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                        ? 'bg-brand text-white self-end rounded-tr-none' 
                        : 'bg-bg/50 text-text self-start rounded-tl-none border border-border'
                    }`}>
-                     {msg.content.includes('giphy.com/media/') || msg.content.match(/\.(jpeg|jpg|gif|png)$/) != null ? (
-                       <div className="py-1">
-                         <img 
-                           src={msg.content} 
-                           alt="GIF" 
-                           className="max-w-full rounded-lg shadow-sm" 
-                           referrerPolicy="no-referrer"
-                         />
-                       </div>
-                     ) : (
-                       formatChatMessage(msg.content)
-                     )}
+                      {formatChatMessage(msg.content)}
                    </div>
                 </div>
               ))}
@@ -927,38 +877,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                              theme={Theme.LIGHT}
                              width={320}
                              height={400}
-                           />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                 </div>
-                 <div className="relative" ref={gifPickerRef}>
-                    <button 
-                      type="button"
-                      onClick={() => {
-                        setShowGifPicker(!showGifPicker);
-                        setShowEmojiPicker(false);
-                      }}
-                      className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all border ${showGifPicker ? 'bg-brand/10 border-brand/20 text-brand' : 'bg-surface border-border text-text-muted hover:text-brand hover:border-brand/30 shadow-sm'}`}
-                      title="Add GIF"
-                    >
-                      <div className="flex flex-col items-center">
-                        <Film size={20} className="mb-1" />
-                        <span className="text-[8px] font-black leading-none">GIF</span>
-                      </div>
-                    </button>
-                    
-                    <AnimatePresence>
-                      {showGifPicker && (
-                        <motion.div 
-                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                          className="absolute bottom-full right-0 mb-4 z-50"
-                        >
-                           <GifPicker 
-                             onSelect={handleSendGif}
-                             onClose={() => setShowGifPicker(false)}
                            />
                         </motion.div>
                       )}

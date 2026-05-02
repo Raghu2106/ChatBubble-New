@@ -164,7 +164,7 @@ export const useDummyUsers = () => {
         if (prev.length === 0) return prev;
         const next = [...prev];
         const indexToReplace = Math.floor(Math.random() * next.length);
-        const currentNicknames = new Set(next.map(u => u.nickname));
+        const currentNicknames = new Set<string>(next.map(u => u.nickname));
         
         const isMale = Math.random() < MALE_PROBABILITY;
         const roomId = getRandomRoomId();
@@ -193,7 +193,7 @@ export const useDummyUsers = () => {
         if (shouldAdd) {
           const isMale = Math.random() < MALE_PROBABILITY;
           const roomId = getRandomRoomId();
-          const currentNicknames = new Set(prev.map(u => u.nickname));
+          const currentNicknames = new Set<string>(prev.map(u => u.nickname));
           const nickname = generateNickname(isMale, roomId, currentNicknames);
           
           return [...prev, {
