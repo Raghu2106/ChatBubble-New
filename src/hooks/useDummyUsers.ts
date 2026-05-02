@@ -50,9 +50,11 @@ const FEMALE_NAMES = [
   'Urvashi', 'Usha', 'Vaishali', 'Varsha', 'Vidya', 'Vinita', 'Yamini'
 ];
 
-const TOTAL_DUMMIES = 123;
+const TARGET_MIN_DUMMIES = 123;
+const TARGET_MAX_DUMMIES = 144;
 const MALE_PROBABILITY = 0.85;
-const CYCLE_INTERVAL_MS = (2 * 60 * 60 * 1000) / TOTAL_DUMMIES;
+const CYCLE_INTERVAL_MS = (2 * 60 * 60 * 1000) / TARGET_MIN_DUMMIES;
+const TRAFFIC_SIMULATION_INTERVAL_MS = 30000; // Check every 30s
 
 const ROOM_DATA = [
   { id: 'lobby', weight: 15, names: 'indian' },
@@ -137,7 +139,7 @@ export const useDummyUsers = () => {
       const dummies: DummyUser[] = [];
       const usedBaseNames = new Set<string>();
 
-      for (let i = 0; i < TOTAL_DUMMIES; i++) {
+      for (let i = 0; i < TARGET_MIN_DUMMIES; i++) {
         const isMale = Math.random() < MALE_PROBABILITY;
         const roomId = getRandomRoomId();
         const nickname = generateNickname(isMale, roomId, usedBaseNames);
@@ -161,8 +163,10 @@ export const useDummyUsers = () => {
   useEffect(() => {
     if (activeDummies.length === 0) return;
 
-    const interval = setInterval(() => {
+    // Cycle existing users
+    const cycleInterval = setInterval(() => {
       setActiveDummies(prev => {
+        if (prev.length === 0) return prev;
         const next = [...prev];
         const indexToReplace = Math.floor(Math.random() * next.length);
         const currentBaseNames = new Set(next.map(u => u.nickname.split(/[0-9_]/)[0]));
@@ -183,7 +187,40 @@ export const useDummyUsers = () => {
       });
     }, CYCLE_INTERVAL_MS);
 
-    return () => clearInterval(interval);
+    // Simulate traffic (Add/Remove users)
+    const trafficInterval = setInterval(() => {
+      setActiveDummies(prev => {
+        const count = prev.length;
+        // Bias towards adding if near min, bias towards removing if near max
+        const shouldAdd = count < TARGET_MAX_DUMMIES && (count <= TARGET_MIN_DUMMIES || Math.random() > 0.5);
+        const shouldRemove = !shouldAdd && count > TARGET_MIN_DUMMIES;
+
+        if (shouldAdd) {
+          const isMale = Math.random() < MALE_PROBABILITY;
+          const roomId = getRandomRoomId();
+          const currentBaseNames = new Set(prev.map(u => u.nickname.split(/[0-9_]/)[0]));
+          const nickname = generateNickname(isMale, roomId, currentBaseNames);
+          
+          return [...prev, {
+            id: `dummy-join-${Date.now()}-${Math.random()}`,
+            nickname,
+            gender: isMale ? 'Male' : 'Female',
+            isDummy: true,
+            currentRoom: roomId
+          }];
+        } else if (shouldRemove) {
+          const randomIndex = Math.floor(Math.random() * prev.length);
+          return prev.filter((_, i) => i !== randomIndex);
+        }
+
+        return prev;
+      });
+    }, TRAFFIC_SIMULATION_INTERVAL_MS);
+
+    return () => {
+      clearInterval(cycleInterval);
+      clearInterval(trafficInterval);
+    };
   }, [activeDummies.length]);
 
   return activeDummies;
