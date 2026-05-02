@@ -36,30 +36,44 @@ export const AdUnit: React.FC<AdUnitProps> = ({ id, format, className }) => {
       }
 
       const dimensions = formatDimensions[format];
-      const configScript = document.createElement('script');
-      configScript.type = 'text/javascript';
-      configScript.innerHTML = `
-        atOptions = {
-          'key' : '${id}',
-          'format' : 'iframe',
-          'height' : ${dimensions.height},
-          'width' : ${dimensions.width},
-          'params' : {}
-        };
-      `;
-      adRef.current.appendChild(configScript);
       
-      const script = document.createElement('script');
-      script.src = `https://www.highperformanceformat.com/${id}/invoke.js`;
-      script.type = 'text/javascript';
-      adRef.current.appendChild(script);
+      // We create an internal iframe to isolate the global atOptions for each unit
+      const iframe = document.createElement('iframe');
+      iframe.width = dimensions.width.toString();
+      iframe.height = dimensions.height.toString();
+      iframe.frameBorder = '0';
+      iframe.scrolling = 'no';
+      iframe.style.border = 'none';
+      iframe.style.overflow = 'hidden';
+      
+      adRef.current.appendChild(iframe);
+      
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (iframeDoc) {
+        iframeDoc.open();
+        iframeDoc.write(`
+          <body style="margin:0;padding:0;display:flex;justify-content:center;align-items:center;">
+            <script type="text/javascript">
+              atOptions = {
+                'key' : '${id}',
+                'format' : 'iframe',
+                'height' : ${dimensions.height},
+                'width' : ${dimensions.width},
+                'params' : {}
+              };
+              document.write('<scr' + 'ipt type="text/javascript" src="https://www.highperformanceformat.com/${id}/invoke.js"></scr' + 'ipt>');
+            </script>
+          </body>
+        `);
+        iframeDoc.close();
+      }
     }
   }, [id, format]);
 
   return (
     <div 
       ref={adRef} 
-      className={`flex items-center justify-center overflow-hidden min-h-[50px] ${className}`}
+      className={`flex items-center justify-center overflow-hidden bg-surface/5 min-h-[50px] ${className}`}
     />
   );
 };

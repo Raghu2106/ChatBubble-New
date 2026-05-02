@@ -18,7 +18,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
   const [modalType, setModalType] = useState<'privacy' | 'terms' | 'about' | 'contact' | null>(null);
 
   return (
-    <div className="min-h-screen bg-bg text-text flex flex-col items-center justify-between font-sans relative overflow-hidden">
+    <div className="min-h-full bg-bg text-text flex flex-col items-center justify-between font-sans relative overflow-hidden">
       {/* Background radial glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-brand/5 rounded-full blur-[120px] pointer-events-none" />
 
