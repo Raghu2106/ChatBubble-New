@@ -24,13 +24,20 @@ export default function App() {
   const [user, setUser] = useState<{ id: string; nickname: string; gender?: Gender; interests: string[] } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(window.location.pathname === '/admin');
+  const lastResetRef = React.useRef(Date.now());
   const [showTimeoutModal, setShowTimeoutModal] = useState(false);
   const [disconnectReason, setDisconnectReason] = useState<string | null>(null);
 
   const inactivityTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
-  const resetInactivityTimer = React.useCallback(() => {
-    if (stepRef.current !== 'chat') return;
+  const resetInactivityTimer = React.useCallback((force = false) => {
+    // Only block if modal is showing and we aren't forcing a reset (like when clicking 'Stay')
+    if (stepRef.current !== 'chat' || (showTimeoutModal && !force)) return;
+    
+    // Throttle the reset to every 2 seconds to avoid overhead, unless forced
+    const now = Date.now();
+    if (!force && now - lastResetRef.current < 2000) return;
+    lastResetRef.current = now;
     
     if (inactivityTimerRef.current) {
       clearTimeout(inactivityTimerRef.current);
@@ -39,15 +46,17 @@ export default function App() {
     inactivityTimerRef.current = setTimeout(() => {
       setShowTimeoutModal(true);
     }, INACTIVITY_LIMIT);
-  }, []);
+  }, [showTimeoutModal]);
 
   useEffect(() => {
     if (step === 'chat') {
-      resetInactivityTimer();
-      const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
-      events.forEach(event => window.addEventListener(event, resetInactivityTimer));
+      resetInactivityTimer(true);
+      // Track all common UI interactions
+      const events = ['mousemove', 'pointermove', 'keydown', 'click', 'scroll', 'touchstart', 'mousedown', 'wheel'];
+      const handler = () => resetInactivityTimer();
+      events.forEach(event => window.addEventListener(event, handler, { passive: true }));
       return () => {
-        events.forEach(event => window.removeEventListener(event, resetInactivityTimer));
+        events.forEach(event => window.removeEventListener(event, handler));
         if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
       };
     }
@@ -96,7 +105,7 @@ export default function App() {
 
   const handleStay = () => {
     setShowTimeoutModal(false);
-    resetInactivityTimer();
+    resetInactivityTimer(true);
   };
 
   const handleTimeoutExit = () => {

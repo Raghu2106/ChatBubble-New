@@ -293,7 +293,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
 
         <div className="flex items-center gap-2 md:gap-6">
           <div className="flex items-center gap-1.5 md:gap-2">
-             <span className="text-[9px] font-black uppercase text-text-muted tracking-widest hidden sm:flex items-center gap-1">
+             <span className="text-[9px] font-black uppercase text-text-muted tracking-widest flex items-center gap-1">
                {isDND ? <BellOff size={10} /> : <Bell size={10} />} DND
              </span>
              <button 
