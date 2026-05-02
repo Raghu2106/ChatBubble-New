@@ -12,6 +12,10 @@ import { AdminPanel } from './AdminPanel';
 import { Gender } from './types';
 import { Shield } from 'lucide-react';
 import { GlobalAds, AdUnit } from './components/AdUnit';
+import { SessionTimeoutModal } from './components/SessionTimeoutModal';
+
+const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 minutes
+const WARNING_DURATION = 60; // 60 seconds
 
 export default function App() {
   const [step, setStep] = useState<'landing' | 'entry' | 'chat'>('landing');
@@ -20,6 +24,34 @@ export default function App() {
   const [user, setUser] = useState<{ id: string; nickname: string; gender?: Gender; interests: string[] } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(window.location.pathname === '/admin');
+  const [showTimeoutModal, setShowTimeoutModal] = useState(false);
+  const [disconnectReason, setDisconnectReason] = useState<string | null>(null);
+
+  const inactivityTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const resetInactivityTimer = React.useCallback(() => {
+    if (stepRef.current !== 'chat') return;
+    
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+    }
+    
+    inactivityTimerRef.current = setTimeout(() => {
+      setShowTimeoutModal(true);
+    }, INACTIVITY_LIMIT);
+  }, []);
+
+  useEffect(() => {
+    if (step === 'chat') {
+      resetInactivityTimer();
+      const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+      events.forEach(event => window.addEventListener(event, resetInactivityTimer));
+      return () => {
+        events.forEach(event => window.removeEventListener(event, resetInactivityTimer));
+        if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
+      };
+    }
+  }, [step, resetInactivityTimer]);
 
   useEffect(() => {
     if (isAdmin) return;
@@ -49,6 +81,7 @@ export default function App() {
 
   const handleJoin = (nickname: string, gender: Gender, interests: string[]) => {
     setError(null);
+    setDisconnectReason(null);
     socket.emit('register' as any, { nickname, gender, interests });
     setUser({ id: 'pending', nickname, gender, interests });
   };
@@ -58,6 +91,17 @@ export default function App() {
     socket.connect(); // Reconnect to be ready for next session
     setUser(null);
     setStep('landing');
+    setShowTimeoutModal(false);
+  };
+
+  const handleStay = () => {
+    setShowTimeoutModal(false);
+    resetInactivityTimer();
+  };
+
+  const handleTimeoutExit = () => {
+    handleExit();
+    setDisconnectReason('You were disconnected due to inactivity');
   };
 
   if (isAdmin) {
@@ -67,6 +111,14 @@ export default function App() {
   return (
     <div className="h-dvh bg-bg overflow-hidden relative flex flex-col">
       <GlobalAds />
+
+      {showTimeoutModal && (
+        <SessionTimeoutModal 
+          onStay={handleStay} 
+          onSignOut={handleTimeoutExit} 
+          countdownSeconds={WARNING_DURATION} 
+        />
+      )}
       
       {/* GLOBAL TOP AD SLOT */}
       <div className="w-full flex justify-center py-1 bg-surface/50 border-b border-border z-50 shrink-0 min-h-[50px] md:min-h-[92px]">
@@ -92,6 +144,14 @@ export default function App() {
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto min-h-0 h-full">
+              {disconnectReason && (
+                <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] animate-in fade-in slide-in-from-top-4">
+                  <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-6 py-3 rounded-2xl flex items-center gap-3 backdrop-blur-md shadow-xl">
+                    <Shield size={20} />
+                    <span className="font-bold text-sm uppercase tracking-wider">{disconnectReason}</span>
+                  </div>
+                </div>
+              )}
               <LandingPage onStart={() => setStep('entry')} />
               {step === 'entry' && (
                 <EntryScreen onJoin={handleJoin} onClose={() => setStep('landing')} error={error} />
