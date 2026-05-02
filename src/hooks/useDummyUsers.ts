@@ -55,39 +55,41 @@ const MALE_PROBABILITY = 0.85;
 const CYCLE_INTERVAL_MS = (2 * 60 * 60 * 1000) / TOTAL_DUMMIES;
 
 const ROOM_DATA = [
-  { id: 'lobby', weight: 30, names: 'indian' },
-  { id: 'mumbai', weight: 15, names: 'indian' },
-  { id: 'delhi', weight: 12, names: 'indian' },
-  { id: 'bangalore', weight: 10, names: 'indian' },
-  { id: 'usa', weight: 8, names: 'western' },
-  { id: 'uk', weight: 6, names: 'western' },
-  { id: 'canada', weight: 5, names: 'western' },
-  { id: 'australia', weight: 4, names: 'western' },
-  { id: 'uae', weight: 3, names: 'arabic' },
-  { id: 'singapore', weight: 2, names: 'east_asian' },
-  { id: 'germany', weight: 2, names: 'western' },
-  { id: 'france', weight: 1, names: 'western' },
-  { id: 'saudi', weight: 2, names: 'arabic' },
-  { id: 'japan', weight: 1, names: 'east_asian' },
-  { id: 'hyderabad', weight: 2, names: 'indian' },
+  { id: 'lobby', weight: 15, names: 'indian' },
+  { id: 'mumbai', weight: 18, names: 'indian' },
+  { id: 'delhi', weight: 16, names: 'indian' },
+  { id: 'bangalore', weight: 12, names: 'indian' },
+  { id: 'usa', weight: 14, names: 'western' },
+  { id: 'uk', weight: 10, names: 'western' },
+  { id: 'canada', weight: 6, names: 'western' },
+  { id: 'australia', weight: 5, names: 'western' },
+  { id: 'uae', weight: 4, names: 'arabic' },
+  { id: 'singapore', weight: 3, names: 'east_asian' },
+  { id: 'germany', weight: 3, names: 'western' },
+  { id: 'saudi', weight: 3, names: 'arabic' },
+  { id: 'japan', weight: 2, names: 'east_asian' },
+  { id: 'hyderabad', weight: 4, names: 'indian' },
+  { id: 'chennai', weight: 3, names: 'indian' },
+  { id: 'kolkata', weight: 3, names: 'indian' },
+  { id: 'lucknow', weight: 2, names: 'indian' },
 ];
 
 const NAME_POOLS: Record<string, { male: string[], female: string[] }> = {
   indian: {
-    male: ['Arjun', 'Ayaan', 'Advait', 'Kabir', 'Rohan', 'Ishaan', 'Aarav', 'Vihaan', 'Aryan', 'Krishna', 'Abhishek', 'Akash', 'Aman', 'Aniket', 'Ankit', 'Gaurav', 'Hardik', 'Kunal', 'Mohit', 'Nikhil', 'Parth', 'Pranav', 'Raghav', 'Rajat', 'Sahil', 'Sanket', 'Shubham', 'Sumit', 'Suraj', 'Vaibhav', 'Vikas', 'Vishal', 'Yuvraj'],
-    female: ['Ananya', 'Diya', 'Ishani', 'Kiara', 'Myra', 'Navya', 'Pari', 'Riya', 'Saisha', 'Vanya', 'Zoya', 'Aditi', 'Ishika', 'Kavya', 'Meera', 'Sara', 'Anjali', 'Ankita', 'Deepali', 'Disha', 'Kajal', 'Komal', 'Neha', 'Pooja', 'Priyanka', 'Sakshi', 'Sanjana', 'Sneha', 'Tanvi']
+    male: ['Arjun', 'Ayaan', 'Advait', 'Kabir', 'Rohan', 'Ishaan', 'Aarav', 'Vihaan', 'Aryan', 'Krishna', 'Abhishek', 'Akash', 'Aman', 'Aniket', 'Ankit', 'Gaurav', 'Hardik', 'Kunal', 'Mohit', 'Nikhil', 'Parth', 'Pranav', 'Raghav', 'Rajat', 'Sahil', 'Sanket', 'Shubham', 'Sumit', 'Suraj', 'Vaibhav', 'Vikas', 'Vishal', 'Yuvraj', 'Aditya', 'Vikram', 'Sanjay', 'Rahul', 'Varun', 'Siddharth', 'Kartik'],
+    female: ['Ananya', 'Diya', 'Ishani', 'Kiara', 'Myra', 'Navya', 'Pari', 'Riya', 'Saisha', 'Vanya', 'Zoya', 'Aditi', 'Ishika', 'Kavya', 'Meera', 'Sara', 'Anjali', 'Ankita', 'Deepali', 'Disha', 'Kajal', 'Komal', 'Neha', 'Pooja', 'Priyanka', 'Sakshi', 'Sanjana', 'Sneha', 'Tanvi', 'Shruti', 'Shweta', 'Priya']
   },
   western: {
-    male: ['James', 'Robert', 'John', 'Michael', 'David', 'William', 'Richard', 'Joseph', 'Thomas', 'Christopher', 'Charles', 'Daniel', 'Matthew', 'Anthony', 'Mark', 'Donald', 'Steven', 'Paul', 'Andrew', 'Joshua', 'Kevin', 'Brian', 'George', 'Timothy', 'Ronald', 'Edward'],
-    female: ['Mary', 'Patricia', 'Jennifer', 'Linda', 'Elizabeth', 'Barbara', 'Susan', 'Jessica', 'Sarah', 'Karen', 'Lisa', 'Nancy', 'Betty', 'Margaret', 'Sandra', 'Ashley', 'Kimberly', 'Emily', 'Donna', 'Michelle', 'Dorothy', 'Carol', 'Amanda', 'Melissa', 'Deborah']
+    male: ['James', 'Robert', 'John', 'Michael', 'David', 'William', 'Richard', 'Joseph', 'Thomas', 'Christopher', 'Charles', 'Daniel', 'Matthew', 'Anthony', 'Mark', 'Donald', 'Steven', 'Paul', 'Andrew', 'Joshua', 'Kevin', 'Brian', 'George', 'Timothy', 'Ronald', 'Edward', 'Jason', 'Jeffrey', 'Ryan', 'Jacob', 'Gary', 'Nicholas', 'Eric', 'Stephen'],
+    female: ['Mary', 'Patricia', 'Jennifer', 'Linda', 'Elizabeth', 'Barbara', 'Susan', 'Jessica', 'Sarah', 'Karen', 'Lisa', 'Nancy', 'Betty', 'Margaret', 'Sandra', 'Ashley', 'Kimberly', 'Emily', 'Donna', 'Michelle', 'Dorothy', 'Carol', 'Amanda', 'Melissa', 'Deborah', 'Stephanie', 'Rebecca', 'Sharon', 'Laura']
   },
   arabic: {
-    male: ['Ahmed', 'Mohammed', 'Omar', 'Ali', 'Hassan', 'Ibrahim', 'Mustafa', 'Youssef', 'Zaid', 'Kareem', 'Hamza', 'Fareed', 'Bilal'],
-    female: ['Fatima', 'Layla', 'Aisha', 'Amira', 'Zahra', 'Noor', 'Mariam', 'Salma', 'Habiba', 'Rania', 'Dina', 'Yasmeen']
+    male: ['Ahmed', 'Mohammed', 'Omar', 'Ali', 'Hassan', 'Ibrahim', 'Mustafa', 'Youssef', 'Zaid', 'Kareem', 'Hamza', 'Fareed', 'Bilal', 'Nasir', 'Khalid', 'Sami', 'Tarik', 'Faisal'],
+    female: ['Fatima', 'Layla', 'Aisha', 'Amira', 'Zahra', 'Noor', 'Mariam', 'Salma', 'Habiba', 'Rania', 'Dina', 'Yasmeen', 'Hana', 'Mona', 'Lina', 'Safa']
   },
   east_asian: {
-    male: ['Wei', 'Li', 'Min', 'Hiroshi', 'Kenji', 'Jae', 'Sang', 'Takumi', 'Yuki', 'Chen', 'Bo', 'Jun', 'Ji'],
-    female: ['Mei', 'Lin', 'Sakura', 'Hana', 'Ji-won', 'Su-bin', 'Yuna', 'Aimi', 'Xia', 'Fan', 'Ying']
+    male: ['Wei', 'Li', 'Min', 'Hiroshi', 'Kenji', 'Jae', 'Sang', 'Takumi', 'Yuki', 'Chen', 'Bo', 'Jun', 'Ji', 'Minsu', 'Hyun', 'Kaito', 'Sora', 'Ren'],
+    female: ['Mei', 'Lin', 'Sakura', 'Hana', 'Ji-won', 'Su-bin', 'Yuna', 'Aimi', 'Xia', 'Fan', 'Ying', 'Momo', 'Rin', 'Hina', 'Seo-yeon']
   }
 };
 

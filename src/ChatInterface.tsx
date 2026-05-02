@@ -255,17 +255,22 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
       counts[r.id.toLowerCase()] = r.userCount || 0;
     });
 
-    // Add online real users (if not handled by server userCount)
-    // Actually server userCount should be the source for real users.
-    
     // Add dummy users (they are always local)
     dummyUsers.forEach(u => {
       const roomKey = (u.currentRoom || 'lobby').toLowerCase();
       counts[roomKey] = (counts[roomKey] || 0) + 1;
     });
     
+    // For General Lobby, we want to show the TOTAL global count (Real + Dummies)
+    // as it represents the overall community
+    counts['lobby'] = onlineUsers.length + dummyUsers.length + 1; // +1 for the user themselves if not in onlineUsers
+    
+    // Check if user is already in onlineUsers to avoid double counting
+    const isUserInList = onlineUsers.some(u => u.id === user.id);
+    counts['lobby'] = onlineUsers.length + dummyUsers.length + (isUserInList ? 0 : 1);
+
     return counts;
-  }, [rooms, dummyUsers]);
+  }, [rooms, dummyUsers, onlineUsers, user.id]);
 
   const currentRoomData = rooms.find(r => r.id === currentRoom);
   const currentChatName = activePrivateChat 
@@ -377,7 +382,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                 if (tab === 'Messages') count = Object.keys(privateThreads).length;
                 if (tab === 'Rooms') count = rooms.length;
                 if (tab === 'People') {
-                  count = [...onlineUsers, ...dummyUsers].filter(u => 
+                  // Create a comprehensive list including the current user
+                  const allUsers = [...onlineUsers, ...dummyUsers];
+                  const isSelfInList = allUsers.some(u => u.id === user.id);
+                  const finalUserList = isSelfInList ? allUsers : [...allUsers, { id: user.id, nickname: user.nickname, gender: user.gender, currentRoom }];
+
+                  count = finalUserList.filter(u => 
                     currentRoom === 'lobby' ||
                     (u.currentRoom?.toLowerCase() === currentRoom.toLowerCase()) || 
                     (u.id === user.id)
@@ -514,72 +524,83 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                       </div>
 
                       <div className="space-y-1">
-                        {[...onlineUsers, ...dummyUsers]
-                          .filter(u => 
-                            currentRoom === 'lobby' ||
-                            (u.currentRoom?.toLowerCase() === currentRoom.toLowerCase()) || 
-                            (u.id === user.id)
-                          )
-                          .sort((a, b) => {
-                            let comparison = 0;
-                            if (peopleSortBy === 'alphabet') {
-                              comparison = a.nickname.localeCompare(b.nickname);
-                            } else {
-                              comparison = (a.gender || '').localeCompare(b.gender || '');
-                            }
-                            return peopleSortOrder === 'asc' ? comparison : -comparison;
-                          })
-                          .map(u => (
-                          <div 
-                            key={u.id} 
-                            className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-surface-hover transition-all group"
-                          >
-                              <button 
-                                onClick={() => {
-                                  setActivePrivateChat(u.id);
-                                  setMobileSidebarOpen(false);
-                                }}
-                                className="flex items-center gap-3 flex-1 text-left"
-                              >
-                                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black uppercase tracking-widest shadow-sm ${
-                                   u.gender === 'Male' ? 'bg-blue-500 text-white' :
-                                   u.gender === 'Female' ? 'bg-pink-500 text-white' :
-                                   u.gender === 'Non-binary' ? 'bg-indigo-500 text-white' :
-                                   'bg-slate-500 text-white'
-                                 }`}>
-                                    {u.gender === 'Male' && <Mars size={16} />}
-                                    {u.gender === 'Female' && <Venus size={16} />}
-                                    {u.gender === 'Non-binary' && <span>NB</span>}
-                                    {(u.gender === 'Prefer not to say' || u.gender === 'Other' || !u.gender) && <span>P</span>}
-                                </div>
-                                <div>
-                                   <div className="flex items-center gap-2">
-                                     <p className="text-xs font-bold tracking-tight text-text">{u.nickname}</p>
-                                     {u.isDND && <BellOff size={12} className="text-orange-500 fill-orange-500/10" title="DND Enabled" />}
-                                     {blockedUsers.has(u.id) && <Shield size={12} className="text-red-500" title="Restricted" />}
-                                   </div>
-                                   <p className="text-[9px] text-text-muted uppercase font-black tracking-widest">{u.gender || 'Private'}</p>
-                                </div>
-                             </button>
-                             
-                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <button 
-                                  onClick={() => blockedUsers.has(u.id) ? handleUnblock(u.id) : handleBlock(u.id)}
-                                  className={`p-1.5 rounded-lg transition-colors ${blockedUsers.has(u.id) ? 'bg-red-500/10 text-red-500' : 'bg-surface-hover text-text-muted hover:text-text'}`}
-                                  title={blockedUsers.has(u.id) ? "Unrestrict" : "Restrict"}
-                                >
-                                   <Shield size={12} />
-                                </button>
+                        {(() => {
+                           const allUsers = [...onlineUsers, ...dummyUsers];
+                           const isSelfInList = allUsers.some(u => u.id === user.id);
+                           const finalUserList = isSelfInList ? allUsers : [...allUsers, { id: user.id, nickname: user.nickname, gender: user.gender, currentRoom }];
+                           
+                           return finalUserList
+                            .filter(u => 
+                              currentRoom === 'lobby' ||
+                              (u.currentRoom?.toLowerCase() === currentRoom.toLowerCase()) || 
+                              (u.id === user.id)
+                            )
+                            .sort((a, b) => {
+                              let comparison = 0;
+                              if (peopleSortBy === 'alphabet') {
+                                comparison = a.nickname.localeCompare(b.nickname);
+                              } else {
+                                comparison = (a.gender || '').localeCompare(b.gender || '');
+                              }
+                              return peopleSortOrder === 'asc' ? comparison : -comparison;
+                            })
+                            .map(u => (
+                            <div 
+                              key={u.id} 
+                              className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-surface-hover transition-all group"
+                            >
                                 <button 
-                                  onClick={() => handleReport(u.id)}
-                                  className="p-1.5 rounded-lg bg-surface-hover text-text-muted hover:text-red-500 hover:bg-red-500/10 transition-all"
-                                  title="Report"
+                                  onClick={() => {
+                                    if (u.id === user.id) return;
+                                    setActivePrivateChat(u.id);
+                                    setMobileSidebarOpen(false);
+                                  }}
+                                  className="flex items-center gap-3 flex-1 text-left"
                                 >
-                                   <ShieldAlert size={12} />
-                                </button>
-                             </div>
-                          </div>
-                        ))}
+                                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black uppercase tracking-widest shadow-sm ${
+                                     u.gender === 'Male' ? 'bg-blue-500 text-white' :
+                                     u.gender === 'Female' ? 'bg-pink-500 text-white' :
+                                     u.gender === 'Non-binary' ? 'bg-indigo-500 text-white' :
+                                     'bg-slate-500 text-white'
+                                   }`}>
+                                      {u.gender === 'Male' && <Mars size={16} />}
+                                      {u.gender === 'Female' && <Venus size={16} />}
+                                      {u.gender === 'Non-binary' && <span>NB</span>}
+                                      {(u.gender === 'Prefer not to say' || u.gender === 'Other' || !u.gender) && <span>P</span>}
+                                  </div>
+                                  <div>
+                                     <div className="flex items-center gap-2">
+                                       <p className={`text-xs font-bold tracking-tight ${u.id === user.id ? 'text-brand' : 'text-text'}`}>
+                                         {u.nickname} {u.id === user.id && '(You)'}
+                                       </p>
+                                       {u.isDND && <BellOff size={12} className="text-orange-500 fill-orange-500/10" title="DND Enabled" />}
+                                       {blockedUsers.has(u.id) && <Shield size={12} className="text-red-500" title="Restricted" />}
+                                     </div>
+                                     <p className="text-[9px] text-text-muted uppercase font-black tracking-widest">{u.gender || 'Private'}</p>
+                                  </div>
+                               </button>
+                               
+                               {u.id !== user.id && (
+                                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <button 
+                                      onClick={() => blockedUsers.has(u.id) ? handleUnblock(u.id) : handleBlock(u.id)}
+                                      className={`p-1.5 rounded-lg transition-colors ${blockedUsers.has(u.id) ? 'bg-red-500/10 text-red-500' : 'bg-surface-hover text-text-muted hover:text-text'}`}
+                                      title={blockedUsers.has(u.id) ? "Unrestrict" : "Restrict"}
+                                    >
+                                       <Shield size={12} />
+                                    </button>
+                                    <button 
+                                      onClick={() => handleReport(u.id)}
+                                      className="p-1.5 rounded-lg bg-surface-hover text-text-muted hover:text-red-500 hover:bg-red-500/10 transition-all"
+                                      title="Report"
+                                    >
+                                       <ShieldAlert size={12} />
+                                    </button>
+                                 </div>
+                               )}
+                            </div>
+                          ));
+                        })()}
                       </div>
                     </div>
                  )}
