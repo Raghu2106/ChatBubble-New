@@ -316,7 +316,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
       </header>
 
       {/* MAIN LAYOUT CONTENT */}
-      <div className="flex-1 flex overflow-hidden md:px-6 md:py-6 gap-6 relative">
+      <div className="flex-1 flex overflow-hidden md:px-4 md:py-3 gap-3 relative">
         
         {/* Mobile Sidebar Overlay */}
         <AnimatePresence>
@@ -333,10 +333,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
 
         {/* LEFT SIDEBAR CATEGORIES */}
         <aside className={`
-          fixed inset-y-0 left-0 top-10 md:static md:w-64 flex flex-col gap-2 flex-shrink-0 z-40 transition-transform duration-300 ease-in-out
+          fixed inset-y-0 left-0 top-10 md:static md:w-60 flex flex-col gap-2 flex-shrink-0 z-40 transition-transform duration-300 ease-in-out
           bg-surface md:bg-transparent p-3 md:p-0 shadow-2xl md:shadow-none
           ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-          w-[80%] sm:w-64
+          w-[75%] sm:w-60
         `}>
            {/* Sidebar Close button for mobile */}
            <div className="flex items-center justify-between md:hidden mb-1">
@@ -380,7 +380,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
 
            {/* Content List Card */}
            <div className="flex-1 bg-surface rounded-[2rem] border border-border shadow-sm flex flex-col overflow-hidden">
-              <div className="flex-1 overflow-y-auto p-4 space-y-6">
+              <div className="flex-1 overflow-y-auto min-h-0 p-4 space-y-6">
                  {activeTab === 'Rooms' && (
                    <div className="space-y-6">
                      {/* THE LOBBY - SPECIAL ITEM */}
@@ -657,9 +657,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         {/* CENTER CHAT DISPLAY WINDOW */}
         <main className="flex-1 bg-surface md:rounded-[2.5rem] border-x md:border border-border flex flex-col overflow-hidden relative shadow-sm z-10 w-full">
            {/* Window Header */}
-           <div className="p-4 md:p-6 flex items-center gap-4 border-b border-border bg-surface-hover/20">
-              <div className="w-12 h-12 bg-brand/10 rounded-2xl flex items-center justify-center border border-brand/5">
-                 <MessageSquare size={24} className="text-brand" />
+           <div className="p-3 md:p-4 flex items-center gap-3 border-b border-border bg-surface-hover/20">
+              <div className="w-10 h-10 bg-brand/10 rounded-xl flex items-center justify-center border border-brand/5">
+                 <MessageSquare size={20} className="text-brand" />
               </div>
               <div>
                  <div className="flex items-center gap-2">
@@ -677,14 +677,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
            </div>
 
            {/* Message Buffer Flow */}
-           <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6">
-              <div className="flex justify-center mb-8">
-                 <div className="bg-border/30 px-4 py-1.5 rounded-full text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] border border-border">
+           <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0 p-4 space-y-4">
+              <div className="flex justify-center mb-6">
+                 <div className="bg-border/30 px-3 py-1.5 rounded-full text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] border border-border">
                     {currentRoom === 'lobby' ? 'Welcome to General Lobby' : `Welcome to ${currentChatName}`}
                  </div>
               </div>
 
-              <div className="bg-brand/5 border border-brand/10 p-5 rounded-2xl mb-8 mx-auto max-w-[90%]">
+              <div className="bg-brand/5 border border-brand/10 p-4 rounded-xl mb-6 mx-auto max-w-[90%]">
                  <p className="text-[11px] text-brand/60 text-center leading-relaxed font-medium">
                    Please be respectful. Treat others kindly and keep conversations appropriate. Indecent behavior can be anonymously reported. 
                    <br/><br/>
@@ -699,7 +699,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
               </div>
 
                {((activePrivateChat ? (privateThreads[activePrivateChat] || []) : messages) || []).length === 0 && (
-                 <div className="flex flex-col items-center justify-center py-20 opacity-40 select-none pointer-events-none">
+                 <div className="flex flex-col items-center justify-center py-10 opacity-30 select-none pointer-events-none">
                    <div className="w-16 h-16 bg-brand/10 rounded-full flex items-center justify-center mb-4">
                      <MessageSquare size={32} className="text-brand" />
                    </div>
@@ -718,7 +718,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                         {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                    </div>
-                   <div className={`max-w-[80%] px-5 py-3 rounded-2xl text-sm leading-relaxed font-medium shadow-sm transition-all ${
+                   <div className={`max-w-[80%] px-4 py-2 rounded-xl text-sm leading-relaxed font-medium shadow-sm transition-all ${
                      msg.senderId === user.id 
                        ? 'bg-brand text-white self-end rounded-tr-none' 
                        : 'bg-bg/50 text-text self-start rounded-tl-none border border-border'
@@ -730,7 +730,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
            </div>
 
            {/* Message Input Container */}
-           <div className="p-6 pt-0">
+           <div className="p-4 pt-0">
               {error && (
                 <div className="mb-2 text-center animate-in fade-in slide-in-from-top-2">
                    <span className="text-[10px] font-black text-red-500 uppercase tracking-widest bg-red-500/10 px-3 py-1 rounded-full border border-red-500/20">
@@ -755,14 +755,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                         if (error) setError(null);
                       }}
                       placeholder={`Message ${currentChatName}...`} 
-                      className="w-full bg-bg/50 rounded-xl py-4 px-6 text-sm focus:outline-none border border-border focus:border-brand transition-all font-medium placeholder:text-text-muted/30 shadow-inner"
+                      className="w-full bg-bg/50 rounded-xl py-3 px-5 text-sm focus:outline-none border border-border focus:border-brand transition-all font-medium placeholder:text-text-muted/30 shadow-inner"
                     />
                  </div>
                  <div className="relative" ref={emojiPickerRef}>
                     <button 
                       type="button"
                       onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                      className={`w-14 h-14 rounded-xl flex items-center justify-center transition-all border ${showEmojiPicker ? 'bg-brand/10 border-brand/20 text-brand' : 'bg-surface border-border text-text-muted hover:text-brand hover:border-brand/30 shadow-sm'}`}
+                      className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all border ${showEmojiPicker ? 'bg-brand/10 border-brand/20 text-brand' : 'bg-surface border-border text-text-muted hover:text-brand hover:border-brand/30 shadow-sm'}`}
                       title="Add emoji"
                     >
                       <Smile size={24} strokeWidth={2} />

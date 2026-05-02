@@ -65,7 +65,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-bg overflow-x-hidden relative flex flex-col">
+    <div className="h-dvh bg-bg overflow-hidden relative flex flex-col">
       <GlobalAds />
       
       {/* GLOBAL TOP AD SLOT */}
@@ -78,20 +78,20 @@ export default function App() {
         </div>
       </div>
 
-      <div className="flex flex-1 relative overflow-hidden h-full">
+      <div className="flex flex-1 relative overflow-hidden">
         {/* GLOBAL LEFT SKYSCRAPER */}
         <aside className="hidden lg:flex w-[165px] shrink-0 items-start justify-center py-2 border-r border-border bg-surface/5">
           <AdUnit id="1792c7f73f1077081cad03590a1a650d" format="160x600" className="sticky top-2" />
         </aside>
 
         {/* MAIN CONTENT AREA */}
-        <main className="flex-1 relative overflow-hidden flex flex-col h-full">
+        <main className="flex-1 relative overflow-hidden flex flex-col">
           {step === 'chat' && user ? (
-            <div className="flex-1 h-full">
+            <div className="flex-1 overflow-hidden">
               <ChatInterface user={user} onExit={handleExit} error={error} setError={setError} />
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto h-full">
+            <div className="flex-1 overflow-y-auto min-h-0 h-full">
               <LandingPage onStart={() => setStep('entry')} />
               {step === 'entry' && (
                 <EntryScreen onJoin={handleJoin} onClose={() => setStep('landing')} error={error} />
