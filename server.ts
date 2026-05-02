@@ -144,8 +144,7 @@ async function startServer() {
       // console.log(`Event: ${event}`, args);
     });
 
-    // Custom entry signal
-    socket.on('register' as any, (data: { nickname: string, gender?: any, interests?: string[] }) => {
+    socket.on('register' as any, (data: { userId?: string, nickname: string, gender?: any, interests?: string[] }) => {
       const cleanNickname = (data.nickname || '').trim();
       
       if (!cleanNickname) {
@@ -153,6 +152,22 @@ async function startServer() {
         return;
       }
 
+      // If they provided a userId, they are trying to resume
+      if (data.userId && users.has(data.userId)) {
+        const existingUser = users.get(data.userId)!;
+        // Verify nickname matches (security check)
+        if (existingUser.nickname === cleanNickname) {
+          console.log(`User ${cleanNickname} resumed session.`);
+          if (userTimers.has(data.userId)) {
+            clearTimeout(userTimers.get(data.userId)!);
+            userTimers.delete(data.userId);
+          }
+          sessions.set(socket.id, data.userId);
+          socket.emit('registration:success' as any, { userId: data.userId });
+          return;
+        }
+      }
+      
       // Check if nickname is already taken across all users
       const allUsers = Array.from(users.values());
       const existingUser = allUsers.find(u => 
@@ -160,15 +175,17 @@ async function startServer() {
       );
 
       if (existingUser) {
-        // If the existing user is in grace period (disconnected), we can take the name
+        // If the existing user is in grace period (disconnected), we can take the name or if it's the SAME person resuming
         const isActive = Array.from(sessions.values()).includes(existingUser.id);
         if (isActive) {
           console.log(`Registration failed: Nickname "${cleanNickname}" is actively in use.`);
           socket.emit('error', 'This nickname is already in use. Please choose another one.');
           return;
         } else {
-          // Evict the stale user
-          console.log(`Evicting stale user ${existingUser.nickname} for new registration.`);
+          // If NOT active, it's either a different person trying to take an abandoned name
+          // OR the same person reconnecting without their userId stored.
+          // We allow reuse of abandoned names immediately if NOT active.
+          console.log(`Reusing name ${existingUser.nickname} which was in grace period.`);
           if (userTimers.has(existingUser.id)) {
             clearTimeout(userTimers.get(existingUser.id)!);
             userTimers.delete(existingUser.id);
@@ -395,24 +412,28 @@ async function startServer() {
         if (user) {
           sessions.delete(socket.id);
           
-          // Immediate removal since "reload = expired"
-          if (user.currentRoom) {
-            const roomObj = rooms.find(rm => rm.id === user.currentRoom);
-            if (roomObj) {
-              roomObj.userCount = Math.max(0, roomObj.userCount - 1);
-              io.emit('rooms:updated' as any, rooms);
+          // Small grace period (30s) before total removal to handle blips
+          console.log(`User ${user.nickname} disconnected. Starting 30s grace period...`);
+          
+          const timeout = setTimeout(() => {
+            const stillActive = Array.from(sessions.values()).includes(userId);
+            if (!stillActive) {
+              if (user.currentRoom) {
+                const roomObj = rooms.find(rm => rm.id === user.currentRoom);
+                if (roomObj) {
+                  roomObj.userCount = Math.max(0, roomObj.userCount - 1);
+                  io.emit('rooms:updated' as any, rooms);
+                }
+              }
+              
+              io.emit('user:left', user.id);
+              users.delete(userId);
+              userTimers.delete(userId);
+              console.log(`User ${user.nickname} purged after grace period.`);
             }
-          }
+          }, 30000);
           
-          io.emit('user:left', user.id);
-          
-          if (userTimers.has(userId)) {
-            clearTimeout(userTimers.get(userId)!);
-            userTimers.delete(userId);
-          }
-          
-          users.delete(userId);
-          console.log(`User ${user.nickname} removed immediately on disconnect.`);
+          userTimers.set(userId, timeout);
         }
       }
     });

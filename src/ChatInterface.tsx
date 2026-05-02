@@ -13,13 +13,14 @@ import { ChatMessage, Room, Gender } from './types';
 import { AdUnit } from './components/AdUnit';
 import { useDummyUsers } from './hooks/useDummyUsers';
 
+import { GifPicker } from './components/GifPicker';
+
 // Helper to sanitize message content and strip clickable links/HTML
 const formatChatMessage = (content: string) => {
-  // We can't easily strip all text that looks like a URL without potentially breaking normal chat,
-  // but we can ensure they aren't rendered as links.
-  // By default, React renders strings safely, so as long as we don't use 'linkify' or similar libraries,
-  // URLs won't be clickable unless we explicitly make them so.
-  // However, we can also strip anything that looks like an HTML tag for extra safety.
+  // Check if content is a direct GIF link from Giphy
+  if (content.includes('giphy.com/media/') || content.match(/\.(jpeg|jpg|gif|png)$/) != null) {
+    return content; // Return as is, we'll handle rendering below
+  }
   return content.replace(/<[^>]*>/g, '');
 };
 
@@ -43,7 +44,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   const [activeTab, setActiveTab] = useState<Tab>('Rooms');
   const dummyUsers = useDummyUsers();
   const [currentRoom, setCurrentRoom] = useState<string>('lobby');
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [roomMessages, setRoomMessages] = useState<Record<string, ChatMessage[]>>({});
   const [onlineUsers, setOnlineUsers] = useState<{ id: string; nickname: string; gender?: Gender; isDND?: boolean; currentRoom?: string }[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [collapsedCategories, setCollapsedCategories] = useState<string[]>([]);
@@ -55,13 +56,18 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   const [privateThreads, setPrivateThreads] = useState<Record<string, ChatMessage[]>>({});
   const [unreadThreads, setUnreadThreads] = useState<Set<string>>(new Set());
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showGifPicker, setShowGifPicker] = useState(false);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const gifPickerRef = useRef<HTMLDivElement>(null);
 
-  // Close emoji picker when clicking outside
+  // Close pickers when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
         setShowEmojiPicker(false);
+      }
+      if (gifPickerRef.current && !gifPickerRef.current.contains(event.target as Node)) {
+        setShowGifPicker(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -74,15 +80,21 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   
   // Clear all history on mount to be absolutely safe
   useEffect(() => {
-    setMessages([]);
+    setRoomMessages({});
     setPrivateThreads({});
     setUnreadThreads(new Set());
   }, []);
   
   const activePrivateChatRef = useRef(activePrivateChat);
+  const currentRoomRef = useRef(currentRoom);
+  
   useEffect(() => {
     activePrivateChatRef.current = activePrivateChat;
   }, [activePrivateChat]);
+
+  useEffect(() => {
+    currentRoomRef.current = currentRoom;
+  }, [currentRoom]);
 
   const [blockedUsers, setBlockedUsers] = useState<Set<string>>(new Set());
   const [globalStatuses, setGlobalStatuses] = useState<Record<string, { isDND?: boolean }>>({});
@@ -91,10 +103,16 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   const scrollRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
+    const onConnect = () => {
+      socket.emit('join:room', currentRoom);
+    };
+
+    socket.on('connect', onConnect);
     socket.on('room:message', (msg) => {
-      if (msg.roomId === currentRoom) {
-        setMessages(prev => [...prev, msg].slice(-100));
-      }
+      setRoomMessages(prev => ({
+        ...prev,
+        [msg.roomId]: [...(prev[msg.roomId] || []), msg].slice(-100)
+      }));
     });
 
     socket.on('private:message', (msg) => {
@@ -149,6 +167,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
     socket.emit('join:room', currentRoom);
 
     return () => {
+      socket.off('connect', onConnect);
       socket.off('room:message');
       socket.off('private:message');
       socket.off('users:list');
@@ -163,7 +182,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, activePrivateChat, privateThreads]);
+  }, [roomMessages, activePrivateChat, privateThreads, currentRoom]);
 
   useEffect(() => {
     if (activePrivateChat) {
@@ -190,6 +209,16 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
     setInputText('');
   };
 
+  const handleSendGif = (url: string) => {
+    setError(null);
+    if (activePrivateChat) {
+      socket.emit('send:private', { recipientId: activePrivateChat, content: url });
+    } else {
+      socket.emit('send:message', { roomId: currentRoom, content: url });
+    }
+    setShowGifPicker(false);
+  };
+
   const switchRoom = (roomId: string) => {
     if (activePrivateChat === null && roomId === currentRoom) {
       setMobileSidebarOpen(false);
@@ -197,7 +226,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
     }
     setCurrentRoom(roomId);
     setActivePrivateChat(null);
-    setMessages([]);
+    // Don't clear messages anymore, we use roomMessages dictionary
     socket.emit('join:room', roomId);
     setMobileSidebarOpen(false);
   };
@@ -760,7 +789,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                  </p>
               </div>
 
-               {((activePrivateChat ? (privateThreads[activePrivateChat] || []) : messages) || []).length === 0 && (
+               {((activePrivateChat ? (privateThreads[activePrivateChat] || []) : (roomMessages[currentRoom] || []))).length === 0 && (
                  <div className="flex flex-col items-center justify-center py-10 opacity-30 select-none pointer-events-none">
                    <div className="w-16 h-16 bg-brand/10 rounded-full flex items-center justify-center mb-4">
                      <MessageSquare size={32} className="text-brand" />
@@ -772,7 +801,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                  </div>
                )}
 
-              {((activePrivateChat ? privateThreads[activePrivateChat] : messages) || []).map((msg, idx) => (
+              {((activePrivateChat ? (privateThreads[activePrivateChat] || []) : (roomMessages[currentRoom] || []))).map((msg, idx) => (
                 <div key={msg.id} className="flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2">
                    <div className={`flex items-center gap-2 ${msg.senderId === user.id ? 'justify-end mr-4' : 'ml-4'}`}>
                       <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">{msg.senderName}</span>
@@ -785,7 +814,18 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                        ? 'bg-brand text-white self-end rounded-tr-none' 
                        : 'bg-bg/50 text-text self-start rounded-tl-none border border-border'
                    }`}>
-                     {formatChatMessage(msg.content)}
+                     {msg.content.includes('giphy.com/media/') || msg.content.match(/\.(jpeg|jpg|gif|png)$/) != null ? (
+                       <div className="py-1">
+                         <img 
+                           src={msg.content} 
+                           alt="GIF" 
+                           className="max-w-full rounded-lg shadow-sm" 
+                           referrerPolicy="no-referrer"
+                         />
+                       </div>
+                     ) : (
+                       formatChatMessage(msg.content)
+                     )}
                    </div>
                 </div>
               ))}
@@ -844,6 +884,35 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                              theme={Theme.LIGHT}
                              width={320}
                              height={400}
+                           />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                 </div>
+                 <div className="relative" ref={gifPickerRef}>
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setShowGifPicker(!showGifPicker);
+                        setShowEmojiPicker(false);
+                      }}
+                      className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all border ${showGifPicker ? 'bg-brand/10 border-brand/20 text-brand' : 'bg-surface border-border text-text-muted hover:text-brand hover:border-brand/30 shadow-sm'}`}
+                      title="Add GIF"
+                    >
+                      <Film size={24} strokeWidth={2} />
+                    </button>
+                    
+                    <AnimatePresence>
+                      {showGifPicker && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          className="absolute bottom-full right-0 mb-4 z-50"
+                        >
+                           <GifPicker 
+                             onSelect={handleSendGif}
+                             onClose={() => setShowGifPicker(false)}
                            />
                         </motion.div>
                       )}

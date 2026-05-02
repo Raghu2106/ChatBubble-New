@@ -18,10 +18,16 @@ const INACTIVITY_LIMIT = 60 * 60 * 1000; // 60 minutes
 const WARNING_DURATION = 60; // 60 seconds
 
 export default function App() {
-  const [step, setStep] = useState<'landing' | 'entry' | 'chat'>('landing');
+  const [step, setStep] = useState<'landing' | 'entry' | 'chat'>(() => {
+    const storedUser = localStorage.getItem('chat_user');
+    return storedUser ? 'chat' : 'landing';
+  });
   const stepRef = React.useRef(step);
   stepRef.current = step;
-  const [user, setUser] = useState<{ id: string; nickname: string; gender?: Gender; interests: string[] } | null>(null);
+  const [user, setUser] = useState<{ id: string; nickname: string; gender?: Gender; interests: string[] } | null>(() => {
+    const stored = localStorage.getItem('chat_user');
+    return stored ? JSON.parse(stored) : null;
+  });
   const [error, setError] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(window.location.pathname === '/admin');
   const lastResetRef = React.useRef(Date.now());
@@ -29,6 +35,30 @@ export default function App() {
   const [disconnectReason, setDisconnectReason] = useState<string | null>(null);
 
   const inactivityTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  // Persistence effect
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem('chat_user', JSON.stringify(user));
+      // Re-register if socket connects and we have a user (handles refresh)
+      const onConnect = () => {
+        socket.emit('register' as any, { 
+          userId: user.id === 'pending' ? undefined : user.id, 
+          nickname: user.nickname, 
+          gender: user.gender, 
+          interests: user.interests 
+        });
+      };
+      
+      if (socket.connected) onConnect();
+      socket.on('connect', onConnect);
+      return () => {
+        socket.off('connect', onConnect);
+      }
+    } else {
+      localStorage.removeItem('chat_user');
+    }
+  }, [user]);
 
   const resetInactivityTimer = React.useCallback((force = false) => {
     // Only block if modal is showing and we aren't forcing a reset (like when clicking 'Stay')
