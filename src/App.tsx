@@ -14,7 +14,7 @@ import { Shield } from 'lucide-react';
 import { GlobalAds, AdUnit } from './components/AdUnit';
 import { SessionTimeoutModal } from './components/SessionTimeoutModal';
 
-const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 minutes
+const INACTIVITY_LIMIT = 60 * 60 * 1000; // 60 minutes
 const WARNING_DURATION = 60; // 60 seconds
 
 export default function App() {

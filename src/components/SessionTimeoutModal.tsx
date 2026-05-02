@@ -39,14 +39,8 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({ onStay
         className="bg-surface w-full max-w-md rounded-[2rem] border border-border shadow-2xl overflow-hidden"
       >
         <div className="p-8 text-center">
-          <div className="flex justify-center items-center gap-4 mb-6">
-            <div className="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center text-white font-black text-xl shadow-lg shadow-red-500/20">
-              OUT
-            </div>
+          <div className="flex justify-center items-center mb-6">
             <h2 className="text-2xl font-bold text-text">Session Timeout</h2>
-            <div className="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center text-white font-black text-xl shadow-lg shadow-red-500/20">
-              OUT
-            </div>
           </div>
 
           <div className="h-px bg-border/50 mb-8" />
