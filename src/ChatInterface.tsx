@@ -11,6 +11,7 @@ import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 import { socket } from './socket';
 import { ChatMessage, Room, Gender } from './types';
 import { AdUnit } from './components/AdUnit';
+import { useDummyUsers } from './hooks/useDummyUsers';
 
 // Helper to sanitize message content and strip clickable links/HTML
 const formatChatMessage = (content: string) => {
@@ -40,6 +41,7 @@ const CATEGORIES = [
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, error, setError }) => {
   const [activeTab, setActiveTab] = useState<Tab>('Rooms');
+  const dummyUsers = useDummyUsers();
   const [currentRoom, setCurrentRoom] = useState<string>('lobby');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<{ id: string; nickname: string; gender?: Gender; isDND?: boolean; currentRoom?: string }[]>([]);
@@ -245,9 +247,20 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
     socket.emit('report:user', userId);
   };
 
+  const roomCounts = React.useMemo(() => {
+    const counts: Record<string, number> = {};
+    rooms.forEach(r => {
+      counts[r.id] = r.userCount || 0;
+    });
+    dummyUsers.forEach(u => {
+      counts[u.currentRoom] = (counts[u.currentRoom] || 0) + 1;
+    });
+    return counts;
+  }, [rooms, dummyUsers]);
+
   const currentRoomData = rooms.find(r => r.id === currentRoom);
   const currentChatName = activePrivateChat 
-    ? onlineUsers.find(u => u.id === activePrivateChat)?.nickname || 
+    ? [...onlineUsers, ...dummyUsers].find(u => u.id === activePrivateChat)?.nickname || 
       (privateThreads[activePrivateChat]?.length > 0
         ? (privateThreads[activePrivateChat][0].senderId === activePrivateChat 
             ? privateThreads[activePrivateChat][0].senderName 
@@ -353,7 +366,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
               {(['Rooms', 'Messages', 'People'] as Tab[]).map(tab => {
                 let count = 0;
                 if (tab === 'Messages') count = Object.keys(privateThreads).length;
-                if (tab === 'People') count = onlineUsers.length;
+                if (tab === 'People') count = onlineUsers.length + dummyUsers.length;
                 const hasUnread = tab === 'Messages' && unreadThreads.size > 0;
 
                 return (
@@ -399,7 +412,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                            <div className="flex items-center gap-1.5">
                               <div className={`w-1 h-1 rounded-full ${currentRoom === 'lobby' ? 'bg-brand' : 'bg-slate-300'}`} />
                               <span className="text-[9px] font-black opacity-60 font-mono">
-                                {rooms.find(r => r.id === 'lobby')?.userCount || 0}
+                                {roomCounts['lobby'] || 0}
                               </span>
                            </div>
                         </button>
@@ -450,7 +463,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                                      </div>
                                      <div className="flex items-center gap-1.5">
                                         <div className={`w-1 h-1 rounded-full ${currentRoom === room.id ? 'bg-brand' : 'bg-slate-300'}`} />
-                                        <span className="text-[9px] font-black opacity-60 font-mono text-text-muted">{room.userCount || 0}</span>
+                                        <span className="text-[9px] font-black opacity-60 font-mono text-text-muted">{roomCounts[room.id] || 0}</span>
                                      </div>
                                   </button>
                                 ))}
@@ -485,7 +498,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                       </div>
 
                       <div className="space-y-1">
-                        {onlineUsers
+                        {[...onlineUsers, ...dummyUsers]
                           .sort((a, b) => {
                             let comparison = 0;
                             if (peopleSortBy === 'alphabet') {
@@ -563,7 +576,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                         Object.keys(privateThreads).map(otherId => {
                           const thread = privateThreads[otherId];
                           const lastMsg = thread[thread.length - 1];
-                          const otherUser = onlineUsers.find(u => u.id === otherId);
+                          const otherUser = [...onlineUsers, ...dummyUsers].find(u => u.id === otherId);
                           
                           // Fallback to name from the last message sent by them or to them
                           const displayName = otherUser?.nickname || 
