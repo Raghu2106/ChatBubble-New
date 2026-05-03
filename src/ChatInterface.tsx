@@ -8,6 +8,7 @@ import {
   Smile
 } from 'lucide-react';
 import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
+import { Logo } from './components/Logo';
 import { socket } from './socket';
 import { ChatMessage, Room, Gender } from './types';
 import { AdUnit } from './components/AdUnit';
@@ -338,10 +339,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
             <MoreVertical size={18} className={mobileSidebarOpen ? 'rotate-90 transition-transform' : 'transition-transform'} />
           </button>
           <div className="flex items-center gap-1.5">
-            <div className="w-6 h-6 bg-brand/10 rounded-lg flex items-center justify-center shrink-0">
-              <MessageSquare size={14} className="text-brand" />
-            </div>
-            <h1 className="text-base md:text-lg font-black tracking-tight text-text">ChatBubble</h1>
+            <Logo size="sm" />
           </div>
         </div>
 

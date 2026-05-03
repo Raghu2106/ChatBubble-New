@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Logo } from './components/Logo';
 import { Sparkles, X, Shield, ArrowRight } from 'lucide-react';
 import { Gender } from './types';
 
@@ -47,7 +48,7 @@ export const EntryScreen: React.FC<EntryScreenProps> = ({ onJoin, onClose, error
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-1">
-            <Sparkles className="text-brand" size={20} />
+            <Logo size="sm" iconOnly />
             <h2 className="text-xl font-black text-text tracking-tight">Join the Conversation</h2>
           </div>
           <p className="text-text-muted text-xs font-medium">Pick a name and start talking to new people</p>

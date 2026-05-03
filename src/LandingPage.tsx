@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Users, MessageCircle, Shield } from 'lucide-react';
 import { PolicyModal } from './components/PolicyModal';
+import { Logo } from './components/Logo';
 import { 
   PrivacyPolicyContent, 
   TermsOfServiceContent, 
@@ -152,12 +153,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
       {/* Footer */}
       <footer className="w-full py-8 border-t border-border bg-surface/50 backdrop-blur-md relative z-10">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-brand/10 rounded-lg flex items-center justify-center">
-              <MessageCircle size={16} className="text-brand" />
-            </div>
-            <span className="font-black tracking-tight text-text">ChatBubble</span>
-          </div>
+          <Logo size="md" />
 
           <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-4 text-[13px] font-bold text-text-muted">
             <button onClick={() => setModalType('about')} className="hover:text-brand transition-colors">About Us</button>
