@@ -49,6 +49,8 @@ export interface ServerToClientEvents {
   'error': (msg: string) => void;
   'ban': (durationHours: number) => void;
   'status:update': (data: { userId: string; isDND: boolean }) => void;
+  'restriction:update': (data: { byUserId: string; status: 'restricted' | 'unrestricted' }) => void;
+  'user:reported': (data: { totalReports: number }) => void;
   'match:found': (data: { peerId: string; peerNickname: string; peerGender?: Gender }) => void;
   'match:left': () => void;
 }
@@ -291,6 +293,14 @@ async function startServer() {
       if (!targetUser.reports.has(reporterId)) {
         targetUser.reports.add(reporterId);
 
+        // Notify the reported user
+        const targetSocketId = Array.from(sessions.entries())
+          .find(([sid, uid]) => uid === targetUserId)?.[0];
+        
+        if (targetSocketId) {
+          io.to(targetSocketId).emit('user:reported', { totalReports: targetUser.reports.size });
+        }
+
         // 5 reports -> 30 minute ban
         if (targetUser.reports.size >= 5) {
           const unbanTime = Date.now() + (30 * 60 * 1000);
@@ -305,7 +315,10 @@ async function startServer() {
             const bannedSocket = io.sockets.sockets.get(bannedSocketId);
             if (bannedSocket) {
               bannedSocket.emit('ban', 0.5); // 0.5 hours = 30 mins
-              bannedSocket.disconnect();
+              // Small delay to ensure the event is sent before disconnection
+              setTimeout(() => {
+                bannedSocket.disconnect();
+              }, 1000);
             }
           }
         }
@@ -318,6 +331,13 @@ async function startServer() {
       const user = users.get(userId);
       if (user) {
         user.blockedUsers.add(targetUserId);
+        
+        // Notify the target user that they've been restricted
+        const targetSocketId = Array.from(sessions.entries())
+          .find(([sid, uid]) => uid === targetUserId)?.[0];
+        if (targetSocketId) {
+          io.to(targetSocketId).emit('restriction:update', { byUserId: userId, status: 'restricted' });
+        }
       }
     });
 
@@ -327,6 +347,13 @@ async function startServer() {
       const user = users.get(userId);
       if (user) {
         user.blockedUsers.delete(targetUserId);
+
+        // Notify the target user that they've been unrestricted
+        const targetSocketId = Array.from(sessions.entries())
+          .find(([sid, uid]) => uid === targetUserId)?.[0];
+        if (targetSocketId) {
+          io.to(targetSocketId).emit('restriction:update', { byUserId: userId, status: 'unrestricted' });
+        }
       }
     });
 

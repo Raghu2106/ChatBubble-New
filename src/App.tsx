@@ -66,6 +66,17 @@ export default function App() {
     if (isAdmin) return;
     socket.connect();
 
+    socket.on('connect', () => {
+      // If we already have a user and we are in the chat step, re-register automatically on reconnect
+      if (stepRef.current === 'chat' && user) {
+        socket.emit('register' as any, { 
+          nickname: user.nickname, 
+          gender: user.gender, 
+          interests: user.interests 
+        });
+      }
+    });
+
     socket.on('error', (msg) => {
       setError(msg);
       // If session expired, force logout regardless of current step
@@ -82,10 +93,16 @@ export default function App() {
       setStep('chat');
     });
 
+    socket.on('ban', (duration) => {
+      handleExit();
+      setDisconnectReason(`You have been reported by 5 users. According to the website policy, you will be restricted to use this site for the next 30 minutes.`);
+    });
+
     return () => {
       socket.disconnect();
       socket.off('error');
       socket.off('registration:success' as any);
+      socket.off('ban');
     };
   }, [isAdmin]);
 

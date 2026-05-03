@@ -93,20 +93,20 @@ export const EntryScreen: React.FC<EntryScreenProps> = ({ onJoin, onClose, error
 
           {/* Combined Checkbox */}
           <div className="pt-2">
-            <label className="flex items-center gap-3 p-4 bg-surface-hover rounded-xl border border-border cursor-pointer hover:bg-surface transition-all group">
+            <label className="flex items-center gap-3 p-4 bg-surface-hover rounded-xl border border-border cursor-pointer hover:bg-surface transition-all group focus-within:ring-2 focus-within:ring-brand focus-within:border-brand">
               <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
                 isAgreed ? 'bg-brand border-brand' : 'border-border'
-              }`}>
+              } group-focus-within:border-brand-dark`}>
                 {isAgreed && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
               </div>
               <input 
                 type="checkbox" 
-                className="hidden" 
+                className="sr-only" 
                 checked={isAgreed}
                 onChange={(e) => setIsAgreed(e.target.checked)}
               />
               <span className="text-[11px] text-text-muted font-medium leading-tight">
-                I am 18+ and agree to the <button type="button" onClick={(e) => { e.stopPropagation(); setShowLegal(true); }} className="text-brand font-bold hover:underline">Terms & Privacy Policy</button>
+                I am 18+ and agree to the <button type="button" onClick={(e) => { e.stopPropagation(); setShowLegal(true); }} className="text-brand font-bold hover:underline focus:outline-none focus:ring-1 focus:ring-brand focus:rounded-sm px-1">Terms & Privacy Policy</button>
               </span>
             </label>
           </div>
@@ -126,8 +126,11 @@ export const EntryScreen: React.FC<EntryScreenProps> = ({ onJoin, onClose, error
 
           <button
             type="submit"
-            disabled={!isFormValid}
-            className="w-full bg-brand hover:bg-brand-dark disabled:opacity-30 disabled:cursor-not-allowed text-white font-black py-4 rounded-xl shadow-lg shadow-brand/20 transition-all flex items-center justify-center gap-2 active:scale-95"
+            className={`w-full bg-brand hover:bg-brand-dark text-white font-black py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-95 focus:outline-none focus:ring-2 focus:ring-brand/50 focus:ring-offset-2 focus:ring-offset-surface ${
+              isFormValid 
+                ? 'shadow-brand/20' 
+                : 'opacity-30 cursor-not-allowed'
+            }`}
           >
             Join <ArrowRight size={16} />
           </button>

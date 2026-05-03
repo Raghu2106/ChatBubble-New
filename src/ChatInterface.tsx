@@ -47,6 +47,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   const [peopleSortOrder, setPeopleSortOrder] = useState<SortOrder>('asc');
   const [inputText, setInputText] = useState('');
   const [isDND, setIsDND] = useState(false);
+  const [showDNDToast, setShowDNDToast] = useState(false);
+  const [reportNotification, setReportNotification] = useState<{ visible: boolean; message: string; type: 'info' | 'warning' | 'success' } | null>(null);
   const [activePrivateChat, setActivePrivateChat] = useState<string | null>(null);
   const [privateThreads, setPrivateThreads] = useState<Record<string, ChatMessage[]>>({});
   const [unreadThreads, setUnreadThreads] = useState<Set<string>>(new Set());
@@ -87,17 +89,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   }, [currentRoom]);
 
   const [blockedUsers, setBlockedUsers] = useState<Set<string>>(new Set());
+  const [whoBlockedMe, setWhoBlockedMe] = useState<Set<string>>(new Set());
   const [globalStatuses, setGlobalStatuses] = useState<Record<string, { isDND?: boolean }>>({});
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
-    const onConnect = () => {
-      socket.emit('join:room', currentRoom);
-    };
-
-    socket.on('connect', onConnect);
     socket.on('room:message', (msg) => {
       setRoomMessages(prev => ({
         ...prev,
@@ -153,11 +151,38 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
       }));
     });
 
-    // Request initial list/counts explicitly
-    socket.emit('join:room', currentRoom);
+    socket.on('restriction:update' as any, ({ byUserId, status }: { byUserId: string, status: 'restricted' | 'unrestricted' }) => {
+      setWhoBlockedMe(prev => {
+        const next = new Set(prev);
+        if (status === 'restricted') next.add(byUserId);
+        else next.delete(byUserId);
+        return next;
+      });
+    });
+
+    socket.on('user:reported' as any, ({ totalReports }: { totalReports: number }) => {
+      if (totalReports >= 5) {
+        setReportNotification({ 
+          visible: true, 
+          message: `You have been reported by 5 users. According to the website policy, you will be restricted to use this site for the next 30 minutes`,
+          type: 'warning'
+        });
+      } else {
+        setReportNotification({ 
+          visible: true, 
+          message: `You have been reported by a user for violating site policies.`,
+          type: 'info'
+        });
+        setTimeout(() => setReportNotification(null), 5000);
+      }
+    });
+
+    // Request initial list/counts explicitly if we are already "registered" (have a real ID)
+    if (user.id !== 'pending') {
+      socket.emit('join:room', currentRoom);
+    }
 
     return () => {
-      socket.off('connect', onConnect);
       socket.off('room:message');
       socket.off('private:message');
       socket.off('users:list');
@@ -165,8 +190,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
       socket.off('user:left');
       socket.off('rooms:updated' as any);
       socket.off('status:update');
+      socket.off('restriction:update' as any);
+      socket.off('user:reported' as any);
     };
-  }, [currentRoom]);
+  }, [currentRoom, user.id]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -240,6 +267,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
     const newVal = !isDND;
     setIsDND(newVal);
     socket.emit('toggle:dnd', newVal);
+    if (newVal) {
+      setShowDNDToast(true);
+      setTimeout(() => setShowDNDToast(false), 5000);
+    } else {
+      setShowDNDToast(false);
+    }
   };
 
   const toggleCategory = (id: string) => {
@@ -279,6 +312,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
 
   const handleReport = (userId: string) => {
     socket.emit('report:user', userId);
+    setReportNotification({
+      visible: true,
+      message: 'You have reported this user.',
+      type: 'success'
+    });
+    setTimeout(() => setReportNotification(null), 3000);
   };
 
   const roomCounts = React.useMemo(() => {
@@ -346,13 +385,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         {/* Centered Welcome Message - Only show on desktop */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none hidden md:flex">
           <span className="text-xs font-medium text-text-muted pointer-events-auto">
-            Welcome, <span className="text-text font-black">{user.nickname}</span>
+            Welcome, <span className="text-text-highlight font-black">{user.nickname}</span>
           </span>
         </div>
 
         <div className="flex items-center gap-2 md:gap-6">
           <div className="flex items-center gap-1.5 md:gap-2">
-             <span className="text-[9px] font-black uppercase text-text-muted tracking-widest flex items-center gap-1">
+             <span className="text-[9px] font-black uppercase text-text-highlight tracking-widest flex items-center gap-1">
                {isDND ? <BellOff size={10} /> : <Bell size={10} />} DND
              </span>
              <button 
@@ -365,7 +404,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
           <div className="flex items-center">
             <button 
               onClick={onExit}
-              className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 bg-surface/50 hover:bg-red-500/10 text-text-muted hover:text-red-500 rounded-lg transition-all font-black text-[9px] uppercase tracking-widest border border-border hover:border-red-500/20"
+              className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 bg-surface/50 hover:bg-red-500/10 text-text-highlight hover:text-red-500 rounded-lg transition-all font-black text-[9px] uppercase tracking-widest border border-border hover:border-red-500/20"
             >
               <DoorOpen size={12} />
               <span>Exit</span>
@@ -465,7 +504,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                         >
                            <div className="flex items-center gap-3">
                              <MessageSquare size={16} className={currentRoom === 'lobby' ? 'text-brand' : 'opacity-40'} />
-                             <span className="text-xs font-bold truncate max-w-[140px] tracking-tight">General Lobby</span>
+                             <span className="text-xs font-bold truncate max-w-[140px] tracking-tight text-text-highlight">General Lobby</span>
                            </div>
                            <div className="flex items-center gap-1.5 shrink-0">
                               <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${currentRoom === 'lobby' ? 'bg-white' : 'bg-brand'}`} />
@@ -519,7 +558,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                                   >
                                      <div className="flex items-center gap-3">
                                         <Hash size={16} className={currentRoom === room.id ? 'text-brand' : 'opacity-40'} />
-                                        <span className="text-xs font-bold truncate max-w-[140px] tracking-tight text-text">{room.name}</span>
+                                        <span className="text-xs font-bold truncate max-w-[140px] tracking-tight text-text-highlight">{room.name}</span>
                                      </div>
                                      <div className="flex items-center gap-1.5 shrink-0">
                                         <div className={`w-1 h-1 rounded-full ${currentRoom === room.id ? 'bg-brand' : 'bg-slate-300'}`} />
@@ -608,7 +647,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                                   </div>
                                   <div>
                                      <div className="flex items-center gap-2">
-                                       <p className={`text-xs font-bold tracking-tight ${u.id === user.id ? 'text-brand' : 'text-text'}`}>
+                                       <p className="text-xs font-bold tracking-tight text-text-highlight">
                                          {u.nickname} {u.id === user.id && '(You)'}
                                        </p>
                                        {u.isDND && <BellOff size={12} className="text-orange-500 fill-orange-500/10" title="DND Enabled" />}
@@ -698,7 +737,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                                   <div className="flex-1 min-w-0">
                                      <div className="flex justify-between items-center">
                                         <div className="flex items-center gap-1.5 min-w-0">
-                                          <p className={`text-xs font-bold tracking-tight truncate ${unreadThreads.has(otherId) ? 'text-brand' : 'text-text'}`}>{displayName}</p>
+                                          <p className="text-xs font-bold tracking-tight truncate text-text-highlight">{displayName}</p>
                                           {globalStatuses[otherId]?.isDND && <BellOff size={11} className="text-orange-500 shrink-0" />}
                                           {blockedUsers.has(otherId) && <Shield size={10} className="text-red-500 shrink-0" />}
                                         </div>
@@ -749,6 +788,61 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
 
         {/* CENTER CHAT DISPLAY WINDOW */}
         <main className="flex-1 bg-surface md:rounded-[2.5rem] border-x md:border border-border flex flex-col overflow-hidden relative shadow-sm z-10 w-full">
+           <AnimatePresence>
+             {reportNotification && (
+               <motion.div
+                 initial={{ opacity: 0, y: -20 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 exit={{ opacity: 0, scale: 0.9 }}
+                 className="absolute top-4 left-1/2 -translate-x-1/2 z-[60] w-[90%] max-w-sm"
+               >
+                 <div className={`
+                   ${reportNotification.type === 'success' ? 'bg-green-600' : reportNotification.type === 'warning' ? 'bg-red-600' : 'bg-brand'}
+                   text-white p-3.5 rounded-2xl shadow-2xl flex items-start gap-3 border border-white/10
+                 `}>
+                   <div className="shrink-0 p-1.5 bg-white/10 rounded-lg">
+                     <ShieldAlert size={16} />
+                   </div>
+                   <div className="flex-1">
+                     <p className="text-[11px] font-bold leading-snug">
+                       {reportNotification.message}
+                     </p>
+                   </div>
+                   <button onClick={() => setReportNotification(null)} className="shrink-0 opacity-60 hover:opacity-100">
+                     <X size={14} />
+                   </button>
+                 </div>
+               </motion.div>
+             )}
+           </AnimatePresence>
+
+           <AnimatePresence>
+             {showDNDToast && (
+               <motion.div
+                 initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                 animate={{ opacity: 1, y: 0, scale: 1 }}
+                 exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                 className="absolute bottom-20 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-md px-4"
+               >
+                 <div className="bg-text-highlight text-white p-3.5 rounded-xl shadow-2xl border border-white/10 flex items-center gap-3 backdrop-blur-md bg-opacity-95">
+                   <div className="flex items-center justify-center gap-3 flex-1">
+                     <div className="p-1.5 bg-white/10 rounded-lg shrink-0">
+                       <BellOff size={14} className="text-white" />
+                     </div>
+                     <p className="text-[11px] font-bold text-white leading-tight text-center">
+                       Your DND is on. Turn it off to receive private messages.
+                     </p>
+                   </div>
+                   <button 
+                     onClick={() => setShowDNDToast(false)}
+                     className="p-1 hover:bg-white/10 rounded-md transition-colors shrink-0"
+                   >
+                     <X size={14} />
+                   </button>
+                 </div>
+               </motion.div>
+             )}
+           </AnimatePresence>
            {/* Window Header */}
            <div className="p-3 md:p-4 flex items-center gap-3 border-b border-border bg-surface-hover/20">
               <div className="w-10 h-10 bg-brand/10 rounded-xl flex items-center justify-center border border-brand/5">
@@ -756,7 +850,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
               </div>
               <div>
                  <div className="flex items-center gap-2">
-                   <h2 className="text-lg font-black tracking-tight text-text">{currentChatName}</h2>
+                   <h2 className="text-lg font-black tracking-tight text-text-highlight">{currentChatName}</h2>
                    {activePrivateChat && globalStatuses[activePrivateChat]?.isDND && (
                      <span className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest bg-orange-500/10 text-orange-500 px-1.5 py-0.5 rounded-md border border-orange-500/10">
                        <BellOff size={8} /> DND
@@ -768,6 +862,32 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                  </p>
               </div>
            </div>
+
+            {/* Restriction Banners */}
+            {activePrivateChat && (
+              <>
+                {blockedUsers.has(activePrivateChat) && (
+                  <div className="bg-red-500/10 border-b border-red-500/20 px-4 py-2 flex items-center justify-between animate-in slide-in-from-top-1">
+                    <div className="flex items-center gap-2">
+                       <Shield size={14} className="text-red-500" />
+                       <span className="text-[11px] font-bold text-red-600">You have restricted this user. Unrestrict them to receive private messages.</span>
+                    </div>
+                    <button 
+                      onClick={() => handleUnblock(activePrivateChat)}
+                      className="px-2 py-0.5 bg-red-500 text-white rounded text-[10px] font-black uppercase tracking-tighter hover:bg-red-600 transition-colors"
+                    >
+                      Unrestrict
+                    </button>
+                  </div>
+                )}
+                {whoBlockedMe.has(activePrivateChat) && (
+                  <div className="bg-orange-500/10 border-b border-orange-500/20 px-4 py-2 flex items-center gap-2 animate-in slide-in-from-top-1">
+                    <ShieldAlert size={14} className="text-orange-500" />
+                    <span className="text-[11px] font-bold text-orange-600">Communication with this user is currently restricted.</span>
+                  </div>
+                )}
+              </>
+            )}
 
            {/* Message Buffer Flow */}
            <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0 p-4 space-y-4">
@@ -806,7 +926,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
               {((activePrivateChat ? (privateThreads[activePrivateChat] || []) : (roomMessages[currentRoom] || []))).map((msg, idx) => (
                 <div key={msg.id} className="flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2">
                    <div className={`flex items-center gap-2 ${msg.senderId === user.id ? 'justify-end mr-4' : 'ml-4'}`}>
-                      <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">{msg.senderName}</span>
+                      <span className="text-[10px] font-black text-text-highlight uppercase tracking-widest">{msg.senderName}</span>
                       <span className="text-[8px] text-text-muted/40 font-bold">
                         {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
@@ -823,7 +943,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
            </div>
 
            {/* Message Input Container */}
-           <div className="p-4 pt-0">
+           <div className="p-4 pt-0 transition-all">
               {error && (
                 <div className="mb-2 text-center animate-in fade-in slide-in-from-top-2">
                    <span className="text-[10px] font-black text-red-500 uppercase tracking-widest bg-red-500/10 px-3 py-1 rounded-full border border-red-500/20">
@@ -831,63 +951,75 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                    </span>
                 </div>
               )}
-              {activePrivateChat && globalStatuses[activePrivateChat]?.isDND && (
-                <div className="mb-2 text-center">
-                   <span className="text-[10px] font-black text-brand uppercase tracking-widest bg-brand/10 px-3 py-1 rounded-full border border-brand/20">
-                     Recipient has DND enabled
-                   </span>
+              
+              {activePrivateChat && whoBlockedMe.has(activePrivateChat) ? (
+                <div className="bg-orange-500/5 rounded-2xl border border-orange-500/10 py-5 flex flex-col items-center justify-center gap-2 animate-in fade-in slide-in-from-bottom-2">
+                  <ShieldAlert size={20} className="text-orange-500 opacity-40" />
+                  <p className="text-[11px] font-bold text-orange-600 text-center px-6 leading-tight">
+                    You cannot send messages to this user as they have restricted you.
+                  </p>
                 </div>
-              )}
-              <form onSubmit={handleSendMessage} className="flex gap-3 items-end">
-                 <div className="flex-1 relative group">
-                    <input 
-                      type="text" 
-                      value={inputText}
-                      onChange={(e) => {
-                        setInputText(e.target.value);
-                        if (error) setError(null);
-                      }}
-                      placeholder={`Message ${currentChatName}...`} 
-                      className="w-full bg-bg/50 rounded-xl py-3 px-5 text-sm focus:outline-none border border-border focus:border-brand transition-all font-medium placeholder:text-text-muted/30 shadow-inner"
-                    />
-                 </div>
-                 <div className="relative" ref={emojiPickerRef}>
-                    <button 
-                      type="button"
-                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                      className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all border ${showEmojiPicker ? 'bg-brand/10 border-brand/20 text-brand' : 'bg-surface border-border text-text-muted hover:text-brand hover:border-brand/30 shadow-sm'}`}
-                      title="Add emoji"
-                    >
-                      <Smile size={24} strokeWidth={2} />
-                    </button>
-                    
-                    <AnimatePresence>
-                      {showEmojiPicker && (
-                        <motion.div 
-                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                          className="absolute bottom-full right-0 mb-4 z-50 shadow-2xl rounded-2xl overflow-hidden border border-border"
+              ) : (
+                <>
+                  {activePrivateChat && globalStatuses[activePrivateChat]?.isDND && (
+                    <div className="mb-2 text-center">
+                       <span className="text-[10px] font-black text-brand uppercase tracking-widest bg-brand/10 px-3 py-1 rounded-full border border-brand/20">
+                         Recipient has DND enabled
+                       </span>
+                    </div>
+                  )}
+                  <form onSubmit={handleSendMessage} className="flex gap-3 items-end">
+                     <div className="flex-1 relative group">
+                        <input 
+                          type="text" 
+                          value={inputText}
+                          onChange={(e) => {
+                            setInputText(e.target.value);
+                            if (error) setError(null);
+                          }}
+                          placeholder={`Message ${currentChatName}...`} 
+                          className="w-full bg-bg/50 rounded-xl py-3 px-5 text-sm focus:outline-none border border-border focus:border-brand transition-all font-medium placeholder:text-text-muted/30 shadow-inner"
+                        />
+                     </div>
+                     <div className="relative" ref={emojiPickerRef}>
+                        <button 
+                          type="button"
+                          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                          className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all border ${showEmojiPicker ? 'bg-brand/10 border-brand/20 text-brand' : 'bg-surface border-border text-text-muted hover:text-brand hover:border-brand/30 shadow-sm'}`}
+                          title="Add emoji"
                         >
-                           <EmojiPicker 
-                             onEmojiClick={onEmojiClick}
-                             autoFocusSearch={false}
-                             theme={Theme.LIGHT}
-                             width={320}
-                             height={400}
-                           />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                 </div>
-                 <button 
-                   type="submit"
-                   disabled={!inputText.trim()}
-                   className="w-14 h-14 bg-brand hover:bg-brand-dark disabled:opacity-30 rounded-xl flex items-center justify-center shadow-lg shadow-brand/20 transition-all active:scale-95 text-white flex-shrink-0"
-                 >
-                    <Send size={20} />
-                 </button>
-              </form>
+                          <Smile size={24} strokeWidth={2} />
+                        </button>
+                        
+                        <AnimatePresence>
+                          {showEmojiPicker && (
+                            <motion.div 
+                              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                              className="absolute bottom-full right-0 mb-4 z-50 shadow-2xl rounded-2xl overflow-hidden border border-border"
+                            >
+                               <EmojiPicker 
+                                 onEmojiClick={onEmojiClick}
+                                 autoFocusSearch={false}
+                                 theme={Theme.LIGHT}
+                                 width={320}
+                                 height={400}
+                               />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                     </div>
+                     <button 
+                       type="submit"
+                       disabled={!inputText.trim()}
+                       className="w-14 h-14 bg-brand hover:bg-brand-dark disabled:opacity-30 rounded-xl flex items-center justify-center shadow-lg shadow-brand/20 transition-all active:scale-95 text-white flex-shrink-0"
+                     >
+                        <Send size={20} />
+                     </button>
+                  </form>
+                </>
+              )}
            </div>
         </main>
       </div>

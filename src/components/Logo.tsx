@@ -44,7 +44,7 @@ export const Logo: React.FC<LogoProps> = ({ className = '', iconOnly = false, si
         </svg>
       </div>
       {!iconOnly && (
-        <span className={`${currentSize.text} font-black tracking-tighter text-text`}>
+        <span className={`${currentSize.text} font-black tracking-tighter text-text-highlight uppercase`}>
           ChatBubble
         </span>
       )}
