@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://chatbubble.fun/sitemap.xml
