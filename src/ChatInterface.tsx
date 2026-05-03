@@ -356,6 +356,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         : "Private Chat")
     : currentRoom === 'lobby' ? 'General Lobby' : (currentRoomData?.name || "The Lobby");
 
+  const peopleCount = [...onlineUsers, ...dummyUsers].filter(u => 
+    currentRoom === 'lobby' ||
+    (u.currentRoom?.toLowerCase() === currentRoom.toLowerCase()) || 
+    (u.id === user.id)
+  ).length;
+
   return (
     <div className="h-full flex flex-col bg-bg text-text overflow-hidden font-sans">
       
@@ -470,19 +476,31 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-md transition-all flex items-center justify-center gap-1.5 ${
-                      activeTab === tab ? 'bg-surface text-text shadow-sm' : 'text-text-muted hover:text-text'
+                    className={`flex-1 py-1 text-[9px] font-black uppercase tracking-widest rounded-md transition-all flex items-center justify-center gap-1.5 ${
+                      activeTab === tab ? 'bg-surface text-brand shadow-sm' : 'text-text-muted hover:text-text'
                     }`}
+                    title={tab}
                   >
-                    <div className={`px-2 py-0.5 rounded-full text-[9px] flex items-center justify-center font-black shadow-sm relative ${
-                      activeTab === tab ? 'bg-brand text-white' : 'bg-brand/10 text-brand'
-                    }`}>
-                      {count}
-                      {hasUnread && (
-                        <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full border-2 border-surface animate-pulse" />
-                      )}
+                    <div className="flex flex-col items-center gap-1">
+                      <div className={`p-1.5 rounded-lg flex items-center justify-center font-black relative transition-all ${
+                        activeTab === tab ? 'bg-brand/10 text-brand' : 'bg-transparent text-text-muted'
+                      }`}>
+                        {tab === 'Rooms' && <Hash size={16} strokeWidth={activeTab === tab ? 3 : 2} />}
+                        {tab === 'Messages' && <MessageSquare size={16} strokeWidth={activeTab === tab ? 3 : 2} />}
+                        {tab === 'People' && <Users size={16} strokeWidth={activeTab === tab ? 3 : 2} />}
+                        
+                        {count > 0 && (
+                          <div className={`absolute -top-1 -right-1.5 px-1.5 py-0.5 rounded-full text-[7px] flex items-center justify-center font-black shadow-sm ${
+                            activeTab === tab ? 'bg-brand text-white' : 'bg-border text-text-muted'
+                          }`}>
+                            {count}
+                          </div>
+                        )}
+                        {hasUnread && (
+                          <div className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-surface animate-pulse shadow-sm shadow-red-500/50" />
+                        )}
+                      </div>
                     </div>
-                    {tab}
                   </button>
                 );
               })}
@@ -1035,7 +1053,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
             activeTab === 'Rooms' && mobileSidebarOpen ? 'text-brand' : 'text-text-muted hover:text-text'
           }`}
         >
-          <Globe size={20} className={activeTab === 'Rooms' && mobileSidebarOpen ? 'stroke-[3px]' : ''} />
+          <Hash size={20} className={activeTab === 'Rooms' && mobileSidebarOpen ? 'stroke-[3px]' : ''} />
           <span className="text-[10px] font-black uppercase tracking-widest">Rooms</span>
         </button>
 
@@ -1068,7 +1086,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
             activeTab === 'People' && mobileSidebarOpen ? 'text-brand' : 'text-text-muted hover:text-text'
           }`}
         >
-          <Users size={20} className={activeTab === 'People' && mobileSidebarOpen ? 'stroke-[3px]' : ''} />
+          <div className="relative">
+             <Users size={20} className={activeTab === 'People' && mobileSidebarOpen ? 'stroke-[3px]' : ''} />
+             {peopleCount > 0 && (
+               <span className="absolute -top-1 -right-3 bg-brand/10 text-brand text-[8px] font-black px-1 rounded-full animate-pulse">
+                 {peopleCount}
+               </span>
+             )}
+          </div>
           <span className="text-[10px] font-black uppercase tracking-widest">People</span>
         </button>
       </nav>
