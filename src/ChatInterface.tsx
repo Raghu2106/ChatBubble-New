@@ -379,7 +379,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
           <button 
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
             className="md:hidden p-1.5 hover:bg-surface-hover rounded-lg text-text-muted"
-            aria-label="Toggle Menu"
+            aria-label={mobileSidebarOpen ? "Close menu" : "Open menu"}
           >
             <MoreVertical size={18} className={mobileSidebarOpen ? 'rotate-90 transition-transform' : 'transition-transform'} />
           </button>
@@ -403,6 +403,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
              <button 
                onClick={toggleDND}
                className={`w-8 h-4 rounded-full relative transition-all duration-300 ${isDND ? 'bg-brand' : 'bg-border'}`}
+               aria-label={isDND ? "Disable Do Not Disturb" : "Enable Do Not Disturb"}
+               aria-pressed={isDND}
              >
                 <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-all duration-300 ${isDND ? 'left-4.5' : 'left-0.5'}`} />
              </button>
@@ -480,6 +482,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                       activeTab === tab ? 'bg-surface text-brand shadow-sm' : 'text-text-muted hover:text-text'
                     }`}
                     title={tab}
+                    aria-label={`${tab} view`}
+                    aria-pressed={activeTab === tab}
                   >
                     <div className="flex flex-col items-center gap-1">
                       <div className={`p-1.5 rounded-lg flex items-center justify-center font-black relative transition-all ${
@@ -681,6 +685,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                                       onClick={() => blockedUsers.has(u.id) ? handleUnblock(u.id) : handleBlock(u.id)}
                                       className={`p-1.5 rounded-lg transition-colors ${blockedUsers.has(u.id) ? 'bg-red-500/10 text-red-500' : 'bg-surface-hover text-text-muted hover:text-text'}`}
                                       title={blockedUsers.has(u.id) ? "Unrestrict" : "Restrict"}
+                                      aria-label={blockedUsers.has(u.id) ? `Unrestrict ${u.nickname}` : `Restrict ${u.nickname}`}
                                     >
                                        <Shield size={12} />
                                     </button>
@@ -988,7 +993,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                   )}
                   <form onSubmit={handleSendMessage} className="flex gap-3 items-end">
                      <div className="flex-1 relative group">
+                        <label htmlFor="chat-input" className="sr-only">Type a message</label>
                         <input 
+                          id="chat-input"
                           type="text" 
                           value={inputText}
                           onChange={(e) => {
@@ -1005,6 +1012,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                           onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                           className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all border ${showEmojiPicker ? 'bg-brand/10 border-brand/20 text-brand' : 'bg-surface border-border text-text-muted hover:text-brand hover:border-brand/30 shadow-sm'}`}
                           title="Add emoji"
+                          aria-label="Toggle emoji picker"
                         >
                           <Smile size={24} strokeWidth={2} />
                         </button>
@@ -1032,6 +1040,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                        type="submit"
                        disabled={!inputText.trim()}
                        className="w-14 h-14 bg-brand hover:bg-brand-dark disabled:opacity-30 rounded-xl flex items-center justify-center shadow-lg shadow-brand/20 transition-all active:scale-95 text-white flex-shrink-0"
+                       aria-label="Send message"
                      >
                         <Send size={20} />
                      </button>
@@ -1052,6 +1061,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
           className={`flex flex-col items-center gap-1 transition-all ${
             activeTab === 'Rooms' && mobileSidebarOpen ? 'text-brand' : 'text-text-muted hover:text-text'
           }`}
+          aria-label="Rooms tab"
+          aria-pressed={activeTab === 'Rooms' && mobileSidebarOpen}
         >
           <Hash size={20} className={activeTab === 'Rooms' && mobileSidebarOpen ? 'stroke-[3px]' : ''} />
           <span className="text-[10px] font-black uppercase tracking-widest">Rooms</span>
@@ -1065,6 +1076,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
           className={`flex flex-col items-center gap-1 transition-all relative ${
             activeTab === 'Messages' && mobileSidebarOpen ? 'text-brand' : 'text-text-muted hover:text-text'
           }`}
+          aria-label="Messages tab"
+          aria-pressed={activeTab === 'Messages' && mobileSidebarOpen}
         >
           <div className="relative">
             <MessageSquare size={20} className={activeTab === 'Messages' && mobileSidebarOpen ? 'stroke-[3px]' : ''} />
@@ -1085,6 +1098,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
           className={`flex flex-col items-center gap-1 transition-all ${
             activeTab === 'People' && mobileSidebarOpen ? 'text-brand' : 'text-text-muted hover:text-text'
           }`}
+          aria-label="People tab"
+          aria-pressed={activeTab === 'People' && mobileSidebarOpen}
         >
           <div className="relative">
              <Users size={20} className={activeTab === 'People' && mobileSidebarOpen ? 'stroke-[3px]' : ''} />

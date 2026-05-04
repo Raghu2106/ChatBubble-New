@@ -8,11 +8,12 @@ import { socket } from './socket';
 import { LandingPage } from './LandingPage';
 import { EntryScreen } from './EntryScreen';
 import { ChatInterface } from './ChatInterface';
-import { AdminPanel } from './AdminPanel';
 import { Gender } from './types';
 import { Shield } from 'lucide-react';
 import { GlobalAds, AdUnit } from './components/AdUnit';
 import { SessionTimeoutModal } from './components/SessionTimeoutModal';
+
+const AdminPanel = React.lazy(() => import('./AdminPanel').then(m => ({ default: m.AdminPanel })));
 
 const INACTIVITY_LIMIT = 60 * 60 * 1000; // 60 minutes
 const WARNING_DURATION = 60; // 60 seconds
@@ -132,7 +133,11 @@ export default function App() {
   };
 
   if (isAdmin) {
-    return <AdminPanel />;
+    return (
+      <React.Suspense fallback={<div className="h-screen bg-bg flex items-center justify-center font-black text-brand animate-pulse">LOADING ADMIN...</div>}>
+        <AdminPanel />
+      </React.Suspense>
+    );
   }
 
   return (
@@ -146,16 +151,6 @@ export default function App() {
           countdownSeconds={WARNING_DURATION} 
         />
       )}
-      
-      {/* GLOBAL TOP AD SLOT */}
-      <div className="w-full flex justify-center py-1 bg-surface/50 border-b border-border z-50 shrink-0 min-h-[50px] md:min-h-[92px]">
-        <div className="hidden md:block">
-          <AdUnit id="e09cae3901da8691e785bc3a6fb53b5f" format="728x90" />
-        </div>
-        <div className="md:hidden">
-          <AdUnit id="b4f39cdd8d2c49287bc15b998684cb7e" format="320x50" />
-        </div>
-      </div>
 
       <div className="flex flex-1 relative overflow-hidden">
         {/* GLOBAL LEFT SKYSCRAPER */}
@@ -166,11 +161,33 @@ export default function App() {
         {/* MAIN CONTENT AREA */}
         <main className="flex-1 relative overflow-hidden flex flex-col">
           {step === 'chat' && user ? (
-            <div className="flex-1 overflow-hidden">
-              <ChatInterface user={user} onExit={handleExit} error={error} setError={setError} />
+            <div className="flex-1 overflow-hidden flex flex-col">
+              {/* GLOBAL TOP AD SLOT - Inside Chat (Fixed/Sticky behavior handled by ChatInterface or stayed outside) */}
+              {/* For chat, we might want it fixed or part of the header. Let's keep it here for now but check ChatInterface */}
+              <div className="w-full flex justify-center py-1 bg-surface/50 border-b border-border z-50 shrink-0 min-h-[50px] md:min-h-[60px]">
+                <div className="hidden md:block">
+                  <AdUnit id="e09cae3901da8691e785bc3a6fb53b5f" format="728x90" />
+                </div>
+                <div className="md:hidden">
+                  <AdUnit id="b4f39cdd8d2c49287bc15b998684cb7e" format="320x50" />
+                </div>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <ChatInterface user={user} onExit={handleExit} error={error} setError={setError} />
+              </div>
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto min-h-0 h-full">
+              {/* GLOBAL TOP AD SLOT - SCROLLABLE with Landing Page */}
+              <div className="w-full flex justify-center py-1 bg-surface/50 border-b border-border z-50 shrink-0 min-h-[50px] md:min-h-[92px]">
+                <div className="hidden md:block">
+                  <AdUnit id="e09cae3901da8691e785bc3a6fb53b5f" format="728x90" />
+                </div>
+                <div className="md:hidden">
+                  <AdUnit id="b4f39cdd8d2c49287bc15b998684cb7e" format="320x50" />
+                </div>
+              </div>
+
               {disconnectReason && (
                 <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] animate-in fade-in slide-in-from-top-4">
                   <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-6 py-3 rounded-2xl flex items-center gap-3 backdrop-blur-md shadow-xl">

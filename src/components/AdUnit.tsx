@@ -84,10 +84,16 @@ export const AdUnit: React.FC<AdUnitProps> = ({ id, format, className }) => {
     }
   }, [id, format]);
 
+  const dimensions = formatDimensions[format];
+
   return (
     <div 
       ref={adRef} 
-      className={`flex items-center justify-center overflow-hidden bg-surface/5 min-h-[50px] ${className}`}
+      className={`flex items-center justify-center overflow-hidden bg-surface/5 ${className}`}
+      style={{ 
+        minHeight: dimensions.height > 0 ? `${dimensions.height}px` : '100px',
+        minWidth: dimensions.width > 0 ? `${dimensions.width}px` : 'auto'
+      }}
     />
   );
 };

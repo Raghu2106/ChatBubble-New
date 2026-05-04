@@ -41,6 +41,7 @@ export const EntryScreen: React.FC<EntryScreenProps> = ({ onJoin, onClose, error
         <button 
           onClick={onClose}
           className="absolute right-6 top-6 text-text-muted hover:text-text transition-colors"
+          aria-label="Close"
         >
           <X size={20} />
         </button>
@@ -153,7 +154,7 @@ export const EntryScreen: React.FC<EntryScreenProps> = ({ onJoin, onClose, error
             >
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-black text-text">Terms & Privacy</h3>
-                <button onClick={() => setShowLegal(false)} className="text-text-muted hover:text-text">
+                <button onClick={() => setShowLegal(false)} className="text-text-muted hover:text-text" aria-label="Close terms">
                   <X size={20} />
                 </button>
               </div>
