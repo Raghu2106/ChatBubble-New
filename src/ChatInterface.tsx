@@ -60,9 +60,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   // Helper to get response delay based on profile
   const getResponseDelay = (profile: ResponseProfile) => {
     switch (profile) {
-      case 'Quick': return Math.random() * 6000 + 2000; // 2-8s
+      case 'Quick': return Math.random() * 3000 + 2000; // 2-5s as requested
       case 'Moderate': return Math.random() * 30000 + 20000; // 20-50s
-      case 'Sluggish': return Math.random() * 120000 + 60000; // 60-180s
+      case 'Sluggish': return Math.random() * 120000 + 60000; // 60-180s (1-3 mins)
       default: return null;
     }
   };
@@ -197,7 +197,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
           }
         };
 
-        const totalToSendMessage = Math.random() < 0.2 ? (Math.random() < 0.5 ? 2 : 3) : 1;
+        const totalToSendMessage = profile === 'Quick' 
+          ? (Math.random() < 0.5 ? 3 : 4) // Quick users send 3-4 messages as requested
+          : (Math.random() < 0.2 ? (Math.random() < 0.5 ? 2 : 3) : 1);
         await sendSequence(0, totalToSendMessage, context);
 
         if (activePrivateChatRef.current !== otherId) {

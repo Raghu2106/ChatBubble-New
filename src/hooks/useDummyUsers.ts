@@ -10,8 +10,8 @@ interface DummyUser {
   responseProfile: ResponseProfile;
 }
 
-const TARGET_MIN_DUMMIES = 80;
-const TARGET_MAX_DUMMIES = 100;
+const TARGET_MIN_DUMMIES = 150;
+const TARGET_MAX_DUMMIES = 180;
 const MALE_PROBABILITY = 0.85;
 const CYCLE_INTERVAL_MS = (2 * 60 * 60 * 1000) / TARGET_MIN_DUMMIES;
 const TRAFFIC_SIMULATION_INTERVAL_MS = 15000; // Check every 15s to make it feel more active
@@ -103,13 +103,23 @@ export const useDummyUsers = () => {
 
   const getRandomProfile = (gender: Gender): ResponseProfile => {
     // Distribution requested: 
-    // 5% Quick, 40% Moderate, 10% Sluggish, 45% Lurker
+    // Female: 5% Quick, 40% Moderate, 10% Sluggish, 45% Lurker
     const rand = Math.random() * 100;
     
-    if (rand < 5) return 'Quick';
-    if (rand < 45) return 'Moderate';
-    if (rand < 55) return 'Sluggish';
-    return 'Lurker';
+    if (gender === 'Female') {
+      if (rand < 5) return 'Quick';
+      if (rand < 45) return 'Moderate';
+      if (rand < 55) return 'Sluggish';
+      return 'Lurker';
+    } else {
+      // For males, we can keep a similar but slightly different distribution 
+      // or same if not specified, but let's stick to requested for consistency 
+      // where specified and maybe more active for others.
+      if (rand < 10) return 'Quick';
+      if (rand < 50) return 'Moderate';
+      if (rand < 70) return 'Sluggish';
+      return 'Lurker';
+    }
   };
 
   const generateNickname = (isMale: boolean, roomId: string, existingFullNicknames: Set<string>) => {
