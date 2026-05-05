@@ -1156,7 +1156,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                             if (error) setError(null);
                           }}
                           placeholder={`Message ${currentChatName}...`} 
-                          className="w-full bg-bg/50 rounded-xl py-3 px-5 text-sm focus:outline-none border border-border focus:border-brand transition-all font-medium placeholder:text-text-muted/30 shadow-inner"
+                          className="w-full bg-bg/50 rounded-xl py-3 px-5 text-base md:text-sm focus:outline-none border border-border focus:border-brand transition-all font-medium placeholder:text-text-muted/30 shadow-inner"
                         />
                      </div>
                      <div className="relative" ref={emojiPickerRef}>

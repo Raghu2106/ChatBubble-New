@@ -141,7 +141,7 @@ export default function App() {
   }
 
   return (
-    <div className="h-dvh bg-bg overflow-hidden relative flex flex-col">
+    <div className="h-dvh bg-bg overflow-hidden relative flex flex-col p-safe">
       <GlobalAds />
 
       {showTimeoutModal && (

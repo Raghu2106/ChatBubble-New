@@ -64,7 +64,7 @@ export const EntryScreen: React.FC<EntryScreenProps> = ({ onJoin, onClose, error
               required
               maxLength={15}
               placeholder="Your nickname..."
-              className="w-full bg-surface border-2 border-border rounded-xl px-4 py-3 text-sm text-text focus:outline-none focus:border-brand transition-all placeholder:text-text-muted/30 font-medium"
+              className="w-full bg-surface border-2 border-border rounded-xl px-4 py-3 text-base md:text-sm text-text focus:outline-none focus:border-brand transition-all placeholder:text-text-muted/30 font-medium"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
             />
@@ -78,7 +78,7 @@ export const EntryScreen: React.FC<EntryScreenProps> = ({ onJoin, onClose, error
                 required
                 value={gender}
                 onChange={(e) => setGender(e.target.value as Gender)}
-                className="w-full bg-surface border-2 border-border rounded-xl px-4 py-3 text-sm text-text focus:outline-none focus:border-brand transition-all appearance-none cursor-pointer font-medium"
+                className="w-full bg-surface border-2 border-border rounded-xl px-4 py-3 text-base md:text-sm text-text focus:outline-none focus:border-brand transition-all appearance-none cursor-pointer font-medium"
               >
                 <option value="" disabled>Select gender</option>
                 <option value="Male">Male</option>

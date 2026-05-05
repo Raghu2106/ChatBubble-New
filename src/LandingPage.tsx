@@ -25,7 +25,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-20 w-full">
-        <div className="text-center max-w-5xl mb-20 relative z-10">
+        <div className="text-center max-w-5xl mb-12 md:mb-20 relative z-10">
           <motion.h1 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -58,7 +58,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="mb-28 relative z-10"
+          className="mb-16 md:mb-28 relative z-10"
         >
           <button 
             onClick={onStart}
