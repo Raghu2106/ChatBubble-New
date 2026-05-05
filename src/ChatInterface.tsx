@@ -10,9 +10,10 @@ import {
 import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 import { Logo } from './components/Logo';
 import { socket } from './socket';
-import { ChatMessage, Room, Gender } from './types';
+import { ChatMessage, Room, Gender, ResponseProfile } from './types';
 import { AdUnit } from './components/AdUnit';
 import { useDummyUsers } from './hooks/useDummyUsers';
+import { generateDummyResponse, generateLobbyChatter } from './services/geminiService';
 
 // Helper to sanitize message content and strip clickable links/HTML
 const formatChatMessage = (content: string) => {
@@ -54,6 +55,158 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   const [unreadThreads, setUnreadThreads] = useState<Set<string>>(new Set());
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
+
+  // Helper to get response delay based on profile
+  const getResponseDelay = (profile: ResponseProfile) => {
+    switch (profile) {
+      case 'Quick': return Math.random() * 6000 + 2000; // 2-8s
+      case 'Moderate': return Math.random() * 30000 + 20000; // 20-50s
+      case 'Sluggish': return Math.random() * 120000 + 60000; // 60-180s
+      default: return null;
+    }
+  };
+
+  // Lobby Chatter Logic
+  useEffect(() => {
+    const chatInterval = setInterval(async () => {
+      // 15% chance to post a message in lobby every 20 seconds
+      if (Math.random() > 0.15) return;
+
+      const lobbyDummies = dummyUsers.filter(u => u.currentRoom === 'lobby' && u.responseProfile !== 'Lurker');
+      if (lobbyDummies.length === 0) return;
+
+      const chatter = await generateLobbyChatter(lobbyDummies.map(u => ({ nickname: u.nickname, gender: u.gender as string })));
+      
+      const newMessage: ChatMessage = {
+        id: `dummy-lobby-${Date.now()}`,
+        senderId: lobbyDummies.find(u => u.nickname === chatter.senderName)?.id || 'unknown',
+        senderName: chatter.senderName,
+        content: chatter.content,
+        timestamp: Date.now(),
+        roomId: 'lobby',
+        type: 'public'
+      };
+
+      setRoomMessages(prev => ({
+        ...prev,
+        'lobby': [...(prev['lobby'] || []), newMessage].slice(-100)
+      }));
+    }, 20000);
+
+    return () => clearInterval(chatInterval);
+  }, [dummyUsers]);
+
+  // Dummy Private Response Logic
+  useEffect(() => {
+    const handleDummyResponse = async (otherId: string, profile: ResponseProfile) => {
+      if (profile === 'Lurker') return;
+
+      const delay = getResponseDelay(profile);
+      if (!delay) return;
+
+      const dummyUser = dummyUsers.find(u => u.id === otherId);
+      if (!dummyUser) return;
+
+      // Start typing halfway through the delay
+      setTimeout(() => {
+        setTypingUsers(prev => {
+          const next = new Set(prev);
+          next.add(otherId);
+          return next;
+        });
+      }, delay / 2);
+
+      setTimeout(async () => {
+        const thread = privateThreads[otherId] || [];
+        if (thread.length === 0 || thread[thread.length - 1].senderId !== user.id) {
+          setTypingUsers(prev => {
+            const next = new Set(prev);
+            next.delete(otherId);
+            return next;
+          });
+          return;
+        }
+
+        // Generate response using last 5 messages for context
+        const context = thread.slice(-5).map(m => ({ senderName: m.senderName, content: m.content }));
+        const responseText = await generateDummyResponse(context, dummyUser.nickname, dummyUser.gender as string);
+
+        // Multiple response logic (up to 3-4 messages)
+        const sendSequence = async (count: number, max: number, currentContext: { senderName: string, content: string }[]) => {
+          if (count >= max) {
+            setTypingUsers(prev => {
+              const next = new Set(prev);
+              next.delete(otherId);
+              return next;
+            });
+            return;
+          }
+
+          setTypingUsers(prev => new Set(prev).add(otherId));
+          const text = await generateDummyResponse(currentContext, dummyUser.nickname, dummyUser.gender as string);
+          
+          const msg: ChatMessage = {
+            id: `dummy-reply-${Date.now()}-${count}`,
+            senderId: otherId,
+            senderName: dummyUser.nickname,
+            senderGender: dummyUser.gender,
+            content: text,
+            timestamp: Date.now(),
+            recipientId: user.id,
+            type: 'private'
+          };
+
+          setPrivateThreads(prev => ({
+            ...prev,
+            [otherId]: [...(prev[otherId] || []), msg]
+          }));
+
+          const nextContext = [...currentContext, { senderName: dummyUser.nickname, content: text }];
+
+          // Decide if we send another one
+          const shouldFollowUp = Math.random() < 0.4 && count < max - 1;
+          if (shouldFollowUp) {
+            setTimeout(() => sendSequence(count + 1, max, nextContext), Math.random() * 4000 + 2000);
+          } else {
+            setTypingUsers(prev => {
+              const next = new Set(prev);
+              next.delete(otherId);
+              return next;
+            });
+          }
+        };
+
+        const totalToSendMessage = Math.random() < 0.3 ? (Math.random() < 0.5 ? 3 : 4) : 1;
+        await sendSequence(0, totalToSendMessage, context);
+
+        if (activePrivateChatRef.current !== otherId) {
+          setUnreadThreads(prev => {
+            const next = new Set(prev);
+            next.add(otherId);
+            return next;
+          });
+        }
+      }, delay);
+    };
+
+    // Check for recent messages from user to dummies
+    Object.keys(privateThreads).forEach(otherId => {
+      if (otherId.startsWith('dummy-')) {
+        const thread = privateThreads[otherId];
+        const lastMsg = thread[thread.length - 1];
+        if (lastMsg && lastMsg.senderId === user.id) {
+          const dummyUser = dummyUsers.find(u => u.id === otherId);
+          if (dummyUser && !typingUsers.has(otherId)) {
+            const timeSinceLastMsg = Date.now() - lastMsg.timestamp;
+            if (timeSinceLastMsg < 2000) { 
+              handleDummyResponse(otherId, dummyUser.responseProfile);
+            }
+          }
+        }
+      }
+    });
+  }, [privateThreads, dummyUsers, user.id, user.nickname, user.gender, typingUsers]);
 
   // Close pickers when clicking outside
   useEffect(() => {
@@ -914,6 +1067,20 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
 
            {/* Message Buffer Flow */}
            <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0 p-4 space-y-4">
+              {activePrivateChat && typingUsers.has(activePrivateChat) && (
+                <div className="flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2 ml-4 mb-2 sticky top-0 z-10">
+                   <div className="bg-brand/10 text-brand self-start px-3 py-1 rounded-xl rounded-tl-none border border-brand/20 flex items-center gap-2 shadow-sm backdrop-blur-sm">
+                     <span className="text-[10px] font-black uppercase tracking-widest leading-none">
+                        {dummyUsers.find(u => u.id === activePrivateChat)?.nickname || "User"} typing
+                     </span>
+                     <div className="flex gap-1">
+                       <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1, delay: 0 }} className="w-1 h-1 bg-brand rounded-full" />
+                       <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-1 h-1 bg-brand rounded-full" />
+                       <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-1 h-1 bg-brand rounded-full" />
+                     </div>
+                   </div>
+                </div>
+              )}
               <div className="flex justify-center mb-6">
                  <div className="bg-border/30 px-3 py-1.5 rounded-full text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] border border-border">
                     {currentRoom === 'lobby' ? 'Welcome to General Lobby' : `Welcome to ${currentChatName}`}

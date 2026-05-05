@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Gender } from '../types';
+import { useState, useEffect } from 'react';
+import { Gender, ResponseProfile } from '../types';
 
 interface DummyUser {
   id: string;
@@ -7,10 +7,11 @@ interface DummyUser {
   gender: Gender;
   isDummy: boolean;
   currentRoom: string;
+  responseProfile: ResponseProfile;
 }
 
-const TARGET_MIN_DUMMIES = 123;
-const TARGET_MAX_DUMMIES = 144;
+const TARGET_MIN_DUMMIES = 150;
+const TARGET_MAX_DUMMIES = 180;
 const MALE_PROBABILITY = 0.85;
 const CYCLE_INTERVAL_MS = (2 * 60 * 60 * 1000) / TARGET_MIN_DUMMIES;
 const TRAFFIC_SIMULATION_INTERVAL_MS = 15000; // Check every 15s to make it feel more active
@@ -100,6 +101,17 @@ export const useDummyUsers = () => {
     return 'lobby';
   };
 
+  const getRandomProfile = (gender: Gender): ResponseProfile => {
+    // Distribution requested: 
+    // 5% Quick, 40% Moderate, 10% Sluggish, 45% Lurker
+    const rand = Math.random() * 100;
+    
+    if (rand < 5) return 'Quick';
+    if (rand < 45) return 'Moderate';
+    if (rand < 55) return 'Sluggish';
+    return 'Lurker';
+  };
+
   const generateNickname = (isMale: boolean, roomId: string, existingFullNicknames: Set<string>) => {
     const roomInfo = ROOM_DATA.find(r => r.id === roomId) || ROOM_DATA[0];
     const pool = NAME_POOLS[roomInfo.names] || NAME_POOLS.indian;
@@ -137,6 +149,7 @@ export const useDummyUsers = () => {
 
       for (let i = 0; i < TARGET_MIN_DUMMIES; i++) {
         const isMale = Math.random() < MALE_PROBABILITY;
+        const gender: Gender = isMale ? 'Male' : 'Female';
         const roomId = getRandomRoomId();
         const nickname = generateNickname(isMale, roomId, usedNicknames);
         usedNicknames.add(nickname);
@@ -144,9 +157,10 @@ export const useDummyUsers = () => {
         dummies.push({
           id: `dummy-${i}-${Date.now()}`,
           nickname,
-          gender: isMale ? 'Male' : 'Female',
+          gender,
           isDummy: true,
-          currentRoom: roomId
+          currentRoom: roomId,
+          responseProfile: getRandomProfile(gender)
         });
       }
       return dummies;
@@ -167,15 +181,17 @@ export const useDummyUsers = () => {
         const currentNicknames = new Set<string>(next.map(u => u.nickname));
         
         const isMale = Math.random() < MALE_PROBABILITY;
+        const gender: Gender = isMale ? 'Male' : 'Female';
         const roomId = getRandomRoomId();
         const nickname = generateNickname(isMale, roomId, currentNicknames);
 
         next[indexToReplace] = {
           id: `dummy-${Date.now()}-${Math.random()}`,
           nickname,
-          gender: isMale ? 'Male' : 'Female',
+          gender,
           isDummy: true,
-          currentRoom: roomId
+          currentRoom: roomId,
+          responseProfile: getRandomProfile(gender)
         };
         
         return next;
@@ -192,6 +208,7 @@ export const useDummyUsers = () => {
 
         if (shouldAdd) {
           const isMale = Math.random() < MALE_PROBABILITY;
+          const gender: Gender = isMale ? 'Male' : 'Female';
           const roomId = getRandomRoomId();
           const currentNicknames = new Set<string>(prev.map(u => u.nickname));
           const nickname = generateNickname(isMale, roomId, currentNicknames);
@@ -199,9 +216,10 @@ export const useDummyUsers = () => {
           return [...prev, {
             id: `dummy-join-${Date.now()}-${Math.random()}`,
             nickname,
-            gender: isMale ? 'Male' : 'Female',
+            gender,
             isDummy: true,
-            currentRoom: roomId
+            currentRoom: roomId,
+            responseProfile: getRandomProfile(gender)
           }];
         } else if (shouldRemove) {
           const randomIndex = Math.floor(Math.random() * prev.length);

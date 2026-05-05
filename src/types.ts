@@ -1,5 +1,7 @@
 export type Gender = 'Male' | 'Female' | 'Other' | 'Non-binary' | 'Prefer not to say';
 
+export type ResponseProfile = 'Quick' | 'Moderate' | 'Sluggish' | 'Lurker';
+
 export interface User {
   id: string;
   nickname: string;
@@ -11,6 +13,8 @@ export interface User {
   blockedUsers: Set<string>; // Set of user IDs this user has blocked
   isDND: boolean;
   currentRoom?: string;
+  isDummy?: boolean;
+  responseProfile?: ResponseProfile;
 }
 
 export interface ChatMessage {
