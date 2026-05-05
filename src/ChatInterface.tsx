@@ -81,8 +81,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   // Lobby Chatter Logic
   useEffect(() => {
     const chatInterval = setInterval(async () => {
-      // 40% chance to post a message in lobby every 15 seconds
-      if (Math.random() > 0.40) return;
+      // 25% chance to post a message in lobby every 20 seconds.
+      // This ensures that on average messages are spaced out well beyond 5 seconds.
+      if (Math.random() > 0.25) return;
 
       const lobbyDummies = dummyUsers.filter(u => u.currentRoom === 'lobby' && u.responseProfile !== 'Lurker');
       if (lobbyDummies.length === 0) return;
@@ -112,10 +113,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         ...prev,
         'lobby': [...(prev['lobby'] || []), newMessage].slice(-100)
       }));
-    }, 15000);
+    }, 20000); 
 
     return () => clearInterval(chatInterval);
-  }, [dummyUsers]); // Only depend on dummyUsers list changes
+  }, [dummyUsers]); 
 
   // Dummy Private Response Logic
   useEffect(() => {
