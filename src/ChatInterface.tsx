@@ -67,16 +67,36 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
     }
   };
 
+  const roomMessagesRef = useRef(roomMessages);
+  const privateThreadsRef = useRef(privateThreads);
+
+  useEffect(() => {
+    roomMessagesRef.current = roomMessages;
+  }, [roomMessages]);
+
+  useEffect(() => {
+    privateThreadsRef.current = privateThreads;
+  }, [privateThreads]);
+
   // Lobby Chatter Logic
   useEffect(() => {
     const chatInterval = setInterval(async () => {
-      // 15% chance to post a message in lobby every 20 seconds
-      if (Math.random() > 0.15) return;
+      // 40% chance to post a message in lobby every 15 seconds
+      if (Math.random() > 0.40) return;
 
       const lobbyDummies = dummyUsers.filter(u => u.currentRoom === 'lobby' && u.responseProfile !== 'Lurker');
       if (lobbyDummies.length === 0) return;
 
-      const chatter = await generateLobbyChatter(lobbyDummies.map(u => ({ nickname: u.nickname, gender: u.gender as string })));
+      // Get recent lobby messages for context from Ref
+      const recentMessages = (roomMessagesRef.current['lobby'] || []).slice(-10).map(m => ({
+        senderName: m.senderName,
+        content: m.content
+      }));
+
+      const chatter = await generateLobbyChatter(
+        lobbyDummies.map(u => ({ nickname: u.nickname, gender: u.gender as string })),
+        recentMessages
+      );
       
       const newMessage: ChatMessage = {
         id: `dummy-lobby-${Date.now()}`,
@@ -92,10 +112,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         ...prev,
         'lobby': [...(prev['lobby'] || []), newMessage].slice(-100)
       }));
-    }, 20000);
+    }, 15000);
 
     return () => clearInterval(chatInterval);
-  }, [dummyUsers]);
+  }, [dummyUsers]); // Only depend on dummyUsers list changes
 
   // Dummy Private Response Logic
   useEffect(() => {
@@ -118,7 +138,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
       }, delay / 2);
 
       setTimeout(async () => {
-        const thread = privateThreads[otherId] || [];
+        const thread = privateThreadsRef.current[otherId] || [];
         if (thread.length === 0 || thread[thread.length - 1].senderId !== user.id) {
           setTypingUsers(prev => {
             const next = new Set(prev);
@@ -144,7 +164,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
           }
 
           setTypingUsers(prev => new Set(prev).add(otherId));
-          const text = await generateDummyResponse(currentContext, dummyUser.nickname, dummyUser.gender as string);
+          const text = count === 0 ? responseText : await generateDummyResponse(currentContext, dummyUser.nickname, dummyUser.gender as string);
           
           const msg: ChatMessage = {
             id: `dummy-reply-${Date.now()}-${count}`,
@@ -165,7 +185,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
           const nextContext = [...currentContext, { senderName: dummyUser.nickname, content: text }];
 
           // Decide if we send another one
-          const shouldFollowUp = Math.random() < 0.4 && count < max - 1;
+          const shouldFollowUp = Math.random() < 0.3 && count < max - 1;
           if (shouldFollowUp) {
             setTimeout(() => sendSequence(count + 1, max, nextContext), Math.random() * 4000 + 2000);
           } else {
@@ -177,7 +197,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
           }
         };
 
-        const totalToSendMessage = Math.random() < 0.3 ? (Math.random() < 0.5 ? 3 : 4) : 1;
+        const totalToSendMessage = Math.random() < 0.2 ? (Math.random() < 0.5 ? 2 : 3) : 1;
         await sendSequence(0, totalToSendMessage, context);
 
         if (activePrivateChatRef.current !== otherId) {
@@ -199,6 +219,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
           const dummyUser = dummyUsers.find(u => u.id === otherId);
           if (dummyUser && !typingUsers.has(otherId)) {
             const timeSinceLastMsg = Date.now() - lastMsg.timestamp;
+            // Only trigger if message was sent in last 2 seconds
             if (timeSinceLastMsg < 2000) { 
               handleDummyResponse(otherId, dummyUser.responseProfile);
             }
@@ -206,7 +227,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         }
       }
     });
-  }, [privateThreads, dummyUsers, user.id, user.nickname, user.gender, typingUsers]);
+  }, [privateThreads, dummyUsers, user.id, typingUsers]);
 
   // Close pickers when clicking outside
   useEffect(() => {

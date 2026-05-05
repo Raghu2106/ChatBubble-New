@@ -10,8 +10,8 @@ interface DummyUser {
   responseProfile: ResponseProfile;
 }
 
-const TARGET_MIN_DUMMIES = 150;
-const TARGET_MAX_DUMMIES = 180;
+const TARGET_MIN_DUMMIES = 80;
+const TARGET_MAX_DUMMIES = 100;
 const MALE_PROBABILITY = 0.85;
 const CYCLE_INTERVAL_MS = (2 * 60 * 60 * 1000) / TARGET_MIN_DUMMIES;
 const TRAFFIC_SIMULATION_INTERVAL_MS = 15000; // Check every 15s to make it feel more active
