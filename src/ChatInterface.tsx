@@ -199,8 +199,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         };
 
         const totalToSendMessage = profile === 'Quick' 
-          ? (Math.random() < 0.5 ? 3 : 4) // Quick users send 3-4 messages as requested
-          : (Math.random() < 0.2 ? (Math.random() < 0.5 ? 2 : 3) : 1);
+          ? (Math.random() < 0.5 ? 2 : 2) // Quick users send 2 messages max now
+          : (Math.random() < 0.2 ? 2 : 1); // Others send 1 or 2
         await sendSequence(0, totalToSendMessage, context);
 
         if (activePrivateChatRef.current !== otherId) {

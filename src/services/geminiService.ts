@@ -30,17 +30,19 @@ Goal: Sound like a common Indian person chatting casually. Tailor your response 
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Previous messages for context:\n${conversationString}\n\n${dummyName}, write a natural, brief response to the last message:`,
+      contents: `Previous messages for context:\n${conversationString}\n\n${dummyName}, write a natural, desi, brief response to the last message. DO NOT just say "ok" or "theek h" unless it's the only logical answer. Be more expressive:`,
       config: {
         systemInstruction,
         temperature: 1.0,
       }
     });
 
-    return response.text?.trim() || "theek h";
+    const text = response.text?.trim() || "";
+    if (text.length < 2) return "kya hua?";
+    return text;
   } catch (error: any) {
     console.error("Gemini Response Error:", error);
-    const fallbacks = ["theek h", "okay", "okk", "ha", "achha", "kya?"];
+    const fallbacks = ["bolo yaar", "kya scene?", "okk", "ha", "achha thik h", "kya?"];
     return fallbacks[Math.floor(Math.random() * fallbacks.length)];
   }
 }
@@ -49,7 +51,7 @@ export async function generateLobbyChatter(
   usersInRoom: { nickname: string; gender: string }[],
   recentLobbyContext: { senderName: string; content: string }[] = []
 ): Promise<{ senderName: string; content: string }> {
-  if (usersInRoom.length < 1) return { senderName: "User", content: "kya haal chaal?" };
+  if (usersInRoom.length < 1) return { senderName: "User", content: "anybody active?" };
   
   const user = usersInRoom[Math.floor(Math.random() * usersInRoom.length)];
     const systemInstruction = `You are an Indian user in a public chat lobby on ChatBubble.
@@ -57,8 +59,8 @@ Produce a single casual message for a public lobby.
 
 Language:
 - Mix Desi English (Indian English), Hinglish, and casual Hindi (Latin script).
-- Variety is key: Use Indian context (cricket, food, college, office, weather, movies).
-- Use local slang: 'kya scene?', 'anybody here?', 'bore ho raha hai', 'kya chal rha h public?', 'hi friends'.
+- Variety is key: Use Indian context (cricket, food, college, office, weather, movies, startups, travel).
+- Use local slang: 'kya scene?', 'is this real?', 'bore ho raha hai', 'kya chal rha h public?', 'hello friends', 'any girls?'.
 - Tone: Extremely casual, brief, youthful.
 - NEVER start with 'kya haal chaal' or 'hello' every time. Be creative and random.
 - React to the vibe of previous messages if they exist.
@@ -66,12 +68,12 @@ User: ${user.nickname} (${user.gender})`;
 
   const contextStr = recentLobbyContext.length > 0 
     ? "Recent lobby messages for context (DO NOT REPEAT THESE):\n" + recentLobbyContext.map(m => `${m.senderName}: ${m.content}`).join("\n")
-    : "The lobby is quiet, start a conversation or react to the room vibe.";
+    : "The lobby is quiet, start a conversation or share something random.";
 
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `${contextStr}\n\nProduce a UNIQUE and casual message from ${user.nickname}:`,
+      contents: `${contextStr}\n\nProduce a UNIQUE and conversational message from ${user.nickname} (not too short):`,
       config: {
         systemInstruction,
         temperature: 1.0,
@@ -79,25 +81,24 @@ User: ${user.nickname} (${user.gender})`;
     });
 
     const text = response.text?.trim() || "";
-    if (!text || text.toLowerCase().includes("kya haal chaal")) {
+    if (!text || text.length < 4) {
        const fallbacks = [
-         "kya chal rha h?", 
-         "bore ho rha h yaar", 
-         "is anyone active?", 
-         "kya scene?", 
-         "any girls from mumbai?", 
-         "aur batao public", 
-         "hello ji, whats up",
-         "anyone for private chat?",
-         "it is so hot today na",
-         "waah kya baat h"
+         "kya chal rha h public?", 
+         "life is so boring today", 
+         "is anyone actually active here?", 
+         "kya scene h friday ka?", 
+         "anyone up for a voice call later?", 
+         "aur batao kya chal rha h", 
+         "hello ji, whats up with everyone",
+         "it is so hot today, even ac is not working",
+         "waah kya message h"
        ];
        return { senderName: user.nickname, content: fallbacks[Math.floor(Math.random() * fallbacks.length)] };
     }
     return { senderName: user.nickname, content: text };
   } catch (error: any) {
     console.error("Gemini Lobby Error:", error);
-    const fallbacks = ["theek h", "hummm", "okk", "kya?", "waah", "badhiya"];
+    const fallbacks = ["kya scene?", "anyone from delhi?", "hi guys", "bore ho rha h", "waah", "badhiya"];
     return { senderName: user.nickname, content: fallbacks[Math.floor(Math.random() * fallbacks.length)] };
   }
 }
