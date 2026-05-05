@@ -55,12 +55,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   const [unreadThreads, setUnreadThreads] = useState<Set<string>>(new Set());
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
-  const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
 
   // Helper to get response delay based on profile
   const getResponseDelay = (profile: ResponseProfile) => {
     switch (profile) {
-      case 'Quick': return Math.random() * 3000 + 2000; // 2-5s as requested
+      case 'Quick': return Math.random() * 3000 + 5000; // 5-8s as requested
       case 'Moderate': return Math.random() * 30000 + 20000; // 20-50s
       case 'Sluggish': return Math.random() * 120000 + 60000; // 60-180s (1-3 mins)
       default: return null;
@@ -129,23 +128,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
       const dummyUser = dummyUsers.find(u => u.id === otherId);
       if (!dummyUser) return;
 
-      // Start typing halfway through the delay
-      setTimeout(() => {
-        setTypingUsers(prev => {
-          const next = new Set(prev);
-          next.add(otherId);
-          return next;
-        });
-      }, delay / 2);
-
+      // Response delay logic
       setTimeout(async () => {
         const thread = privateThreadsRef.current[otherId] || [];
         if (thread.length === 0 || thread[thread.length - 1].senderId !== user.id) {
-          setTypingUsers(prev => {
-            const next = new Set(prev);
-            next.delete(otherId);
-            return next;
-          });
           return;
         }
 
@@ -156,15 +142,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         // Multiple response logic (up to 3-4 messages)
         const sendSequence = async (count: number, max: number, currentContext: { senderName: string, content: string }[]) => {
           if (count >= max) {
-            setTypingUsers(prev => {
-              const next = new Set(prev);
-              next.delete(otherId);
-              return next;
-            });
             return;
           }
 
-          setTypingUsers(prev => new Set(prev).add(otherId));
           const text = count === 0 ? responseText : await generateDummyResponse(currentContext, dummyUser.nickname, dummyUser.gender as string);
           
           const msg: ChatMessage = {
@@ -189,12 +169,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
           const shouldFollowUp = Math.random() < 0.3 && count < max - 1;
           if (shouldFollowUp) {
             setTimeout(() => sendSequence(count + 1, max, nextContext), Math.random() * 4000 + 2000);
-          } else {
-            setTypingUsers(prev => {
-              const next = new Set(prev);
-              next.delete(otherId);
-              return next;
-            });
           }
         };
 
@@ -220,7 +194,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         const lastMsg = thread[thread.length - 1];
         if (lastMsg && lastMsg.senderId === user.id) {
           const dummyUser = dummyUsers.find(u => u.id === otherId);
-          if (dummyUser && !typingUsers.has(otherId)) {
+          if (dummyUser) {
             const timeSinceLastMsg = Date.now() - lastMsg.timestamp;
             // Only trigger if message was sent in last 2 seconds
             if (timeSinceLastMsg < 2000) { 
@@ -230,7 +204,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         }
       }
     });
-  }, [privateThreads, dummyUsers, user.id, typingUsers]);
+  }, [privateThreads, dummyUsers, user.id]);
 
   // Close pickers when clicking outside
   useEffect(() => {
@@ -1091,25 +1065,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
 
            {/* Message Buffer Flow */}
            <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0 p-4 space-y-4">
-              {activePrivateChat && typingUsers.has(activePrivateChat) && (
-                <div className="flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2 ml-4 mb-2 sticky top-0 z-10">
-                   <div className="bg-brand/10 text-brand self-start px-3 py-1 rounded-xl rounded-tl-none border border-brand/20 flex items-center gap-2 shadow-sm backdrop-blur-sm">
-                     <span className="text-[10px] font-black uppercase tracking-widest leading-none">
-                        {dummyUsers.find(u => u.id === activePrivateChat)?.nickname || "User"} typing
-                     </span>
-                     <div className="flex gap-1">
-                       <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1, delay: 0 }} className="w-1 h-1 bg-brand rounded-full" />
-                       <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-1 h-1 bg-brand rounded-full" />
-                       <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-1 h-1 bg-brand rounded-full" />
-                     </div>
+              {!activePrivateChat && (
+                <div className="flex justify-center mb-6">
+                   <div className="bg-border/30 px-3 py-1.5 rounded-full text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] border border-border">
+                      {currentRoom === 'lobby' ? 'Welcome to General Lobby' : `Welcome to ${currentChatName}`}
                    </div>
                 </div>
               )}
-              <div className="flex justify-center mb-6">
-                 <div className="bg-border/30 px-3 py-1.5 rounded-full text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] border border-border">
-                    {currentRoom === 'lobby' ? 'Welcome to General Lobby' : `Welcome to ${currentChatName}`}
-                 </div>
-              </div>
 
               <div className="bg-brand/5 border border-brand/10 p-4 rounded-xl mb-6 mx-auto max-w-[90%]">
                  <p className="text-[11px] text-brand/60 text-center leading-relaxed font-medium">

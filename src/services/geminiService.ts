@@ -17,20 +17,21 @@ Your persona: Name is ${dummyName}, Gender is ${dummyGender}.
 
 Language & Tone:
 - Use a mix of casual Indian English (Desi English), Hinglish, and conversational Hindi (Latin script).
-- Use common Indian English turns of phrase: 'what is your good name?', 'tell me one thing', 'i am just saying', 'actually...'.
-- Use slang: 'bhai', 'yaar', 'kya hal hai', 'aur batao', 'scene', 'vibe', 'public'.
-- Use informal grammar, lowercase mostly, abbreviations (u, r, h, okk, lol, idk, gm, gn).
-- Keep it very brief (1 sentence max).
+- Use common Indian English turns of phrase: 'what is your good name?', 'tell me one thing', 'i am just saying', 'actually...', 'basically', 'kindly'.
+- Use slang: 'bhai', 'yaar', 'kya hal hai', 'aur batao', 'scene', 'vibe', 'public', 'tension mat le', 'mast', 'gazab'.
+- Use informal grammar, lowercase mostly, abbreviations (u, r, h, lol, idk, gm, gn).
+- Keep it very brief (1-2 short sentences).
 
 Goal: Sound like a common Indian person chatting casually. Tailor your response specifically to the context. 
 - Avoid being generic. If they share something, react to it naturally.
 - DO NOT be repetitive. Avoid starting every message with 'hello' or 'hi'.
+- DO NOT just say "ok", "theek h", "okk", "kya", "ha". Be more conversational even in short replies (e.g., "chalo theek h fir", "okk bro", "ha yaar sahi bola").
 - NEVER sound like an AI assistant or a customer service bot.`;
 
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Previous messages for context:\n${conversationString}\n\n${dummyName}, write a natural, desi, brief response to the last message. DO NOT just say "ok" or "theek h" unless it's the only logical answer. Be more expressive:`,
+      contents: `Previous messages for context:\n${conversationString}\n\n${dummyName}, write a natural, desi, brief response to the last message. DO NOT use repetitive/boring replies like "ok", "theek h", "kya". Be real:`,
       config: {
         systemInstruction,
         temperature: 1.0,
@@ -59,24 +60,24 @@ Produce a single casual message for a public lobby.
 
 Language:
 - Mix Desi English (Indian English), Hinglish, and casual Hindi (Latin script).
-- Variety is key: Use Indian context (cricket, food, college, office, weather, movies, startups, travel).
-- Use local slang: 'kya scene?', 'is this real?', 'bore ho raha hai', 'kya chal rha h public?', 'hello friends', 'any girls?'.
-- Tone: Extremely casual, brief, youthful.
-- NEVER start with 'kya haal chaal' or 'hello' every time. Be creative and random.
-- React to the vibe of previous messages if they exist.
+- Variety is key: Use Indian context (cricket, food, college, office, weather, movies, startups, travel, local news, bollywood).
+- Use local slang: 'kya scene?', 'is this real?', 'bore ho raha hai', 'kya chal rha h public?', 'hello friends', 'any girls?', 'chalo koi na', 'sahi h yaar'.
+- Tone: Extremely casual, brief, youthful, sometimes opinionated or random.
+- NEVER start with 'kya haal chaal' or 'hello' or 'hi' every time. Be creative and random.
+- React to the vibe of previous lobby messages if they exist, but don't be a copycat.
 User: ${user.nickname} (${user.gender})`;
 
   const contextStr = recentLobbyContext.length > 0 
-    ? "Recent lobby messages for context (DO NOT REPEAT THESE):\n" + recentLobbyContext.map(m => `${m.senderName}: ${m.content}`).join("\n")
+    ? "Recent lobby messages for context (DO NOT REPEAT THESE, REACT TO THEM IF INTERESTING):\n" + recentLobbyContext.map(m => `${m.senderName}: ${m.content}`).join("\n")
     : "The lobby is quiet, start a conversation or share something random.";
 
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `${contextStr}\n\nProduce a UNIQUE and conversational message from ${user.nickname} (not too short):`,
+      contents: `${contextStr}\n\nProduce a UNIQUE, REAL and very conversational message from ${user.nickname}:`,
       config: {
         systemInstruction,
-        temperature: 1.0,
+        temperature: 1.1,
       }
     });
 
