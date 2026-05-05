@@ -1,6 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+// Standard initialization as per gemini-api skill
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 export async function generateDummyResponse(
   context: { senderName: string; content: string }[],
@@ -29,7 +30,7 @@ ${conversationString}
 ${dummyName}, respond to the last message.`;
 
   try {
-    const response = await ai.models.generateContent({
+    const result = await ai.models.generateContent({
       model,
       contents: systemInstruction,
       config: {
@@ -37,7 +38,7 @@ ${dummyName}, respond to the last message.`;
       }
     });
 
-    return response.text || "theek hai";
+    return result.text || "theek h";
   } catch (error) {
     console.error("Gemini Error:", error);
     return "theek h";
@@ -47,7 +48,7 @@ ${dummyName}, respond to the last message.`;
 export async function generateLobbyChatter(
   usersInRoom: { nickname: string; gender: string }[]
 ): Promise<{ senderName: string; content: string }> {
-  if (usersInRoom.length < 1) return { senderName: "User", content: "hey" };
+  if (usersInRoom.length < 1) return { senderName: "User", content: "kya haal chaal?" };
   
   const user = usersInRoom[Math.floor(Math.random() * usersInRoom.length)];
   const model = "gemini-3-flash-preview";
@@ -63,13 +64,14 @@ Language:
 User: ${user.nickname} (${user.gender})`;
 
   try {
-    const response = await ai.models.generateContent({
+    const result = await ai.models.generateContent({
       model,
       contents: systemInstruction,
     });
 
-    return { senderName: user.nickname, content: response.text || "kya haal chaal?" };
+    return { senderName: user.nickname, content: result.text || "kya haal chaal?" };
   } catch (error) {
-    return { senderName: user.nickname, content: "theek h" };
+    console.error("Gemini Lobby Error:", error);
+    return { senderName: user.nickname, content: "kya haal chaal?" };
   }
 }
