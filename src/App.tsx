@@ -112,6 +112,17 @@ export default function App() {
     setDisconnectReason(null);
     socket.emit('register' as any, { nickname, gender, interests });
     setUser({ id: 'pending', nickname, gender, interests });
+
+    // Add a safety timeout to prevent getting stuck in "pending" state
+    setTimeout(() => {
+      setUser(prev => {
+        if (prev?.id === 'pending') {
+          setError('Registration timed out. Please try again.');
+          return null;
+        }
+        return prev;
+      });
+    }, 10000);
   };
 
   const handleExit = () => {
@@ -198,7 +209,12 @@ export default function App() {
               )}
               <LandingPage onStart={() => setStep('entry')} />
               {step === 'entry' && (
-                <EntryScreen onJoin={handleJoin} onClose={() => setStep('landing')} error={error} />
+                <EntryScreen 
+                  onJoin={handleJoin} 
+                  onClose={() => setStep('landing')} 
+                  error={error} 
+                  loading={user?.id === 'pending'}
+                />
               )}
             </div>
           )}

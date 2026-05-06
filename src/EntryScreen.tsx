@@ -8,9 +8,10 @@ interface EntryScreenProps {
   onJoin: (nickname: string, gender: Gender, interests: string[]) => void;
   onClose?: () => void;
   error?: string | null;
+  loading?: boolean;
 }
 
-export const EntryScreen: React.FC<EntryScreenProps> = ({ onJoin, onClose, error }) => {
+export const EntryScreen: React.FC<EntryScreenProps> = ({ onJoin, onClose, error, loading }) => {
   const [nickname, setNickname] = useState('');
   const [gender, setGender] = useState<Gender | ''>('');
   const [isAgreed, setIsAgreed] = useState(false);
@@ -127,13 +128,27 @@ export const EntryScreen: React.FC<EntryScreenProps> = ({ onJoin, onClose, error
 
           <button
             type="submit"
+            disabled={!isFormValid || loading}
             className={`w-full bg-brand hover:bg-brand-dark text-white font-black py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-95 focus:outline-none focus:ring-2 focus:ring-brand/50 focus:ring-offset-2 focus:ring-offset-surface ${
-              isFormValid 
-                ? 'shadow-brand/20' 
-                : 'opacity-30 cursor-not-allowed'
+              isFormValid && !loading
+                ? 'shadow-brand/20 cursor-pointer' 
+                : 'opacity-50 cursor-not-allowed'
             }`}
           >
-            Join <ArrowRight size={16} />
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <motion.div 
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                  className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
+                />
+                <span>Joining...</span>
+              </div>
+            ) : (
+              <>
+                Join <ArrowRight size={16} />
+              </>
+            )}
           </button>
         </form>
 
