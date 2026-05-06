@@ -55,6 +55,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   const [unreadThreads, setUnreadThreads] = useState<Set<string>>(new Set());
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const [dummyReplyCounts, setDummyReplyCounts] = useState<Record<string, number>>({});
+  const dummyReplyCountsRef = useRef(dummyReplyCounts);
+
+  useEffect(() => {
+    dummyReplyCountsRef.current = dummyReplyCounts;
+  }, [dummyReplyCounts]);
 
   // Helper to get response delay based on profile
   const getResponseDelay = (profile: ResponseProfile) => {
@@ -130,6 +136,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
 
       // Response delay logic
       setTimeout(async () => {
+        // Double check count at execution time
+        if ((dummyReplyCountsRef.current[otherId] || 0) >= 2) return;
+
         const thread = privateThreadsRef.current[otherId] || [];
         if (thread.length === 0 || thread[thread.length - 1].senderId !== user.id) {
           return;
@@ -185,6 +194,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         const totalToSendMessage = profile === 'Quick' 
           ? (Math.random() < 0.3 ? 2 : 1) 
           : 1;
+        
+        // Increment reply count
+        setDummyReplyCounts(prev => ({
+          ...prev,
+          [otherId]: (prev[otherId] || 0) + 1
+        }));
+
         await sendSequence(0, totalToSendMessage);
 
         if (activePrivateChatRef.current !== otherId) {
@@ -204,7 +220,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         const lastMsg = thread[thread.length - 1];
         if (lastMsg && lastMsg.senderId === user.id) {
           const dummyUser = dummyUsers.find(u => u.id === otherId);
-          if (dummyUser) {
+          // Only allow up to 2 replies from each dummy
+          const replyCount = dummyReplyCountsRef.current[otherId] || 0;
+          if (dummyUser && replyCount < 2) {
             const timeSinceLastMsg = Date.now() - lastMsg.timestamp;
             // Only trigger if message was sent in last 2 seconds
             if (timeSinceLastMsg < 2000) { 
