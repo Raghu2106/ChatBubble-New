@@ -135,17 +135,29 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
           return;
         }
 
-        // Generate response using last 5 messages for context
-        const context = thread.slice(-5).map(m => ({ senderName: m.senderName, content: m.content }));
-        const responseText = await generateDummyResponse(context, dummyUser.nickname, dummyUser.gender as string);
+        // Predefined responses for dummy users in private messaging
+        const responsePools = [
+          ['hi', 'hii', 'hey', 'hello'],
+          ['asl', 'asl?', 'ur asl'],
+          ['from', 'from?', 'frm', 'from?'],
+          ['age', 'age?', 'ur age']
+        ];
 
-        // Multiple response logic (up to 3-4 messages)
-        const sendSequence = async (count: number, max: number, currentContext: { senderName: string, content: string }[]) => {
+        // Pick a random category and then a random phrase from it
+        const getRandomResponse = () => {
+          const pool = responsePools[Math.floor(Math.random() * responsePools.length)];
+          return pool[Math.floor(Math.random() * pool.length)];
+        };
+
+        const responseText = getRandomResponse();
+
+        // Multiple response logic (up to 2 messages)
+        const sendSequence = async (count: number, max: number) => {
           if (count >= max) {
             return;
           }
 
-          const text = count === 0 ? responseText : await generateDummyResponse(currentContext, dummyUser.nickname, dummyUser.gender as string);
+          const text = count === 0 ? responseText : getRandomResponse();
           
           const msg: ChatMessage = {
             id: `dummy-reply-${Date.now()}-${count}`,
@@ -163,19 +175,17 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
             [otherId]: [...(prev[otherId] || []), msg]
           }));
 
-          const nextContext = [...currentContext, { senderName: dummyUser.nickname, content: text }];
-
           // Decide if we send another one
-          const shouldFollowUp = Math.random() < 0.3 && count < max - 1;
+          const shouldFollowUp = Math.random() < 0.2 && count < max - 1;
           if (shouldFollowUp) {
-            setTimeout(() => sendSequence(count + 1, max, nextContext), Math.random() * 4000 + 2000);
+            setTimeout(() => sendSequence(count + 1, max), Math.random() * 4000 + 2000);
           }
         };
 
         const totalToSendMessage = profile === 'Quick' 
-          ? (Math.random() < 0.5 ? 2 : 2) // Quick users send 2 messages max now
-          : (Math.random() < 0.2 ? 2 : 1); // Others send 1 or 2
-        await sendSequence(0, totalToSendMessage, context);
+          ? (Math.random() < 0.3 ? 2 : 1) 
+          : 1;
+        await sendSequence(0, totalToSendMessage);
 
         if (activePrivateChatRef.current !== otherId) {
           setUnreadThreads(prev => {
