@@ -184,6 +184,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
             [otherId]: [...(prev[otherId] || []), msg]
           }));
 
+          setDummyReplyCounts(prev => ({
+            ...prev,
+            [otherId]: (prev[otherId] || 0) + 1
+          }));
+
           // Decide if we send another one
           const shouldFollowUp = Math.random() < 0.2 && count < max - 1;
           if (shouldFollowUp) {
@@ -191,16 +196,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
           }
         };
 
-        const totalToSendMessage = profile === 'Quick' 
-          ? (Math.random() < 0.3 ? 2 : 1) 
-          : 1;
-        
-        // Increment reply count
-        setDummyReplyCounts(prev => ({
-          ...prev,
-          [otherId]: (prev[otherId] || 0) + 1
-        }));
+        const currentCount = dummyReplyCountsRef.current[otherId] || 0;
+        const remaining = 2 - currentCount;
+        if (remaining <= 0) return;
 
+        const totalToSendMessage = Math.min(remaining, profile === 'Quick' 
+          ? (Math.random() < 0.3 ? 2 : 1) 
+          : 1);
+        
         await sendSequence(0, totalToSendMessage);
 
         if (activePrivateChatRef.current !== otherId) {
