@@ -72,7 +72,7 @@ export default function App() {
     socket.on('connect', () => {
       // If we already have a user and we are in the chat step, re-register automatically on reconnect
       if (stepRef.current === 'chat' && user) {
-        socket.emit('register' as any, { 
+        socket.emit('register', { 
           nickname: user.nickname, 
           gender: user.gender, 
           interests: user.interests 
@@ -91,7 +91,7 @@ export default function App() {
       }
     });
 
-    socket.on('registration:success' as any, ({ userId }: { userId: string }) => {
+    socket.on('registration:success', ({ userId }: { userId: string }) => {
       setUser(prev => prev ? { ...prev, id: userId } : null);
       setStep('chat');
     });
@@ -119,7 +119,7 @@ export default function App() {
       return;
     }
 
-    socket.emit('register' as any, { nickname, gender, interests });
+    socket.emit('register', { nickname, gender, interests });
     setUser({ id: 'pending', nickname, gender, interests });
 
     // Add a safety timeout to prevent getting stuck in "pending" state

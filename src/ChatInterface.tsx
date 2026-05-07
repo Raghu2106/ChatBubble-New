@@ -423,15 +423,17 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         return next;
       });
 
-      // Special check for dummies: show offline error immediately if they are gone
-      if (activePrivateChat.startsWith('dummy-')) {
-        const isStillOnline = dummyUsers.some(u => u.id === activePrivateChat);
-        if (!isStillOnline) {
-          setError("User is no longer online.");
-        }
+      // Unified online check for both dummies and real users
+      const isDummy = activePrivateChat.startsWith('dummy-');
+      const isOnline = isDummy 
+        ? dummyUsers.some(u => u.id === activePrivateChat)
+        : onlineUsers.some(u => u.id === activePrivateChat);
+
+      if (!isOnline) {
+        setError("User is no longer online.");
       }
     }
-  }, [activePrivateChat, dummyUsers, setError]);
+  }, [activePrivateChat, dummyUsers, onlineUsers, setError]);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -439,14 +441,18 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
 
     setError(null);
     if (activePrivateChat) {
-      // Immediate online check for dummies
+      // Immediate online check
       const isDummy = activePrivateChat.startsWith('dummy-');
+      const isOnline = isDummy 
+        ? dummyUsers.some(u => u.id === activePrivateChat)
+        : onlineUsers.some(u => u.id === activePrivateChat);
+
+      if (!isOnline) {
+        setError("User is no longer online.");
+        return;
+      }
+
       if (isDummy) {
-        const isOnline = dummyUsers.some(u => u.id === activePrivateChat);
-        if (!isOnline) {
-          setError("User is no longer online.");
-          return;
-        }
 
         // Handle dummy user message locally
         const newMessage = {

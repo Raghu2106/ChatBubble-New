@@ -53,6 +53,7 @@ export interface ServerToClientEvents {
   'user:reported': (data: { totalReports: number }) => void;
   'match:found': (data: { peerId: string; peerNickname: string; peerGender?: Gender }) => void;
   'match:left': () => void;
+  'registration:success': (data: { userId: string }) => void;
 }
 
 export interface ClientToServerEvents {
@@ -66,6 +67,7 @@ export interface ClientToServerEvents {
   'match:find': () => void;
   'match:cancel': () => void;
   'match:leave': () => void;
+  'register': (data: { nickname: string; gender?: Gender; interests?: string[] }) => void;
 }
 
 const PORT = Number(process.env.PORT) || 3000;
@@ -333,7 +335,8 @@ async function startServer() {
       socket.emit('dummies:update' as any, serverDummyUsers);
     });
 
-    socket.on('register' as any, (data: { nickname: string, gender?: any, interests?: string[] }) => {
+    socket.on('register', (data) => {
+      console.log(`Registration attempt for: ${data?.nickname}`);
       try {
         if (!data) {
           socket.emit('error', 'Invalid registration data.');
@@ -388,7 +391,7 @@ async function startServer() {
         users.set(userId, newUser);
         sessions.set(socket.id, userId);
         
-        socket.emit('registration:success' as any, { userId });
+        socket.emit('registration:success', { userId });
         console.log(`User ${newUser.nickname} registered successfully. (Total users: ${users.size})`);
       } catch (err) {
         console.error('Registration system error:', err);

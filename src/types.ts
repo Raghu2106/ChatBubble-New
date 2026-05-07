@@ -56,6 +56,7 @@ export interface ServerToClientEvents {
   'status:update': (data: { userId: string; isDND: boolean }) => void;
   'match:found': (data: { peerId: string; peerNickname: string; peerGender?: Gender }) => void;
   'match:left': () => void;
+  'registration:success': (data: { userId: string }) => void;
 }
 
 export interface ClientToServerEvents {
@@ -69,6 +70,7 @@ export interface ClientToServerEvents {
   'match:find': () => void;
   'match:cancel': () => void;
   'match:leave': () => void;
+  'register': (data: { nickname: string; gender?: Gender; interests?: string[] }) => void;
 }
 
 export interface SessionData {
