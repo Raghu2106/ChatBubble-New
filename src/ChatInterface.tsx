@@ -10,9 +10,8 @@ import {
 import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 import { Logo } from './components/Logo';
 import { socket } from './socket';
-import { ChatMessage, Room, Gender, ResponseProfile } from './types';
+import { ChatMessage, Room, Gender, ResponseProfile, DummyUser } from './types';
 import { AdUnit } from './components/AdUnit';
-import { useDummyUsers } from './hooks/useDummyUsers';
 import { generateDummyResponse, generateLobbyChatter } from './services/geminiService';
 
 // Helper to sanitize message content and strip clickable links/HTML
@@ -25,6 +24,7 @@ interface ChatInterfaceProps {
   onExit: () => void;
   error?: string | null;
   setError: (err: string | null) => void;
+  dummyUsers: DummyUser[];
 }
 
 type Tab = 'Rooms' | 'Messages' | 'People';
@@ -36,9 +36,8 @@ const CATEGORIES = [
   { id: 'global', name: 'Connect Globally', icon: Globe },
 ];
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, error, setError }) => {
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, error, setError, dummyUsers }) => {
   const [activeTab, setActiveTab] = useState<Tab>('Rooms');
-  const dummyUsers = useDummyUsers();
   const [currentRoom, setCurrentRoom] = useState<string>('lobby');
   const [roomMessages, setRoomMessages] = useState<Record<string, ChatMessage[]>>({});
   const [onlineUsers, setOnlineUsers] = useState<{ id: string; nickname: string; gender?: Gender; isDND?: boolean; currentRoom?: string }[]>([]);

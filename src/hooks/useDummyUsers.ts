@@ -1,15 +1,6 @@
 import { useState, useEffect } from 'react';
 import { socket } from '../socket';
-import { Gender, ResponseProfile } from '../types';
-
-interface DummyUser {
-  id: string;
-  nickname: string;
-  gender: Gender;
-  isDummy: boolean;
-  currentRoom: string;
-  responseProfile: ResponseProfile;
-}
+import { Gender, ResponseProfile, DummyUser } from '../types';
 
 export const useDummyUsers = () => {
   const [activeDummies, setActiveDummies] = useState<DummyUser[]>([]);
@@ -22,9 +13,8 @@ export const useDummyUsers = () => {
 
     socket.on('dummies:update' as any, handleUpdate);
     
-    // The server emits 'dummies:update' on connection, 
-    // but the socket might already be connected.
-    // If we wanted to request it explicitly we could, but server방송 handles it.
+    // Request initial list immediately in case we missed the connection event
+    socket.emit('dummies:get' as any);
     
     return () => {
       socket.off('dummies:update' as any, handleUpdate);

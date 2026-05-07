@@ -2,6 +2,15 @@ export type Gender = 'Male' | 'Female' | 'Other' | 'Non-binary' | 'Prefer not to
 
 export type ResponseProfile = 'Quick' | 'Moderate' | 'Sluggish' | 'Lurker';
 
+export interface DummyUser {
+  id: string;
+  nickname: string;
+  gender: Gender;
+  isDummy: boolean;
+  currentRoom: string;
+  responseProfile: ResponseProfile;
+}
+
 export interface User {
   id: string;
   nickname: string;

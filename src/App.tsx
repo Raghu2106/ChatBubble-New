@@ -10,8 +10,9 @@ import { EntryScreen } from './EntryScreen';
 import { ChatInterface } from './ChatInterface';
 import { Gender } from './types';
 import { Shield } from 'lucide-react';
-import { GlobalAds, AdUnit } from './components/AdUnit';
+import { AdUnit, GlobalAds } from './components/AdUnit';
 import { SessionTimeoutModal } from './components/SessionTimeoutModal';
+import { useDummyUsers } from './hooks/useDummyUsers';
 
 const AdminPanel = React.lazy(() => import('./AdminPanel').then(m => ({ default: m.AdminPanel })));
 
@@ -19,6 +20,7 @@ const INACTIVITY_LIMIT = 60 * 60 * 1000; // 60 minutes
 const WARNING_DURATION = 60; // 60 seconds
 
 export default function App() {
+  const dummyUsers = useDummyUsers();
   const [step, setStep] = useState<'landing' | 'entry' | 'chat'>('landing');
   const stepRef = React.useRef(step);
   stepRef.current = step;
@@ -191,7 +193,7 @@ export default function App() {
                 </div>
               </div>
               <div className="flex-1 overflow-hidden">
-                <ChatInterface user={user} onExit={handleExit} error={error} setError={setError} />
+                <ChatInterface user={user} onExit={handleExit} error={error} setError={setError} dummyUsers={dummyUsers} />
               </div>
             </div>
           ) : (

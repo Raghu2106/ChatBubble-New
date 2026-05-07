@@ -330,6 +330,10 @@ async function startServer() {
     }
 
     // Handle Registration
+    socket.on('dummies:get' as any, () => {
+      socket.emit('dummies:update' as any, serverDummyUsers);
+    });
+
     socket.on('register' as any, (data: { nickname: string, gender?: any, interests?: string[] }) => {
       try {
         if (!data) {
