@@ -10,8 +10,8 @@ interface DummyUser {
   responseProfile: ResponseProfile;
 }
 
-const TARGET_MIN_DUMMIES = 150;
-const TARGET_MAX_DUMMIES = 180;
+const TARGET_MIN_DUMMIES = 186;
+const TARGET_MAX_DUMMIES = 222;
 const MALE_PROBABILITY = 0.85;
 const CYCLE_INTERVAL_MS = (2 * 60 * 60 * 1000) / TARGET_MIN_DUMMIES;
 const TRAFFIC_SIMULATION_INTERVAL_MS = 15000; // Check every 15s to make it feel more active
@@ -154,10 +154,11 @@ export const useDummyUsers = () => {
   
   useEffect(() => {
     const generateInitialDummies = () => {
+      const initialCount = Math.floor(Math.random() * (TARGET_MAX_DUMMIES - TARGET_MIN_DUMMIES + 1)) + TARGET_MIN_DUMMIES;
       const dummies: DummyUser[] = [];
       const usedNicknames = new Set<string>();
 
-      for (let i = 0; i < TARGET_MIN_DUMMIES; i++) {
+      for (let i = 0; i < initialCount; i++) {
         const isMale = Math.random() < MALE_PROBABILITY;
         const gender: Gender = isMale ? 'Male' : 'Female';
         const roomId = getRandomRoomId();

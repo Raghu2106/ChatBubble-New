@@ -57,10 +57,16 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const [dummyReplyCounts, setDummyReplyCounts] = useState<Record<string, number>>({});
   const dummyReplyCountsRef = useRef(dummyReplyCounts);
+  const [usedDummyPools, setUsedDummyPools] = useState<Record<string, number[]>>({});
+  const usedDummyPoolsRef = useRef(usedDummyPools);
 
   useEffect(() => {
     dummyReplyCountsRef.current = dummyReplyCounts;
   }, [dummyReplyCounts]);
+
+  useEffect(() => {
+    usedDummyPoolsRef.current = usedDummyPools;
+  }, [usedDummyPools]);
 
   // Helper to get response delay based on profile
   const getResponseDelay = (profile: ResponseProfile) => {
@@ -144,29 +150,39 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
           return;
         }
 
-        // Predefined responses for dummy users in private messaging
+        // Predefined response pools grouped by category
         const responsePools = [
-          ['hi', 'hii', 'hey', 'hello'],
-          ['asl', 'asl?', 'ur asl'],
-          ['from', 'from?', 'frm', 'from?'],
-          ['age', 'age?', 'ur age']
+          ['hi', 'hii', 'hey', 'hello'], // 0: Greetings
+          ['asl', 'asl?', 'ur asl'],      // 1: Identity
+          ['from', 'from?', 'frm', 'from?'], // 2: Location
+          ['age', 'age?', 'ur age']        // 3: Age
         ];
 
-        // Pick a random category and then a random phrase from it
-        const getRandomResponse = () => {
-          const pool = responsePools[Math.floor(Math.random() * responsePools.length)];
-          return pool[Math.floor(Math.random() * pool.length)];
+        // Pick a pool that hasn't been used yet for this specific chat
+        const getUnusedPoolIndex = (excludeIndices: number[] = []) => {
+          const usedSoFar = usedDummyPoolsRef.current[otherId] || [];
+          const allExcludes = [...usedSoFar, ...excludeIndices];
+          const availableIndices = [0, 1, 2, 3].filter(idx => !allExcludes.includes(idx));
+          
+          if (availableIndices.length === 0) return null;
+          return availableIndices[Math.floor(Math.random() * availableIndices.length)];
         };
 
-        const responseText = getRandomResponse();
+        const firstPoolIdx = getUnusedPoolIndex();
+        if (firstPoolIdx === null) return;
+
+        const responseText = responsePools[firstPoolIdx][Math.floor(Math.random() * responsePools[firstPoolIdx].length)];
 
         // Multiple response logic (up to 2 messages)
-        const sendSequence = async (count: number, max: number) => {
+        const sendSequence = async (count: number, max: number, usedInThisSequence: number[]) => {
           if (count >= max) {
             return;
           }
 
-          const text = count === 0 ? responseText : getRandomResponse();
+          let currentPoolIdx: number | null = count === 0 ? firstPoolIdx : getUnusedPoolIndex(usedInThisSequence);
+          if (currentPoolIdx === null) return;
+
+          const text = count === 0 ? responseText : responsePools[currentPoolIdx][Math.floor(Math.random() * responsePools[currentPoolIdx].length)];
           
           const msg: ChatMessage = {
             id: `dummy-reply-${Date.now()}-${count}`,
@@ -189,22 +205,29 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
             [otherId]: (prev[otherId] || 0) + 1
           }));
 
+          // Mark pool as used
+          setUsedDummyPools(prev => ({
+            ...prev,
+            [otherId]: [...(prev[otherId] || []), currentPoolIdx!]
+          }));
+
           // Decide if we send another one
           const shouldFollowUp = Math.random() < 0.2 && count < max - 1;
           if (shouldFollowUp) {
-            setTimeout(() => sendSequence(count + 1, max), Math.random() * 4000 + 2000);
+            setTimeout(() => sendSequence(count + 1, max, [...usedInThisSequence, currentPoolIdx!]), Math.random() * 4000 + 2000);
           }
         };
 
         const currentCount = dummyReplyCountsRef.current[otherId] || 0;
-        const remaining = 2 - currentCount;
-        if (remaining <= 0) return;
+        const remainingToReplyCount = 2 - currentCount;
+        if (remainingToReplyCount <= 0) return;
 
-        const totalToSendMessage = Math.min(remaining, profile === 'Quick' 
+        // How many messages to send in this specific reply trigger
+        const totalToSendMessage = Math.min(remainingToReplyCount, profile === 'Quick' 
           ? (Math.random() < 0.3 ? 2 : 1) 
           : 1);
         
-        await sendSequence(0, totalToSendMessage);
+        await sendSequence(0, totalToSendMessage, []);
 
         if (activePrivateChatRef.current !== otherId) {
           setUnreadThreads(prev => {
