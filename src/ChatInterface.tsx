@@ -153,10 +153,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
 
         // Predefined response pools grouped by category
         const responsePools = [
-          ['asl', 'asl?', 'ur asl'], // 0: Greetings
+          ['hi', 'hii', 'hey'],           // 0: Greetings
           ['asl', 'asl?', 'ur asl'],      // 1: Identity/ASL
-          ['from', 'from?', 'frm'], // 2: Location
-          ['age', 'age?', 'ur age']        // 3: Age
+          ['from', 'from?', 'frm'],       // 2: Location
+          ['age', 'age?', 'ur age']       // 3: Age
         ];
 
         // Pick a pool that hasn't been used yet for this specific chat
@@ -412,21 +412,26 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
 
   useEffect(() => {
     if (activePrivateChat) {
+      // Clear old error when switching chat
       setError(null);
+      
+      // Clear unread
       setUnreadThreads(prev => {
         if (!prev.has(activePrivateChat)) return prev;
         const next = new Set(prev);
         next.delete(activePrivateChat);
         return next;
       });
-    }
-  }, [activePrivateChat, setError]);
 
-  useEffect(() => {
-    if (activePrivateChat?.startsWith('dummy-') && error?.toLowerCase().includes('online')) {
-      setError(null);
+      // Special check for dummies: show offline error immediately if they are gone
+      if (activePrivateChat.startsWith('dummy-')) {
+        const isStillOnline = dummyUsers.some(u => u.id === activePrivateChat);
+        if (!isStillOnline) {
+          setError("User is no longer online.");
+        }
+      }
     }
-  }, [activePrivateChat, error, setError]);
+  }, [activePrivateChat, dummyUsers, setError]);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -434,9 +439,16 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
 
     setError(null);
     if (activePrivateChat) {
-      if (activePrivateChat.startsWith('dummy-')) {
+      // Immediate online check for dummies
+      const isDummy = activePrivateChat.startsWith('dummy-');
+      if (isDummy) {
+        const isOnline = dummyUsers.some(u => u.id === activePrivateChat);
+        if (!isOnline) {
+          setError("User is no longer online.");
+          return;
+        }
+
         // Handle dummy user message locally
-        const dummyUser = dummyUsers.find(u => u.id === activePrivateChat);
         const newMessage = {
           id: `local-${Date.now()}`,
           senderId: user.id,
@@ -452,6 +464,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
           [activePrivateChat]: [...(prev[activePrivateChat] || []), newMessage]
         }));
       } else {
+        // Real user: server handles the check globally (across rooms)
         socket.emit('send:private', { recipientId: activePrivateChat, content: inputText });
       }
     } else {
@@ -924,8 +937,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                           <p className="text-[9px] text-text-muted/60 mt-1">Select a user from the People tab to start a private chat.</p>
                         </div>
                       ) : (
-                        Object.keys(privateThreads).map(otherId => {
-                          const thread = privateThreads[otherId];
+                        Object.keys(privateThreads)
+                          .sort((a, b) => {
+                            const lastA = privateThreads[a][privateThreads[a].length - 1]?.timestamp || 0;
+                            const lastB = privateThreads[b][privateThreads[b].length - 1]?.timestamp || 0;
+                            return lastB - lastA;
+                          })
+                          .map(otherId => {
+                            const thread = privateThreads[otherId];
                           const lastMsg = thread[thread.length - 1];
                           const otherUser = [...onlineUsers, ...dummyUsers].find(u => u.id === otherId);
                           
