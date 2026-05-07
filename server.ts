@@ -136,18 +136,17 @@ function getRandomRoomId() {
 }
 
 function getRandomProfile(gender: Gender) {
+  if (gender === 'Male') return 'Lurker';
+  
   const rand = Math.random() * 100;
   if (gender === 'Female') {
-    if (rand < 5) return 'Quick';
-    if (rand < 45) return 'Moderate';
-    if (rand < 55) return 'Sluggish';
-    return 'Lurker';
-  } else {
-    if (rand < 10) return 'Quick';
-    if (rand < 50) return 'Moderate';
-    if (rand < 70) return 'Sluggish';
+    if (rand < 4) return 'Quick';
+    if (rand < 10) return 'Moderate';
+    if (rand < 18) return 'Sluggish';
     return 'Lurker';
   }
+  
+  return 'Lurker';
 }
 
 function generateNickname(isMale: boolean, roomId: string, existingFullNicknames: Set<string>) {

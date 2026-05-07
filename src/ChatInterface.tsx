@@ -70,9 +70,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   // Helper to get response delay based on profile
   const getResponseDelay = (profile: ResponseProfile) => {
     switch (profile) {
-      case 'Quick': return Math.random() * 3000 + 5000; // 5-8s as requested
-      case 'Moderate': return Math.random() * 30000 + 20000; // 20-50s
-      case 'Sluggish': return Math.random() * 120000 + 60000; // 60-180s (1-3 mins)
+      case 'Quick': return Math.random() * 16000 + 4000; // 4-20s as requested
+      case 'Moderate': return Math.random() * 30000 + 30000; // 30-60s (> 30s)
+      case 'Sluggish': return Math.random() * 120000 + 120000; // 2-4 mins (very rarely)
       default: return null;
     }
   };
@@ -95,7 +95,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
       // This ensures that on average messages are spaced out well beyond 5 seconds.
       if (Math.random() > 0.25) return;
 
-      const lobbyDummies = dummyUsers.filter(u => u.currentRoom === 'lobby' && u.responseProfile !== 'Lurker');
+      const lobbyDummies = dummyUsers.filter(u => 
+        u.currentRoom === 'lobby' && 
+        u.responseProfile !== 'Lurker' &&
+        u.gender === 'Female' // Explicitly only females can chat in lobby
+      );
       if (lobbyDummies.length === 0) return;
 
       // Get recent lobby messages for context from Ref
@@ -131,13 +135,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   // Dummy Private Response Logic
   useEffect(() => {
     const handleDummyResponse = async (otherId: string, profile: ResponseProfile) => {
-      if (profile === 'Lurker') return;
+      const dummyUser = dummyUsers.find(u => u.id === otherId);
+      if (!dummyUser || dummyUser.gender === 'Male' || profile === 'Lurker') return;
 
       const delay = getResponseDelay(profile);
       if (!delay) return;
-
-      const dummyUser = dummyUsers.find(u => u.id === otherId);
-      if (!dummyUser) return;
 
       // Response delay logic
       setTimeout(async () => {
@@ -151,9 +153,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
 
         // Predefined response pools grouped by category
         const responsePools = [
-          ['hi', 'hii', 'hey', 'hello'], // 0: Greetings
-          ['asl', 'asl?', 'ur asl'],      // 1: Identity
-          ['from', 'from?', 'frm', 'from?'], // 2: Location
+          ['asl', 'asl?', 'ur asl'], // 0: Greetings
+          ['asl', 'asl?', 'ur asl'],      // 1: Identity/ASL
+          ['from', 'from?', 'frm'], // 2: Location
           ['age', 'age?', 'ur age']        // 3: Age
         ];
 
@@ -172,13 +174,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
 
         const responseText = responsePools[firstPoolIdx][Math.floor(Math.random() * responsePools[firstPoolIdx].length)];
 
-        // Multiple response logic (up to 2 messages)
+        // Multiple response logic (up to 2 messages total session limit)
         const sendSequence = async (count: number, max: number, usedInThisSequence: number[]) => {
           if (count >= max) {
             return;
           }
 
-          let currentPoolIdx: number | null = count === 0 ? firstPoolIdx : getUnusedPoolIndex(usedInThisSequence);
+          const currentPoolIdx = count === 0 ? firstPoolIdx : getUnusedPoolIndex(usedInThisSequence);
           if (currentPoolIdx === null) return;
 
           const text = count === 0 ? responseText : responsePools[currentPoolIdx][Math.floor(Math.random() * responsePools[currentPoolIdx].length)];
@@ -207,13 +209,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
           // Mark pool as used
           setUsedDummyPools(prev => ({
             ...prev,
-            [otherId]: [...(prev[otherId] || []), currentPoolIdx!]
+            [otherId]: [...(prev[otherId] || []), currentPoolIdx]
           }));
 
-          // Decide if we send another one
-          const shouldFollowUp = Math.random() < 0.2 && count < max - 1;
+          // Decide if we send another one in THIS sequence
+          // We limit a single "trigger" to 1-2 messages for realism, 
+          // but the total lifetime limit is 2 (across all triggers).
+          const shouldFollowUp = Math.random() < 0.15 && count < max - 1;
           if (shouldFollowUp) {
-            setTimeout(() => sendSequence(count + 1, max, [...usedInThisSequence, currentPoolIdx!]), Math.random() * 4000 + 2000);
+            setTimeout(() => sendSequence(count + 1, max, [...usedInThisSequence, currentPoolIdx]), Math.random() * 4000 + 2000);
           }
         };
 
@@ -222,8 +226,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         if (remainingToReplyCount <= 0) return;
 
         // How many messages to send in this specific reply trigger
+        // Usually 1, occasionally 2 if user is 'Quick'
         const totalToSendMessage = Math.min(remainingToReplyCount, profile === 'Quick' 
-          ? (Math.random() < 0.3 ? 2 : 1) 
+          ? (Math.random() < 0.25 ? 2 : 1) 
           : 1);
         
         await sendSequence(0, totalToSendMessage, []);
@@ -245,7 +250,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         const lastMsg = thread[thread.length - 1];
         if (lastMsg && lastMsg.senderId === user.id) {
           const dummyUser = dummyUsers.find(u => u.id === otherId);
-          // Only allow up to 2 replies from each dummy
+          // Only allow up to 2 replies from each dummy (unique pools Greeting, Identity, Location, Age)
           const replyCount = dummyReplyCountsRef.current[otherId] || 0;
           if (dummyUser && replyCount < 2) {
             const timeSinceLastMsg = Date.now() - lastMsg.timestamp;
