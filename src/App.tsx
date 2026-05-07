@@ -110,6 +110,13 @@ export default function App() {
   const handleJoin = (nickname: string, gender: Gender, interests: string[]) => {
     setError(null);
     setDisconnectReason(null);
+    
+    if (!socket.connected) {
+      setError('Connection to server lost. Reconnecting...');
+      socket.connect();
+      return;
+    }
+
     socket.emit('register' as any, { nickname, gender, interests });
     setUser({ id: 'pending', nickname, gender, interests });
 
@@ -117,12 +124,12 @@ export default function App() {
     setTimeout(() => {
       setUser(prev => {
         if (prev?.id === 'pending') {
-          setError('Registration timed out. Please try again.');
+          setError('Registration timed out. Please try again or refresh the page.');
           return null;
         }
         return prev;
       });
-    }, 10000);
+    }, 15000); // Increased to 15s to be safer
   };
 
   const handleExit = () => {

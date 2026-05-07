@@ -201,54 +201,62 @@ function initDummyUsers() {
 function startDummySimulation(io: Server) {
   // Cycle existing users
   setInterval(() => {
-    if (serverDummyUsers.length === 0) return;
-    const indexToReplace = Math.floor(Math.random() * serverDummyUsers.length);
-    const currentNicknames = new Set<string>(serverDummyUsers.map(u => u.nickname));
-    
-    const isMale = Math.random() < MALE_PROBABILITY;
-    const gender: Gender = isMale ? 'Male' : 'Female';
-    const roomId = getRandomRoomId();
-    const nickname = generateNickname(isMale, roomId, currentNicknames);
-
-    serverDummyUsers[indexToReplace] = {
-      id: `dummy-cycle-${Date.now()}-${Math.random()}`,
-      nickname,
-      gender,
-      isDummy: true,
-      currentRoom: roomId,
-      responseProfile: getRandomProfile(gender)
-    };
-    
-    io.emit('dummies:update' as any, serverDummyUsers);
-  }, CYCLE_INTERVAL_MS);
-
-  // Simulate traffic (Add/Remove users)
-  setInterval(() => {
-    const count = serverDummyUsers.length;
-    const shouldAdd = count < TARGET_MAX_DUMMIES && (count <= TARGET_MIN_DUMMIES || Math.random() > 0.5);
-    const shouldRemove = !shouldAdd && count > TARGET_MIN_DUMMIES;
-
-    if (shouldAdd) {
+    try {
+      if (serverDummyUsers.length === 0) return;
+      const indexToReplace = Math.floor(Math.random() * serverDummyUsers.length);
+      const currentNicknames = new Set<string>(serverDummyUsers.map(u => u.nickname));
+      
       const isMale = Math.random() < MALE_PROBABILITY;
       const gender: Gender = isMale ? 'Male' : 'Female';
       const roomId = getRandomRoomId();
-      const currentNicknames = new Set<string>(serverDummyUsers.map(u => u.nickname));
       const nickname = generateNickname(isMale, roomId, currentNicknames);
-      
-      serverDummyUsers.push({
-        id: `dummy-join-${Date.now()}-${Math.random()}`,
+
+      serverDummyUsers[indexToReplace] = {
+        id: `dummy-cycle-${Date.now()}-${Math.random()}`,
         nickname,
         gender,
         isDummy: true,
         currentRoom: roomId,
         responseProfile: getRandomProfile(gender)
-      });
-    } else if (shouldRemove) {
-      const randomIndex = Math.floor(Math.random() * serverDummyUsers.length);
-      serverDummyUsers.splice(randomIndex, 1);
+      };
+      
+      io.emit('dummies:update' as any, serverDummyUsers);
+    } catch (err) {
+      console.error('Dummy cycle error:', err);
     }
-    
-    io.emit('dummies:update' as any, serverDummyUsers);
+  }, CYCLE_INTERVAL_MS);
+
+  // Simulate traffic (Add/Remove users)
+  setInterval(() => {
+    try {
+      const count = serverDummyUsers.length;
+      const shouldAdd = count < TARGET_MAX_DUMMIES && (count <= TARGET_MIN_DUMMIES || Math.random() > 0.5);
+      const shouldRemove = !shouldAdd && count > TARGET_MIN_DUMMIES;
+
+      if (shouldAdd) {
+        const isMale = Math.random() < MALE_PROBABILITY;
+        const gender: Gender = isMale ? 'Male' : 'Female';
+        const roomId = getRandomRoomId();
+        const currentNicknames = new Set<string>(serverDummyUsers.map(u => u.nickname));
+        const nickname = generateNickname(isMale, roomId, currentNicknames);
+        
+        serverDummyUsers.push({
+          id: `dummy-join-${Date.now()}-${Math.random()}`,
+          nickname,
+          gender,
+          isDummy: true,
+          currentRoom: roomId,
+          responseProfile: getRandomProfile(gender)
+        });
+      } else if (shouldRemove) {
+        const randomIndex = Math.floor(Math.random() * serverDummyUsers.length);
+        serverDummyUsers.splice(randomIndex, 1);
+      }
+      
+      io.emit('dummies:update' as any, serverDummyUsers);
+    } catch (err) {
+      console.error('Traffic simulation error:', err);
+    }
   }, TRAFFIC_SIMULATION_INTERVAL_MS);
 }
 
@@ -321,67 +329,68 @@ async function startServer() {
       return;
     }
 
-    socket.on('join:room', (roomId) => {
-      // For anonymous entry, we might need a separate 'entry' event
-      // but let's assume the client sends user info on first join or entry
-    });
-
-    // Handle Entry / Session Init (Not in spec explicitly but needed)
-    socket.onAny((event, ...args) => {
-      // console.log(`Event: ${event}`, args);
-    });
-
+    // Handle Registration
     socket.on('register' as any, (data: { nickname: string, gender?: any, interests?: string[] }) => {
-      const cleanNickname = (data.nickname || '').trim();
-      
-      if (!cleanNickname) {
-        socket.emit('error', 'Nickname cannot be empty.');
-        return;
+      try {
+        if (!data) {
+          socket.emit('error', 'Invalid registration data.');
+          return;
+        }
+
+        const cleanNickname = (data.nickname || '').trim();
+        
+        if (!cleanNickname) {
+          socket.emit('error', 'Nickname cannot be empty.');
+          return;
+        }
+
+        // Check if nickname is already taken across all users
+        const allUsers = Array.from(users.values());
+        const existingUser = allUsers.find(u => 
+          (u.nickname || '').trim().toLowerCase() === cleanNickname.toLowerCase()
+        );
+
+        if (existingUser) {
+          socket.emit('error', 'This nickname is already in use. Please choose another one.');
+          return;
+        }
+
+        // Check if socket is already registered
+        if (sessions.has(socket.id)) {
+          socket.emit('error', 'You are already registered.');
+          return;
+        }
+
+        // Check if nickname is banned
+        const nickBanTime = bannedNicknames.get(cleanNickname.toLowerCase());
+        if (nickBanTime && nickBanTime > Date.now()) {
+          const remaining = Math.ceil((nickBanTime - Date.now()) / 60000);
+          socket.emit('error', `This nickname is temporarily banned. Try again in ${remaining} minutes.`);
+          return;
+        }
+
+        const userId = uuidv4();
+        const newUser: User = {
+          id: userId,
+          nickname: cleanNickname,
+          gender: data.gender,
+          interests: data.interests || [],
+          ip: ip,
+          reports: new Set(),
+          blockedUsers: new Set(),
+          isDND: false,
+          lastMessageTime: 0
+        } as any;
+
+        users.set(userId, newUser);
+        sessions.set(socket.id, userId);
+        
+        socket.emit('registration:success' as any, { userId });
+        console.log(`User ${newUser.nickname} registered successfully. (Total users: ${users.size})`);
+      } catch (err) {
+        console.error('Registration system error:', err);
+        socket.emit('error', 'A system error occurred. Please refresh and try again.');
       }
-
-      // Check if nickname is already taken across all users
-      const allUsers = Array.from(users.values());
-      const existingUser = allUsers.find(u => 
-        (u.nickname || '').trim().toLowerCase() === cleanNickname.toLowerCase()
-      );
-
-      if (existingUser) {
-        socket.emit('error', 'This nickname is already in use. Please choose another one.');
-        return;
-      }
-
-      // Check if socket is already registered
-      if (sessions.has(socket.id)) {
-        socket.emit('error', 'You are already registered.');
-        return;
-      }
-
-      // Check if nickname is banned
-      const nickBanTime = bannedNicknames.get(data.nickname.toLowerCase());
-      if (nickBanTime && nickBanTime > Date.now()) {
-        const remaining = Math.ceil((nickBanTime - Date.now()) / 60000);
-        socket.emit('error', `This nickname is temporarily banned. Try again in ${remaining} minutes.`);
-        return;
-      }
-
-      const userId = uuidv4();
-      const newUser: User = {
-        id: userId,
-        nickname: data.nickname,
-        gender: data.gender,
-        interests: data.interests || [],
-        ip: ip,
-        reports: new Set(),
-        blockedUsers: new Set(),
-        isDND: false,
-        lastMessageTime: 0
-      } as any;
-
-      users.set(userId, newUser);
-      sessions.set(socket.id, userId);
-      
-      socket.emit('registration:success' as any, { userId });
-      console.log(`User ${newUser.nickname} registered successfully.`);
     });
 
     socket.on('join:room', (roomId) => {
