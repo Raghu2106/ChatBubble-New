@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Users, MessageSquare, Globe, User, MoreVertical, 
@@ -58,6 +58,25 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   const dummyReplyCountsRef = useRef(dummyReplyCounts);
   const [usedDummyPools, setUsedDummyPools] = useState<Record<string, number[]>>({});
   const usedDummyPoolsRef = useRef(usedDummyPools);
+
+  // Memoized sorted private chat IDs by last message timestamp
+  const sortedPrivateChatIds = useMemo(() => {
+    return Object.keys(privateThreads).sort((a, b) => {
+      const threadA = privateThreads[a] || [];
+      const threadB = privateThreads[b] || [];
+      const lastMsgA = threadA[threadA.length - 1];
+      const lastMsgB = threadB[threadB.length - 1];
+      
+      const timeA = lastMsgA?.timestamp || 0;
+      const timeB = lastMsgB?.timestamp || 0;
+      
+      // If timestamps are equal, sort by ID for stability
+      if (timeB === timeA) {
+        return b.localeCompare(a);
+      }
+      return timeB - timeA;
+    });
+  }, [privateThreads]);
 
   useEffect(() => {
     dummyReplyCountsRef.current = dummyReplyCounts;
@@ -934,7 +953,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                  )}
                                 {activeTab === 'Messages' && (
                     <div className="space-y-1">
-                      {Object.keys(privateThreads).length === 0 ? (
+                      {sortedPrivateChatIds.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
                           <div className="w-12 h-12 bg-surface-hover rounded-full flex items-center justify-center mb-3">
                             <Plus size={20} className="text-text-muted/40" />
@@ -943,14 +962,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                           <p className="text-[9px] text-text-muted/60 mt-1">Select a user from the People tab to start a private chat.</p>
                         </div>
                       ) : (
-                        Object.keys(privateThreads)
-                          .sort((a, b) => {
-                            const lastA = privateThreads[a][privateThreads[a].length - 1]?.timestamp || 0;
-                            const lastB = privateThreads[b][privateThreads[b].length - 1]?.timestamp || 0;
-                            return lastB - lastA;
-                          })
-                          .map(otherId => {
-                            const thread = privateThreads[otherId];
+                        sortedPrivateChatIds.map(otherId => {
+                          const thread = privateThreads[otherId];
                           const lastMsg = thread[thread.length - 1];
                           const otherUser = [...onlineUsers, ...dummyUsers].find(u => u.id === otherId);
                           
@@ -1105,11 +1118,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
               <div className="w-10 h-10 bg-brand/10 rounded-xl flex items-center justify-center border border-brand/5">
                  <MessageSquare size={20} className="text-brand" />
               </div>
-              <div>
+              <div className="flex-1 min-w-0">
                  <div className="flex items-center gap-2">
-                   <h2 className="text-lg font-black tracking-tight text-text-highlight">{currentChatName}</h2>
+                   <h2 className="text-lg font-black tracking-tight text-text-highlight truncate">{currentChatName}</h2>
                    {activePrivateChat && globalStatuses[activePrivateChat]?.isDND && (
-                     <span className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest bg-orange-500/10 text-orange-500 px-1.5 py-0.5 rounded-md border border-orange-500/10">
+                     <span className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest bg-orange-500/10 text-orange-500 px-1.5 py-0.5 rounded-md border border-orange-500/10 shrink-0">
                        <BellOff size={8} /> DND
                      </span>
                    )}
@@ -1118,6 +1131,29 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                     {activePrivateChat ? "Private Messaging" : (currentRoomData?.description || "A place for open, respectful conversations")}
                  </p>
               </div>
+
+              {activePrivateChat && (
+                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                  <button
+                    onClick={() => handleReport(activePrivateChat)}
+                    className="flex items-center gap-1.5 px-2 py-1.5 bg-surface/50 hover:bg-orange-500/10 text-text-muted hover:text-orange-500 rounded-lg transition-all font-black text-[9px] sm:text-[10px] uppercase tracking-widest border border-border hover:border-orange-500/20"
+                    title="Report User"
+                  >
+                    <ShieldAlert size={14} />
+                    <span className="hidden xs:inline">Report</span>
+                  </button>
+                  {!blockedUsers.has(activePrivateChat) && (
+                    <button
+                      onClick={() => handleBlock(activePrivateChat)}
+                      className="flex items-center gap-1.5 px-2 py-1.5 bg-surface/50 hover:bg-red-500/10 text-text-muted hover:text-red-500 rounded-lg transition-all font-black text-[9px] sm:text-[10px] uppercase tracking-widest border border-border hover:border-red-500/20"
+                      title="Restrict User"
+                    >
+                      <Shield size={14} />
+                      <span className="hidden xs:inline">Restrict</span>
+                    </button>
+                  )}
+                </div>
+              )}
            </div>
 
             {/* Restriction Banners */}
