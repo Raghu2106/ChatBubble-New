@@ -82,8 +82,8 @@ const userTimers = new Map<string, NodeJS.Timeout>();
 const TARGET_MIN_DUMMIES = 240;
 const TARGET_MAX_DUMMIES = 280;
 const MALE_PROBABILITY = 0.85; // 85:15 ratio maintained
-const CYCLE_INTERVAL_MS = (4 * 60 * 60 * 1000) / TARGET_MIN_DUMMIES; // Doubled cycle time for better stability
-const TRAFFIC_SIMULATION_INTERVAL_MS = 15000;
+const CYCLE_INTERVAL_MS = 8 * 60 * 1000; // Replace one dummy every 8 minutes as requested
+const TRAFFIC_SIMULATION_INTERVAL_MS = 60000; // Slowing down traffic simulation as well to 1 minute to avoid jitter
 
 const ROOM_DATA = [
   { id: 'lobby', weight: 40, names: 'indian' },
