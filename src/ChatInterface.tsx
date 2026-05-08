@@ -85,7 +85,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
     privateThreadsRef.current = privateThreads;
   }, [privateThreads]);
 
-  // Total removal of ResponsePools and Bot logic as per 'recommendations' removal request.
+  // Total removal of ResponsePools and Bot logic as per request.
   
   // Close pickers when clicking outside
   useEffect(() => {
@@ -1045,7 +1045,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                           }}
                           placeholder={`Message ${currentChatName}...`}
                           className="w-full bg-bg/50 rounded-lg py-2 px-4 text-base md:text-sm focus:outline-none border border-border focus:border-brand transition-all font-medium placeholder:text-text-muted/30 shadow-inner"
-                       />
+                          autoComplete="off"
+                        />
                      </div>
                      <div className="relative" ref={emojiPickerRef}>
                         <button 

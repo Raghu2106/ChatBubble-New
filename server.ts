@@ -137,14 +137,21 @@ function getRandomRoomId() {
   return 'lobby';
 }
 
+const RESPONSE_POOLS = [
+  ['hi', 'hii', 'hello', 'hey'],
+  ['age', 'age?', 'ur age'],
+  ['asl', 'asl?', 'ur asl?'],
+  ['u frm', 'frm', 'from?', 'u from']
+];
+
 function getRandomProfile(gender: Gender) {
   if (gender === 'Male') return 'Lurker';
   
   const rand = Math.random() * 100;
   if (gender === 'Female') {
     if (rand < 4) return 'Quick';
-    if (rand < 10) return 'Moderate';
-    if (rand < 18) return 'Sluggish';
+    if (rand < 9) return 'Moderate';
+    if (rand < 15) return 'Sluggish';
     return 'Lurker';
   }
   
@@ -193,7 +200,9 @@ function initDummyUsers() {
       gender,
       isDummy: true,
       currentRoom: roomId,
-      responseProfile: getRandomProfile(gender)
+      responseProfile: getRandomProfile(gender),
+      repliesCount: 0,
+      usedPools: []
     });
   }
   serverDummyUsers = dummies;
@@ -218,7 +227,9 @@ function startDummySimulation(io: Server) {
         gender,
         isDummy: true,
         currentRoom: roomId,
-        responseProfile: getRandomProfile(gender)
+        responseProfile: getRandomProfile(gender),
+        repliesCount: 0,
+        usedPools: []
       };
       
       io.emit('dummies:update' as any, serverDummyUsers);
@@ -247,7 +258,9 @@ function startDummySimulation(io: Server) {
           gender,
           isDummy: true,
           currentRoom: roomId,
-          responseProfile: getRandomProfile(gender)
+          responseProfile: getRandomProfile(gender),
+          repliesCount: 0,
+          usedPools: []
         });
       } else if (shouldRemove) {
         const randomIndex = Math.floor(Math.random() * serverDummyUsers.length);
@@ -259,6 +272,70 @@ function startDummySimulation(io: Server) {
       console.error('Traffic simulation error:', err);
     }
   }, TRAFFIC_SIMULATION_INTERVAL_MS);
+}
+
+function handleDummyResponses(io: Server, roomId: string, senderId: string) {
+  // Only respond to real users
+  if (senderId.startsWith('dummy-')) return;
+
+  const roomDummies = serverDummyUsers.filter(d => d.currentRoom === roomId && d.responseProfile !== 'Lurker');
+  if (roomDummies.length === 0) return;
+
+  // Pick 1-2 random dummies from the room to potentially respond
+  const activeDummies = roomDummies
+    .filter(d => d.repliesCount < 2) // Max 2 replies
+    .sort(() => 0.5 - Math.random())
+    .slice(0, Math.random() > 0.7 ? 2 : 1);
+
+  activeDummies.forEach(dummy => {
+    let delay = 0;
+    if (dummy.responseProfile === 'Quick') delay = Math.random() * 5000 + 5000; // 5-10s
+    else if (dummy.responseProfile === 'Moderate') delay = Math.random() * 30000 + 30000; // 30-60s
+    else if (dummy.responseProfile === 'Sluggish') delay = 120000; // 2 minutes
+
+    if (delay > 0) {
+      setTimeout(() => {
+        // Double check if dummy still in room and still valid
+        const stillExists = serverDummyUsers.find(d => d.id === dummy.id && d.currentRoom === roomId);
+        if (stillExists && stillExists.repliesCount < 2) {
+          // Determine available pools
+          // Pool index 0 is and only for first reply
+          // No pool should be used twice
+          let availablePoolIndices: number[] = [];
+          
+          if (stillExists.repliesCount === 0) {
+            // First reply can use any pool (0, 1, 2, 3)
+            availablePoolIndices = [0, 1, 2, 3];
+          } else if (stillExists.repliesCount === 1) {
+            // Second reply can use pools 1, 2, 3 EXCLUDING the one already used
+            // Index 0 (Pool 1) is strictly for first reply
+            availablePoolIndices = [1, 2, 3].filter(idx => !stillExists.usedPools.includes(idx));
+          }
+
+          if (availablePoolIndices.length === 0) return;
+
+          const poolIndex = availablePoolIndices[Math.floor(Math.random() * availablePoolIndices.length)];
+          const pool = RESPONSE_POOLS[poolIndex];
+          const content = pool[Math.floor(Math.random() * pool.length)];
+
+          const message: ChatMessage = {
+            id: uuidv4(),
+            senderId: dummy.id,
+            senderName: dummy.nickname,
+            senderGender: dummy.gender,
+            content,
+            timestamp: Date.now(),
+            roomId,
+            type: 'public'
+          };
+
+          io.to(roomId).emit('room:message', message);
+          stillExists.repliesCount++;
+          stillExists.usedPools.push(poolIndex);
+        }
+      }, delay);
+    }
+  });
 }
 
 const rooms: Room[] = [
@@ -423,6 +500,9 @@ async function startServer() {
       };
 
       io.to(data.roomId).emit('room:message', message);
+      
+      // Trigger dummy responses
+      handleDummyResponses(io, data.roomId, userId);
     });
 
     socket.on('send:private', (data) => {

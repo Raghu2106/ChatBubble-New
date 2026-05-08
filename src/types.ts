@@ -9,6 +9,8 @@ export interface DummyUser {
   isDummy: boolean;
   currentRoom: string;
   responseProfile: ResponseProfile;
+  repliesCount: number;
+  usedPools: number[];
 }
 
 export interface User {
