@@ -283,26 +283,37 @@ function startDummySimulation(io: Server) {
   }, TRAFFIC_SIMULATION_INTERVAL_MS);
 }
 
-function handleDummyResponses(io: Server, roomId: string, senderId: string) {
+function handleDummyResponses(io: Server, roomId: string, senderId: string, targetDummyId?: string) {
   // Only respond to real users
   if (senderId.startsWith('dummy-')) return;
 
-  // Optimized selection: O(n) filtering instead of O(n log n) sorting
-  const candidates: any[] = [];
-  for (const d of serverDummyUsers) {
-    if (d.currentRoom === roomId && d.responseProfile !== 'Lurker' && d.repliesCount < 2) {
-      candidates.push(d);
+  let candidates: any[] = [];
+  
+  if (targetDummyId) {
+    // Private message: only the recipient dummy responds
+    const dummy = serverDummyUsers.find(d => d.id === targetDummyId && d.responseProfile !== 'Lurker' && d.repliesCount < 2);
+    if (dummy) candidates = [dummy];
+  } else {
+    // Public message: random active dummies in room
+    for (const d of serverDummyUsers) {
+      if (d.currentRoom === roomId && d.responseProfile !== 'Lurker' && d.repliesCount < 2) {
+        candidates.push(d);
+      }
     }
   }
   
   if (candidates.length === 0) return;
 
-  // Pick 1-2 random dummies from the candidates
-  const countToPick = Math.random() > 0.7 ? 2 : 1;
-  const selected: any[] = [];
-  for (let i = 0; i < countToPick && candidates.length > 0; i++) {
-    const randomIndex = Math.floor(Math.random() * candidates.length);
-    selected.push(candidates.splice(randomIndex, 1)[0]);
+  let selected: any[] = [];
+  if (targetDummyId) {
+    selected = candidates;
+  } else {
+    // Pick 1-2 random dummies from the candidates
+    const countToPick = Math.random() > 0.7 ? 2 : 1;
+    for (let i = 0; i < countToPick && candidates.length > 0; i++) {
+      const randomIndex = Math.floor(Math.random() * candidates.length);
+      selected.push(candidates.splice(randomIndex, 1)[0]);
+    }
   }
 
   selected.forEach(dummy => {
@@ -314,16 +325,16 @@ function handleDummyResponses(io: Server, roomId: string, senderId: string) {
     if (delay > 0) {
       setTimeout(() => {
         // Verify dummy state again after the async delay
-        const stillExists = serverDummyUsers.find(d => d.id === dummy.id && d.currentRoom === roomId);
+        const stillExists = serverDummyUsers.find(d => d.id === dummy.id);
         if (stillExists && stillExists.repliesCount < 2) {
           let availablePoolIndices: number[] = [];
           
-          if (stillExists.repliesCount === 0) {
+          if (stillExists.usedPools.length === 0) {
             // First reply can use any pool (index 0, 1, 2, 3)
             availablePoolIndices = [0, 1, 2, 3];
-          } else if (stillExists.repliesCount === 1) {
-            // Second reply can ONLY use pools 2, 3, 4 (index 1, 2, 3)
-            // AND must exclude the pool used in first reply
+          } else {
+            // Further replies (max 2 total) pick from Pools 2, 3, 4 (index 1, 2, 3)
+            // AND exclude Pool 1 (index 0) and any pool used in first reply
             availablePoolIndices = [1, 2, 3].filter(idx => !stillExists.usedPools.includes(idx));
           }
 
@@ -333,18 +344,42 @@ function handleDummyResponses(io: Server, roomId: string, senderId: string) {
           const pool = RESPONSE_POOLS[poolIndex];
           const content = pool[Math.floor(Math.random() * pool.length)];
 
-          const message: ChatMessage = {
-            id: uuidv4(),
-            senderId: dummy.id,
-            senderName: dummy.nickname,
-            senderGender: dummy.gender,
-            content,
-            timestamp: Date.now(),
-            roomId,
-            type: 'public'
-          };
+          const messageId = uuidv4();
+          const timestamp = Date.now();
 
-          io.to(roomId).emit('room:message', message);
+          if (targetDummyId) {
+            // Send Private Reply
+            const privateMsg: ChatMessage = {
+              id: messageId,
+              senderId: dummy.id,
+              senderName: dummy.nickname,
+              senderGender: dummy.gender,
+              content,
+              timestamp,
+              recipientId: senderId,
+              type: 'private'
+            };
+
+            const senderSocketId = Array.from(sessions.entries()).find(([sid, uid]) => uid === senderId)?.[0];
+            if (senderSocketId) {
+              io.to(senderSocketId).emit('private:message', privateMsg);
+            }
+          } else {
+            // Send Public Reply
+            const publicMsg: ChatMessage = {
+              id: messageId,
+              senderId: dummy.id,
+              senderName: dummy.nickname,
+              senderGender: dummy.gender,
+              content,
+              timestamp,
+              roomId,
+              type: 'public'
+            };
+
+            io.to(roomId).emit('room:message', publicMsg);
+          }
+
           stillExists.repliesCount++;
           stillExists.usedPools.push(poolIndex);
         }
@@ -566,8 +601,15 @@ async function startServer() {
       if (recipientSocketId) {
         io.to(recipientSocketId).emit('private:message', message);
       }
+      
       // Always send back to sender for their DM UI as long as recipient exists in system
       socket.emit('private:message', message);
+
+      // Trigger dummy response for private message
+      const isDummyRecipient = serverDummyUsers.some(d => d.id === data.recipientId);
+      if (isDummyRecipient) {
+        handleDummyResponses(io, '', userId, data.recipientId);
+      }
     });
 
     socket.on('toggle:dnd', (isDND) => {
