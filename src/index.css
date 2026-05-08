@@ -1,19 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-brand: #0369a1;
-  --color-brand-light: #0ea5e9;
-  --color-brand-dark: #075985;
-  --color-bg: #f1f5f9;
-  --color-surface: #e2e8f0;
-  --color-surface-hover: #cbd5e1;
-  --color-text: #1e293b;
-  --color-text-muted: #334155;
-  --color-text-highlight: #075985;
-  --color-border: #cbd5e1;
+  --color-brand: #6366f1;
+  --color-brand-light: #818cf8;
+  --color-brand-dark: #4338ca;
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f1f5f9;
+  --color-text: #0f172a;
+  --color-text-muted: #64748b;
+  --color-text-highlight: #6366f1;
+  --color-border: #e2e8f0;
 
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
-  --font-display: "Lexend", system-ui, sans-serif;
+  --font-display: "Outfit", "Inter", sans-serif;
+  
+  --shadow-premium: 0 10px 40px -10px rgba(0, 0, 0, 0.05);
+  --shadow-brand: 0 10px 40px -10px rgba(99, 102, 241, 0.2);
 }
 
 @utility p-safe {

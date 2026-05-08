@@ -38,7 +38,7 @@ export const AboutUsContent = () => (
     </section>
     <section>
       <h3 className="text-text font-bold text-lg mb-2">Global Connectivity</h3>
-      <p>With thousands of users from over 150 countries, ChatBubble serves as a bridge across cultures. Whether you're looking for local friends in Mumbai or curious about life in New York, our platform makes the world feel a little smaller.</p>
+      <p>With thousands of users from over 150 countries, ChatBubble serves as a bridge across cultures. Whether you're curious about different cultures or looking for meaningful conversations, our platform makes the world feel a little smaller.</p>
     </section>
     <section>
       <h3 className="text-text font-bold text-lg mb-2">Privacy by Design</h3>
@@ -56,12 +56,12 @@ export const ContactUsContent = () => (
     <div className="grid gap-4">
       <div className="p-4 bg-surface border border-border rounded-xl">
         <h4 className="text-text font-bold mb-1">Email Support</h4>
-        <p className="text-brand font-black">support@chatbubble.me</p>
+        <p className="text-brand font-black">support@chatbubble.fun</p>
         <p className="text-[11px] mt-1 text-text-muted/60">Average response time: 24-48 hours</p>
       </div>
       <div className="p-4 bg-surface border border-border rounded-xl">
         <h4 className="text-text font-bold mb-1">Moderation Appeals</h4>
-        <p className="text-brand font-black">appeals@chatbubble.me</p>
+        <p className="text-brand font-black">appeals@chatbubble.fun</p>
         <p className="text-[11px] mt-1 text-text-muted/60">Include your nickname and reason for appeal.</p>
       </div>
     </div>

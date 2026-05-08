@@ -26,21 +26,16 @@ export const Logo: React.FC<LogoProps> = ({ className = '', iconOnly = false, si
         >
           <defs>
             <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#22d3ee" />
-              <stop offset="100%" stopColor="#2dd4bf" />
+              <stop offset="0%" stopColor="#4f46e5" />
+              <stop offset="100%" stopColor="#06b6d4" />
             </linearGradient>
           </defs>
           {/* Main Bubble Shape */}
-          <path 
-            d="M50 15C31 15 15 28.5 15 45C15 54.5 21 62.5 30 68L28 85L45 75C46.6 74.5 48.3 75 50 75C69 75 85 61.5 85 45C85 28.5 69 15 50 15Z" 
-            fill="url(#logo-gradient)" 
-          />
-          {/* Inner White Outline Circle */}
-          <circle cx="50" cy="45" r="22" stroke="white" strokeWidth="6" opacity="0.4" />
-          {/* Three Dots */}
-          <circle cx="38" cy="45" r="4.5" fill="white" />
-          <circle cx="50" cy="45" r="4.5" fill="white" />
-          <circle cx="62" cy="45" r="4.5" fill="white" />
+          <rect x="20" y="20" width="60" height="60" rx="18" fill="url(#logo-gradient)" />
+          {/* White icon lines */}
+          <rect x="35" y="38" width="30" height="4" rx="2" fill="white" />
+          <rect x="35" y="48" width="20" height="4" rx="2" fill="white" />
+          <path d="M45 80 L55 80 L50 90 Z" fill="url(#logo-gradient)" />
         </svg>
       </div>
       {!iconOnly && (

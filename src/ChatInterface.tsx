@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  Users, MessageSquare, Globe, User, MoreVertical, 
+  Users, MessageSquare, Globe, User, MoreVertical, Menu,
   Send, ShieldAlert, DoorOpen, Bell, BellOff, RefreshCw,
   Lock, Search, Plus, ChevronDown, Music, Code, Zap,
   Moon, Hash, Shield, ChevronRight, Mars, Venus, X,
@@ -32,8 +32,8 @@ type SortOption = 'alphabet' | 'gender';
 type SortOrder = 'asc' | 'desc';
 
 const CATEGORIES = [
-  { id: 'local', name: 'Connect Locally', icon: Globe },
-  { id: 'global', name: 'Connect Globally', icon: Globe },
+  { id: 'local', name: 'Local Connections', icon: Globe },
+  { id: 'global', name: 'Global Connections', icon: Globe },
 ];
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, error, setError, dummyUsers }) => {
@@ -53,6 +53,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   const [privateThreads, setPrivateThreads] = useState<Record<string, ChatMessage[]>>({});
   const [unreadThreads, setUnreadThreads] = useState<Set<string>>(new Set());
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showLegal, setShowLegal] = useState(false);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const [dummyReplyCounts, setDummyReplyCounts] = useState<Record<string, number>>({});
   const dummyReplyCountsRef = useRef(dummyReplyCounts);
@@ -612,64 +613,50 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   return (
     <div className="h-full flex flex-col bg-bg text-text overflow-hidden font-sans">
       
-      {/* TOP PRIVACY BAR - CONDENSED */}
-      <div className="bg-surface py-1 text-center border-b border-border shrink-0">
-        <span className="text-[9px] uppercase font-black tracking-widest text-text-muted flex items-center justify-center gap-1.5">
-          <Lock size={10} className="text-brand" />
-          Your conversations stay private. No personal data stored.
-        </span>
-      </div>
-
-      {/* MAIN HEADER - CONDENSED */}
-      <header className="h-10 flex-shrink-0 flex items-center justify-between px-4 md:px-10 bg-surface/80 backdrop-blur-md border-b border-border shadow-sm sticky top-0 z-40 relative">
-        <div className="flex items-center gap-2">
+      {/* MAIN HEADER - TIGHTER */}
+      <header className="h-12 flex-shrink-0 flex items-center justify-between px-4 bg-white border-b border-slate-100 sticky top-0 z-40">
+        <div className="flex items-center gap-3">
           <button 
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="md:hidden p-1.5 hover:bg-surface-hover rounded-lg text-text-muted"
+            className="md:hidden p-2 hover:bg-slate-50 rounded-xl text-slate-400 transition-colors"
             aria-label={mobileSidebarOpen ? "Close menu" : "Open menu"}
           >
-            <MoreVertical size={18} className={mobileSidebarOpen ? 'rotate-90 transition-transform' : 'transition-transform'} />
+            <Menu size={22} className={mobileSidebarOpen ? 'rotate-90 transition-transform' : 'transition-transform'} />
           </button>
-          <div className="flex items-center gap-1.5">
-            <Logo size="sm" />
-          </div>
+          <Logo size="md" />
         </div>
 
-        {/* Centered Welcome Message - Only show on desktop */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none hidden md:flex">
-          <span className="text-xs font-medium text-text-muted pointer-events-auto">
-            Welcome, <span className="text-text-highlight font-black">{user.nickname}</span>
-          </span>
+        <div className="hidden md:flex items-center gap-2 px-4 py-1.5 bg-slate-50 rounded-full border border-slate-100">
+           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Welcome,</span>
+           <span className="text-[11px] font-black text-brand uppercase tracking-tight leading-none truncate max-w-[120px]">{user.nickname}</span>
         </div>
 
-        <div className="flex items-center gap-2 md:gap-6">
-          <div className="flex items-center gap-1.5 md:gap-2">
-             <span className="text-[9px] font-black uppercase text-text-highlight tracking-widest flex items-center gap-1">
-               {isDND ? <BellOff size={10} /> : <Bell size={10} />} DND
-             </span>
-             <button 
-               onClick={toggleDND}
-               className={`w-8 h-4 rounded-full relative transition-all duration-300 ${isDND ? 'bg-brand' : 'bg-border'}`}
-               aria-label={isDND ? "Disable Do Not Disturb" : "Enable Do Not Disturb"}
-               aria-pressed={isDND}
-             >
-                <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-all duration-300 ${isDND ? 'left-4.5' : 'left-0.5'}`} />
-             </button>
-          </div>
-          <div className="flex items-center">
-            <button 
-              onClick={onExit}
-              className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 bg-surface/50 hover:bg-red-500/10 text-text-highlight hover:text-red-500 rounded-lg transition-all font-black text-[9px] uppercase tracking-widest border border-border hover:border-red-500/20"
-            >
-              <DoorOpen size={12} />
-              <span>Exit</span>
-            </button>
-          </div>
+        <div className="flex items-center gap-2 md:gap-4">
+          <button 
+            onClick={toggleDND}
+            className={`flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-xl border transition-all duration-300 ${
+              isDND 
+                ? 'bg-amber-50 border-amber-200 text-amber-600 shadow-sm shadow-amber-100' 
+                : 'bg-white border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50'
+            }`}
+             title={isDND ? "Disable Do Not Disturb" : "Enable Do Not Disturb"}
+          >
+            {isDND ? <BellOff size={16} /> : <Bell size={16} />}
+            <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:inline">DND</span>
+          </button>
+          
+          <button 
+            onClick={onExit}
+            className="group flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 bg-slate-900 hover:bg-red-600 border border-slate-800 hover:border-red-500 text-white rounded-xl transition-all font-bold text-[10px] uppercase tracking-wider shadow-lg shadow-slate-900/10"
+          >
+            <DoorOpen size={16} />
+            <span className="hidden sm:inline">Exit App</span>
+          </button>
         </div>
       </header>
 
-      {/* MAIN LAYOUT CONTENT */}
-      <div className="flex-1 flex overflow-hidden md:px-4 md:py-3 gap-3 relative pb-16 md:pb-0">
+      {/* MAIN CONTENT AREA */}
+      <div className="flex-1 flex overflow-hidden lg:pl-3 lg:py-3 gap-3 relative pb-16 md:pb-0">
         
         {/* Mobile Sidebar Overlay */}
         <AnimatePresence>
@@ -679,109 +666,91 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileSidebarOpen(false)}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 md:hidden"
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-30 md:hidden"
             />
           )}
         </AnimatePresence>
 
-        {/* LEFT SIDEBAR CATEGORIES */}
+         {/* LEFT NAVIGATOR - SLIMMER AND MODERN */}
         <aside className={`
-          fixed inset-y-0 left-0 top-10 md:static md:w-60 flex flex-col gap-2 flex-shrink-0 z-40 transition-transform duration-300 ease-in-out
-          bg-surface md:bg-transparent p-3 md:p-0 shadow-2xl md:shadow-none
+          fixed inset-y-0 left-0 top-12 md:static flex flex-col gap-3 flex-shrink-0 z-40 transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
+          bg-surface md:bg-transparent md:w-56 p-2 md:p-0
           ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-          w-[75%] sm:w-60
+          w-[85%] max-w-[300px] md:max-w-none shadow-2xl md:shadow-none
         `}>
-           {/* Sidebar Close button for mobile */}
-           <div className="flex items-center justify-between md:hidden mb-1">
-              <span className="text-xs font-black uppercase tracking-widest text-brand border-b-2 border-brand/20">Menu</span>
-              <button 
-                onClick={() => setMobileSidebarOpen(false)}
-                className="p-1 hover:bg-surface-hover rounded-lg text-text-muted"
-              >
-                <X size={16} />
-              </button>
-           </div>
-           {/* Navigation Tabs - COMPACT */}
-           <div className="flex bg-border/20 p-0.5 rounded-lg border border-border/10">
+           {/* Navigation Tabs - ROUNDED PILL DESIGN */}
+           <div className="flex bg-slate-100 p-0.5 rounded-md border border-slate-200">
               {(['Rooms', 'Messages', 'People'] as Tab[]).map(tab => {
                 let count = 0;
                 if (tab === 'Messages') count = Object.keys(privateThreads).length;
                 if (tab === 'Rooms') count = rooms.length;
                 if (tab === 'People') {
-                  // Create a comprehensive list including the current user
                   const allUsers = [...onlineUsers, ...dummyUsers];
                   const isSelfInList = allUsers.some(u => u.id === user.id);
                   const finalUserList = isSelfInList ? allUsers : [...allUsers, { id: user.id, nickname: user.nickname, gender: user.gender, currentRoom }];
-
                   count = finalUserList.filter(u => 
-                    currentRoom === 'lobby' ||
-                    (u.currentRoom?.toLowerCase() === currentRoom.toLowerCase()) || 
-                    (u.id === user.id)
+                    currentRoom === 'lobby' || (u.currentRoom?.toLowerCase() === currentRoom.toLowerCase()) || (u.id === user.id)
                   ).length;
                 }
                 const hasUnread = tab === 'Messages' && unreadThreads.size > 0;
-
+ 
                 return (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`flex-1 py-1 text-[9px] font-black uppercase tracking-widest rounded-md transition-all flex items-center justify-center gap-1.5 ${
-                      activeTab === tab ? 'bg-surface text-brand shadow-sm' : 'text-text-muted hover:text-text'
+                    className={`flex-1 py-1 text-[8px] font-bold uppercase tracking-widest rounded-md transition-all relative ${
+                      activeTab === tab ? 'bg-white text-indigo-600 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-900 hover:bg-white/40'
                     }`}
-                    title={tab}
-                    aria-label={`${tab} view`}
-                    aria-pressed={activeTab === tab}
                   >
-                    <div className="flex flex-col items-center gap-1">
-                      <div className={`p-1.5 rounded-lg flex items-center justify-center font-black relative transition-all ${
-                        activeTab === tab ? 'bg-brand/10 text-brand' : 'bg-transparent text-text-muted'
-                      }`}>
-                        {tab === 'Rooms' && <Hash size={16} strokeWidth={activeTab === tab ? 3 : 2} />}
-                        {tab === 'Messages' && <MessageSquare size={16} strokeWidth={activeTab === tab ? 3 : 2} />}
-                        {tab === 'People' && <Users size={16} strokeWidth={activeTab === tab ? 3 : 2} />}
+                    <div className="flex flex-col items-center">
+                      <div className="relative">
+                        {tab === 'Rooms' && <Hash size={14} />}
+                        {tab === 'Messages' && <MessageSquare size={14} />}
+                        {tab === 'People' && <Users size={14} />}
                         
                         {count > 0 && (
-                          <div className={`absolute -top-1 -right-1.5 px-1.5 py-0.5 rounded-full text-[7px] flex items-center justify-center font-black shadow-sm ${
-                            activeTab === tab ? 'bg-brand text-white' : 'bg-border text-text-muted'
+                          <div className={`absolute -top-1.5 -right-2 px-1.5 py-0.5 rounded-full text-[8px] flex items-center justify-center font-black ${
+                            activeTab === tab ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-200' : 'bg-slate-200 text-slate-600'
                           }`}>
                             {count}
                           </div>
                         )}
                         {hasUnread && (
-                          <div className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-surface animate-pulse shadow-sm shadow-red-500/50" />
+                          <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white shadow-[0_0_8px_rgba(244,63,94,0.4)]" />
                         )}
                       </div>
+                      <span className="mt-1 hidden sm:block">{tab}</span>
                     </div>
                   </button>
                 );
               })}
            </div>
 
-           {/* Content List Card */}
-           <div className="flex-1 bg-surface rounded-[2rem] border border-border shadow-sm flex flex-col overflow-hidden">
-              <div className="flex-1 overflow-y-auto min-h-0 p-4 space-y-6">
+           {/* Explorer Card */}
+           <div className="flex-1 bg-white md:bg-surface rounded-t-[1.5rem] md:rounded-[1.5rem] border border-border shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col overflow-hidden">
+              <div className="flex-1 overflow-y-auto min-h-0 p-2 space-y-4">
                  {activeTab === 'Rooms' && (
-                   <div className="space-y-6">
+                   <div className="space-y-4">
                      {/* THE LOBBY - SPECIAL ITEM */}
-                     <div className="space-y-2">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-brand px-2">The Lobby</span>
+                     <div className="space-y-1">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-brand px-2">The Lobby</span>
                         <button 
                           onClick={() => switchRoom('lobby')}
-                          className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all ${
-                            currentRoom === 'lobby' ? 'bg-brand/10 text-brand shadow-sm' : 'hover:bg-surface-hover text-text-muted'
+                          className={`w-full flex items-center justify-between p-3 rounded-2xl transition-all duration-300 group ${
+                            currentRoom === 'lobby' ? 'bg-slate-950 text-white shadow-xl shadow-slate-950/20' : 'hover:bg-slate-50 text-slate-500'
                           }`}
                         >
                            <div className="flex items-center gap-3">
-                             <MessageSquare size={16} className={currentRoom === 'lobby' ? 'text-brand' : 'opacity-40'} />
-                             <span className="text-xs font-bold truncate max-w-[140px] tracking-tight text-text-highlight">General Lobby</span>
-                           </div>
-                           <div className="flex items-center gap-1.5 shrink-0">
-                              <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${currentRoom === 'lobby' ? 'bg-white' : 'bg-brand'}`} />
-                              <div className={`px-2.5 py-1 rounded-full text-[10px] font-black shadow-[0_2px_10px_-3px_rgba(0,0,0,0.2)] flex items-center justify-center min-w-[32px] transition-all ${
-                                currentRoom === 'lobby' ? 'bg-white text-brand transform scale-110' : 'bg-brand/10 text-brand'
-                              }`}>
-                                {roomCounts['lobby']}
+                              <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${currentRoom === 'lobby' ? 'bg-white/10 text-white' : 'bg-slate-100 text-slate-400 group-hover:bg-brand/10 group-hover:text-brand'}`}>
+                                <MessageSquare size={16} />
                               </div>
+                              <span className="text-xs font-bold tracking-tight">General Lobby</span>
+                           </div>
+                           <div className="flex items-center gap-2">
+                              <span className={`px-2 py-1 rounded-lg text-[9px] font-bold ${currentRoom === 'lobby' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                                {roomCounts['lobby']}
+                              </span>
+                              <div className={`w-1.5 h-1.5 rounded-full ${currentRoom === 'lobby' ? 'bg-brand shadow-[0_0_8px_brand]' : 'bg-green-500'} animate-pulse`} />
                            </div>
                         </button>
                      </div>
@@ -821,21 +790,18 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                                   <button 
                                     key={room.id}
                                     onClick={() => switchRoom(room.id)}
-                                    className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all ${
-                                      currentRoom === room.id ? 'bg-brand/10 text-brand shadow-sm' : 'hover:bg-surface-hover text-text-muted'
+                                    className={`w-full flex items-center justify-between p-2.5 rounded-2xl transition-all group ${
+                                      currentRoom === room.id ? 'bg-indigo-50 text-brand ring-1 ring-brand/10' : 'hover:bg-slate-50 text-slate-500 hover:text-slate-900'
                                     }`}
                                   >
                                      <div className="flex items-center gap-3">
-                                        <Hash size={16} className={currentRoom === room.id ? 'text-brand' : 'opacity-40'} />
-                                        <span className="text-xs font-bold truncate max-w-[140px] tracking-tight text-text-highlight">{room.name}</span>
+                                        <Hash size={16} className={currentRoom === room.id ? 'text-brand' : 'opacity-40 group-hover:opacity-70'} />
+                                        <span className={`text-[13px] font-medium tracking-tight truncate max-w-[140px]`}>{room.name}</span>
                                      </div>
-                                     <div className="flex items-center gap-1.5 shrink-0">
-                                        <div className={`w-1 h-1 rounded-full ${currentRoom === room.id ? 'bg-brand' : 'bg-slate-300'}`} />
-                                        <div className={`px-2 py-0.5 rounded-full text-[10px] font-black shadow-sm flex items-center justify-center min-w-[28px] transition-all ${
-                                          currentRoom === room.id ? 'bg-brand text-white transform scale-110' : 'bg-surface-hover text-text-muted hover:bg-brand/5 hover:text-brand'
-                                        }`}>
-                                          {roomCounts[room.id.toLowerCase()] || 0}
-                                        </div>
+                                     <div className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all ${
+                                       currentRoom === room.id ? 'bg-brand text-white shadow-sm shadow-brand/20' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'
+                                     }`}>
+                                       {roomCounts[room.id.toLowerCase()] || 0}
                                      </div>
                                   </button>
                                 ))}
@@ -850,7 +816,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                  {activeTab === 'People' && (
                     <div className="space-y-4">
                       {/* Sort Controls */}
-                      <div className="flex items-center justify-between px-2 pb-2 border-b border-border">
+                      <div className="flex items-center justify-between px-2 pb-1 border-b border-border">
                         <div className="flex gap-2">
                            <button 
                              onClick={() => setPeopleSortBy('alphabet')}
@@ -974,10 +940,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                           return (
                             <div 
                               key={otherId} 
-                              className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all group relative ${activePrivateChat === otherId ? 'bg-brand/10 shadow-sm' : unreadThreads.has(otherId) ? 'bg-brand/5 border border-brand/10' : 'hover:bg-surface-hover/50'}`}
+                              className={`w-full flex items-center justify-between p-3 rounded-2xl transition-all group relative border border-transparent ${activePrivateChat === otherId ? 'bg-indigo-50 border-indigo-100 shadow-sm' : unreadThreads.has(otherId) ? 'bg-brand/5 border-brand/20' : 'hover:bg-slate-50'}`}
                             >
                                {unreadThreads.has(otherId) && (
-                                 <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-6 bg-brand rounded-full" />
+                                 <div className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1 h-8 bg-brand rounded-full" />
                                )}
                                <button 
                                  onClick={() => {
@@ -992,30 +958,29 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                                  }}
                                  className="flex items-center gap-3 flex-1 min-w-0 text-left"
                                >
-                                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black uppercase tracking-widest shadow-sm relative ${
-                                     otherUser?.gender === 'Male' ? 'bg-blue-500 text-white' :
-                                     otherUser?.gender === 'Female' ? 'bg-pink-500 text-white' :
-                                     otherUser?.gender === 'Non-binary' ? 'bg-indigo-500 text-white' :
-                                     'bg-slate-500 text-white'
+                                   <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-[10px] font-bold uppercase tracking-widest shadow-sm relative shrink-0 ${
+                                     otherUser?.gender === 'Male' ? 'bg-indigo-100 text-indigo-600' :
+                                     otherUser?.gender === 'Female' ? 'bg-rose-100 text-rose-600' :
+                                     otherUser?.gender === 'Non-binary' ? 'bg-amber-100 text-amber-600' :
+                                     'bg-slate-100 text-slate-600'
                                    }`}>
-                                      {otherUser?.gender === 'Male' && <Mars size={16} />}
-                                      {otherUser?.gender === 'Female' && <Venus size={16} />}
+                                      {otherUser?.gender === 'Male' && <Mars size={18} />}
+                                      {otherUser?.gender === 'Female' && <Venus size={18} />}
                                       {otherUser?.gender === 'Non-binary' && <span>NB</span>}
                                       {(otherUser?.gender === 'Prefer not to say' || otherUser?.gender === 'Other' || !otherUser?.gender) && <span>P</span>}
-                                      {otherUser && <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-green-500 border border-white rounded-full" title="Online in this room" />}
+                                      <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full shadow-sm" />
                                   </div>
                                   <div className="flex-1 min-w-0">
-                                     <div className="flex justify-between items-center">
+                                     <div className="flex justify-between items-center mb-0.5">
                                         <div className="flex items-center gap-1.5 min-w-0">
-                                          <p className="text-xs font-bold tracking-tight truncate text-text-highlight">{displayName}</p>
-                                          {globalStatuses[otherId]?.isDND && <BellOff size={11} className="text-orange-500 shrink-0" />}
-                                          {blockedUsers.has(otherId) && <Shield size={10} className="text-red-500 shrink-0" />}
+                                          <p className="text-sm font-bold tracking-tight truncate text-slate-900">{displayName}</p>
+                                          {globalStatuses[otherId]?.isDND && <div className="w-1.5 h-1.5 bg-amber-500 rounded-full" />}
                                         </div>
-                                        <span className={`text-[8px] opacity-60 ${unreadThreads.has(otherId) ? 'text-brand font-black' : 'text-text-muted'}`}>
+                                        <span className={`text-[9px] font-bold ${unreadThreads.has(otherId) ? 'text-brand' : 'text-slate-400'}`}>
                                           {new Date(lastMsg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </span>
                                      </div>
-                                     <p className={`text-[10px] truncate ${unreadThreads.has(otherId) ? 'text-text font-bold' : 'text-text-muted'}`}>{lastMsg.content}</p>
+                                     <p className={`text-[11px] truncate leading-tight ${unreadThreads.has(otherId) ? 'text-slate-950 font-bold' : 'text-slate-500'}`}>{lastMsg.content}</p>
                                   </div>
                                </button>
                                
@@ -1114,20 +1079,20 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
              )}
            </AnimatePresence>
            {/* Window Header */}
-           <div className="p-3 md:p-4 flex items-center gap-3 border-b border-border bg-surface-hover/20">
-              <div className="w-10 h-10 bg-brand/10 rounded-xl flex items-center justify-center border border-brand/5">
-                 <MessageSquare size={20} className="text-brand" />
+           <div className="px-4 py-3 flex items-center gap-3 border-b border-border bg-surface/50 backdrop-blur-sm sticky top-0 z-20">
+              <div className="w-9 h-9 bg-brand/10 rounded-xl flex items-center justify-center border border-brand/5 shrink-0">
+                 <MessageSquare size={18} className="text-brand" />
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 leading-tight">
                  <div className="flex items-center gap-2">
-                   <h2 className="text-lg font-black tracking-tight text-text-highlight truncate">{currentChatName}</h2>
+                   <h2 className="text-sm font-black tracking-tight text-text-highlight truncate">{currentChatName}</h2>
                    {activePrivateChat && globalStatuses[activePrivateChat]?.isDND && (
                      <span className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest bg-orange-500/10 text-orange-500 px-1.5 py-0.5 rounded-md border border-orange-500/10 shrink-0">
                        <BellOff size={8} /> DND
                      </span>
                    )}
                  </div>
-                 <p className="text-[11px] text-text-muted font-medium">
+                 <p className="text-[10px] text-text-muted font-bold truncate uppercase tracking-wider opacity-60">
                     {activePrivateChat ? "Private Messaging" : (currentRoomData?.description || "A place for open, respectful conversations")}
                  </p>
               </div>
@@ -1183,62 +1148,61 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
             )}
 
            {/* Message Buffer Flow */}
-           <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0 p-4 space-y-4">
-              {!activePrivateChat && (
-                <div className="flex justify-center mb-6">
-                   <div className="bg-border/30 px-3 py-1.5 rounded-full text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] border border-border">
-                      {currentRoom === 'lobby' ? 'Welcome to General Lobby' : `Welcome to ${currentChatName}`}
-                   </div>
+           <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0">
+             <div className="flex flex-col justify-end min-h-full p-4 space-y-4">
+                {/* Simplified Intro Info */}
+                {((activePrivateChat ? (privateThreads[activePrivateChat] || []) : (roomMessages[currentRoom] || []))).length < 10 && (
+                  <div className="flex flex-col items-center justify-center py-6 px-4 space-y-2 select-none">
+                    <div className="flex items-center gap-2 text-[9px] font-black tracking-[0.2em] text-slate-400 uppercase">
+                      <Lock size={10} />
+                      <span>End-to-End Privacy</span>
+                      <div className="w-1 h-1 bg-slate-200 rounded-full" />
+                      <span>No Logs</span>
+                    </div>
+                    <p className="text-[10px] text-slate-400 font-bold text-center max-w-sm leading-tight uppercase opacity-80">
+                      Messages are session-based. Follow our <button onClick={() => setShowLegal(true)} className="text-brand hover:underline cursor-pointer">Community Guidelines</button>.
+                    </p>
+                  </div>
+                )}
+
+                {/* System Message: User Joined */}
+                <div className="flex flex-col items-center justify-center py-4 opacity-40">
+                  <div className="px-3 py-1 bg-slate-100 rounded-full border border-slate-200">
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                       {user.nickname} joined the {activePrivateChat ? 'private chat' : currentChatName}
+                    </p>
+                  </div>
                 </div>
-              )}
 
-              <div className="bg-brand/5 border border-brand/10 p-4 rounded-xl mb-6 mx-auto max-w-[90%]">
-                 <p className="text-[11px] text-brand/60 text-center leading-relaxed font-medium">
-                   Please be respectful. Treat others kindly and keep conversations appropriate. Indecent behavior can be anonymously reported. 
-                   <br/><br/>
-                   <span className="text-text font-black">RULES:</span> 
-                   <br/>
-                   1. 5 reports result in an <span className="text-text font-bold">IP & Nickname ban for 30 minutes</span>.
-                   <br/>
-                   2. Enable <span className="text-text font-bold">DND</span> (top right) to block incoming private messages.
-                   <br/>
-                   3. <span className="text-text font-bold">Restrict</span> annoying users to block their private messages.
-                 </p>
-              </div>
+                {/* Ad Placement in Chat Stream (Rare) */}
+                {((activePrivateChat ? (privateThreads[activePrivateChat] || []) : (roomMessages[currentRoom] || []))).length > 10 && (
+                  <div className="flex justify-center my-8">
+                    <AdUnit id="b4df80321991ad2e3e953641360223af" format="300x250" className="opacity-60 scale-90" />
+                  </div>
+                )}
 
-               {((activePrivateChat ? (privateThreads[activePrivateChat] || []) : (roomMessages[currentRoom] || []))).length === 0 && (
-                 <div className="flex flex-col items-center justify-center py-10 opacity-30 select-none pointer-events-none">
-                   <div className="w-16 h-16 bg-brand/10 rounded-full flex items-center justify-center mb-4">
-                     <MessageSquare size={32} className="text-brand" />
-                   </div>
-                   <p className="text-sm font-black uppercase tracking-widest text-text-muted">No messages yet</p>
-                   <p className="text-[10px] font-bold text-text-muted/60">
-                     {activePrivateChat ? `Start a private conversation with ${currentChatName}` : 'Say hi to start the conversation!'}
-                   </p>
+               {((activePrivateChat ? (privateThreads[activePrivateChat] || []) : (roomMessages[currentRoom] || []))).map((msg, idx) => (
+                 <div key={msg.id} className="flex flex-col gap-1.5 animate-in fade-in slide-in-from-bottom-2">
+                    <div className={`flex items-center gap-2 px-1 ${msg.senderId === user.id ? 'justify-end' : 'justify-start'}`}>
+                       <span className="text-[10px] font-bold text-text mb-0.5">{msg.senderName}</span>
+                       <span className="text-[9px] text-text-muted/40 font-medium tracking-tighter">
+                         {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                       </span>
+                    </div>
+                    <div className={`max-w-[92%] sm:max-w-[80%] px-3 py-1.5 rounded-2xl text-[13px] sm:text-sm leading-relaxed shadow-sm transition-all ${
+                      msg.senderId === user.id 
+                        ? 'bg-brand text-white self-end rounded-tr-none' 
+                        : 'bg-surface text-text self-start rounded-tl-none border border-border'
+                    }`}>
+                       {formatChatMessage(msg.content)}
+                    </div>
                  </div>
-               )}
-
-              {((activePrivateChat ? (privateThreads[activePrivateChat] || []) : (roomMessages[currentRoom] || []))).map((msg, idx) => (
-                <div key={msg.id} className="flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2">
-                   <div className={`flex items-center gap-2 ${msg.senderId === user.id ? 'justify-end mr-4' : 'ml-4'}`}>
-                      <span className="text-[10px] font-black text-text-highlight uppercase tracking-widest">{msg.senderName}</span>
-                      <span className="text-[8px] text-text-muted/40 font-bold">
-                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                   </div>
-                   <div className={`max-w-[80%] px-4 py-2 rounded-xl text-sm leading-relaxed font-medium shadow-sm transition-all ${
-                     msg.senderId === user.id 
-                       ? 'bg-brand text-white self-end rounded-tr-none' 
-                       : 'bg-bg/50 text-text self-start rounded-tl-none border border-border'
-                   }`}>
-                      {formatChatMessage(msg.content)}
-                   </div>
-                </div>
-              ))}
+               ))}
+             </div>
            </div>
 
            {/* Message Input Container */}
-           <div className="p-4 pt-0 transition-all">
+           <div className="p-3 pt-0 transition-all">
               {error && (
                 <div className="mb-2 text-center animate-in fade-in slide-in-from-top-2">
                    <span className="text-[10px] font-black text-red-500 uppercase tracking-widest bg-red-500/10 px-3 py-1 rounded-full border border-red-500/20">
@@ -1274,19 +1238,19 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                             setInputText(e.target.value);
                             if (error) setError(null);
                           }}
-                          placeholder={`Message ${currentChatName}...`} 
-                          className="w-full bg-bg/50 rounded-xl py-3 px-5 text-base md:text-sm focus:outline-none border border-border focus:border-brand transition-all font-medium placeholder:text-text-muted/30 shadow-inner"
-                        />
+                          placeholder={`Message ${currentChatName}...`}
+                          className="w-full bg-bg/50 rounded-lg py-2 px-4 text-base md:text-sm focus:outline-none border border-border focus:border-brand transition-all font-medium placeholder:text-text-muted/30 shadow-inner"
+                       />
                      </div>
                      <div className="relative" ref={emojiPickerRef}>
                         <button 
                           type="button"
                           onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                          className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all border ${showEmojiPicker ? 'bg-brand/10 border-brand/20 text-brand' : 'bg-surface border-border text-text-muted hover:text-brand hover:border-brand/30 shadow-sm'}`}
+                          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all border ${showEmojiPicker ? 'bg-brand/10 border-brand/20 text-brand' : 'bg-surface border-border text-text-muted hover:text-brand hover:border-brand/30 shadow-sm'}`}
                           title="Add emoji"
                           aria-label="Toggle emoji picker"
                         >
-                          <Smile size={24} strokeWidth={2} />
+                          <Smile size={20} strokeWidth={2} />
                         </button>
                         
                         <AnimatePresence>
@@ -1311,10 +1275,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                      <button 
                        type="submit"
                        disabled={!inputText.trim()}
-                       className="w-14 h-14 bg-brand hover:bg-brand-dark disabled:opacity-30 rounded-xl flex items-center justify-center shadow-lg shadow-brand/20 transition-all active:scale-95 text-white flex-shrink-0"
+                       className="w-12 h-12 bg-brand hover:bg-brand-dark disabled:opacity-30 rounded-lg flex items-center justify-center shadow-lg shadow-brand/20 transition-all active:scale-95 text-white flex-shrink-0"
                        aria-label="Send message"
                      >
-                        <Send size={20} />
+                        <Send size={18} />
                      </button>
                   </form>
                 </>
@@ -1384,6 +1348,71 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
           <span className="text-[10px] font-black uppercase tracking-widest">People</span>
         </button>
       </nav>
+
+      <AnimatePresence>
+        {showLegal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowLegal(false)}
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative w-full max-w-md bg-surface rounded-[2.5rem] p-8 overflow-y-auto max-h-[80vh] shadow-2xl border border-border"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-black text-text uppercase tracking-tight">Community Guidelines</h3>
+                <button onClick={() => setShowLegal(false)} className="text-text-muted hover:text-text transition-colors" aria-label="Close guidelines">
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="space-y-6">
+                <section>
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-brand mb-2">1. Respect Each Other</h4>
+                  <p className="text-[11px] text-text-muted leading-relaxed font-medium">
+                    Harassment, hate speech, or bullying will not be tolerated. We are a place for anonymous interaction, but that doesn't excuse toxicity.
+                  </p>
+                </section>
+                <section>
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-brand mb-2">2. No Explicit Content</h4>
+                  <p className="text-[11px] text-text-muted leading-relaxed font-medium">
+                    Public rooms must remain "Safe for Work". Sharing explicit images or links in public chatrooms is strictly forbidden and results in an instant ban.
+                  </p>
+                </section>
+                <section>
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-brand mb-2">3. No Spam or Advertising</h4>
+                  <p className="text-[11px] text-text-muted leading-relaxed font-medium">
+                    Do not flood rooms with repetitive messages or promote external products/services.
+                  </p>
+                </section>
+                <section>
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-brand mb-2">4. Privacy First</h4>
+                  <p className="text-[11px] text-text-muted leading-relaxed font-medium">
+                    Don't share personal identification (PII) of yourself or others. Our session-based model is designed to keep you anonymous.
+                  </p>
+                </section>
+                <section>
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-brand mb-2">5. Automatic Restriction</h4>
+                  <p className="text-[11px] text-text-muted leading-relaxed font-medium">
+                    To maintain order, if your account is reported 5 times, your IP and nickname will be automatically restricted for 30 minutes from all chat activity.
+                  </p>
+                </section>
+              </div>
+              <button 
+                onClick={() => setShowLegal(false)}
+                className="w-full mt-8 py-4 bg-brand text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-lg shadow-brand/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+              >
+                Understood
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

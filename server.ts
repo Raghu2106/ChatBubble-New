@@ -262,7 +262,7 @@ function startDummySimulation(io: Server) {
 }
 
 const rooms: Room[] = [
-  { id: 'lobby', name: 'The Lobby', description: 'A place for open, respectful conversations.', userCount: 0 },
+  { id: 'lobby', name: 'General Lobby', description: 'A place for open, respectful conversations.', userCount: 0 },
   // Indian Cities
   { id: 'mumbai', name: 'Mumbai', description: 'Chat with folks in the City of Dreams.', userCount: 0 },
   { id: 'delhi', name: 'Delhi', description: 'The heart of India. Conversations and chai.', userCount: 0 },
