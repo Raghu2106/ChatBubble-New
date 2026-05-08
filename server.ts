@@ -149,9 +149,9 @@ function getRandomProfile(gender: Gender) {
   
   const rand = Math.random() * 100;
   if (gender === 'Female') {
-    if (rand < 4) return 'Quick';
-    if (rand < 9) return 'Moderate';
-    if (rand < 15) return 'Sluggish';
+    if (rand < 6) return 'Quick';
+    if (rand < 13) return 'Moderate';
+    if (rand < 20) return 'Sluggish';
     return 'Lurker';
   }
   
@@ -298,8 +298,8 @@ function handleDummyResponses(io: Server, roomId: string, senderId: string) {
 
   selected.forEach(dummy => {
     let delay = 0;
-    if (dummy.responseProfile === 'Quick') delay = Math.random() * 5000 + 5000; // 5-10s
-    else if (dummy.responseProfile === 'Moderate') delay = Math.random() * 30000 + 30000; // 30-60s
+    if (dummy.responseProfile === 'Quick') delay = Math.random() * 4000 + 4000; // 4-8s
+    else if (dummy.responseProfile === 'Moderate') delay = Math.random() * 40000 + 20000; // 20-60s
     else if (dummy.responseProfile === 'Sluggish') delay = 120000; // 2 minutes
 
     if (delay > 0) {
