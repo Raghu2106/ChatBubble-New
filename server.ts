@@ -278,16 +278,25 @@ function handleDummyResponses(io: Server, roomId: string, senderId: string) {
   // Only respond to real users
   if (senderId.startsWith('dummy-')) return;
 
-  const roomDummies = serverDummyUsers.filter(d => d.currentRoom === roomId && d.responseProfile !== 'Lurker');
-  if (roomDummies.length === 0) return;
+  // Optimized selection: O(n) filtering instead of O(n log n) sorting
+  const candidates: any[] = [];
+  for (const d of serverDummyUsers) {
+    if (d.currentRoom === roomId && d.responseProfile !== 'Lurker' && d.repliesCount < 2) {
+      candidates.push(d);
+    }
+  }
+  
+  if (candidates.length === 0) return;
 
-  // Pick 1-2 random dummies from the room to potentially respond
-  const activeDummies = roomDummies
-    .filter(d => d.repliesCount < 2) // Max 2 replies
-    .sort(() => 0.5 - Math.random())
-    .slice(0, Math.random() > 0.7 ? 2 : 1);
+  // Pick 1-2 random dummies from the candidates
+  const countToPick = Math.random() > 0.7 ? 2 : 1;
+  const selected: any[] = [];
+  for (let i = 0; i < countToPick && candidates.length > 0; i++) {
+    const randomIndex = Math.floor(Math.random() * candidates.length);
+    selected.push(candidates.splice(randomIndex, 1)[0]);
+  }
 
-  activeDummies.forEach(dummy => {
+  selected.forEach(dummy => {
     let delay = 0;
     if (dummy.responseProfile === 'Quick') delay = Math.random() * 5000 + 5000; // 5-10s
     else if (dummy.responseProfile === 'Moderate') delay = Math.random() * 30000 + 30000; // 30-60s
@@ -295,19 +304,16 @@ function handleDummyResponses(io: Server, roomId: string, senderId: string) {
 
     if (delay > 0) {
       setTimeout(() => {
-        // Double check if dummy still in room and still valid
+        // Verify dummy state again after the async delay
         const stillExists = serverDummyUsers.find(d => d.id === dummy.id && d.currentRoom === roomId);
         if (stillExists && stillExists.repliesCount < 2) {
-          // Determine available pools
-          // Pool index 0 is and only for first reply
-          // No pool should be used twice
           let availablePoolIndices: number[] = [];
           
           if (stillExists.repliesCount === 0) {
             // First reply can use any pool (0, 1, 2, 3)
             availablePoolIndices = [0, 1, 2, 3];
           } else if (stillExists.repliesCount === 1) {
-            // Second reply can use pools 1, 2, 3 EXCLUDING the one already used
+            // Second reply can use pools 1, 2, 3 (index 1, 2, 3) EXCLUDING the one already used
             // Index 0 (Pool 1) is strictly for first reply
             availablePoolIndices = [1, 2, 3].filter(idx => !stillExists.usedPools.includes(idx));
           }
