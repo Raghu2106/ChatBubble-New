@@ -10,9 +10,8 @@ import {
 import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 import { Logo } from './components/Logo';
 import { socket } from './socket';
-import { ChatMessage, Room, Gender, ResponseProfile, DummyUser } from './types';
+import { ChatMessage, Room, Gender, DummyUser } from './types';
 import { AdUnit } from './components/AdUnit';
-import { generateDummyResponse, generateLobbyChatter } from './services/geminiService';
 
 // Helper to sanitize message content and strip clickable links/HTML
 const formatChatMessage = (content: string) => {
@@ -55,10 +54,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showLegal, setShowLegal] = useState(false);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
-  const [dummyReplyCounts, setDummyReplyCounts] = useState<Record<string, number>>({});
-  const dummyReplyCountsRef = useRef(dummyReplyCounts);
-  const [usedDummyPools, setUsedDummyPools] = useState<Record<string, number[]>>({});
-  const usedDummyPoolsRef = useRef(usedDummyPools);
 
   // Memoized sorted private chat IDs by last message timestamp
   const sortedPrivateChatIds = useMemo(() => {
@@ -79,24 +74,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
     });
   }, [privateThreads]);
 
-  useEffect(() => {
-    dummyReplyCountsRef.current = dummyReplyCounts;
-  }, [dummyReplyCounts]);
-
-  useEffect(() => {
-    usedDummyPoolsRef.current = usedDummyPools;
-  }, [usedDummyPools]);
-
-  // Helper to get response delay based on profile
-  const getResponseDelay = (profile: ResponseProfile) => {
-    switch (profile) {
-      case 'Quick': return Math.random() * 16000 + 4000; // 4-20s as requested
-      case 'Moderate': return Math.random() * 30000 + 30000; // 30-60s (> 30s)
-      case 'Sluggish': return Math.random() * 120000 + 120000; // 2-4 mins (very rarely)
-      default: return null;
-    }
-  };
-
   const roomMessagesRef = useRef(roomMessages);
   const privateThreadsRef = useRef(privateThreads);
 
@@ -108,182 +85,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
     privateThreadsRef.current = privateThreads;
   }, [privateThreads]);
 
-  // Lobby Chatter Logic
-  useEffect(() => {
-    const chatInterval = setInterval(async () => {
-      // 25% chance to post a message in lobby every 20 seconds.
-      // This ensures that on average messages are spaced out well beyond 5 seconds.
-      if (Math.random() > 0.25) return;
-
-      const lobbyDummies = dummyUsers.filter(u => 
-        u.currentRoom === 'lobby' && 
-        u.responseProfile !== 'Lurker' &&
-        u.gender === 'Female' // Explicitly only females can chat in lobby
-      );
-      if (lobbyDummies.length === 0) return;
-
-      // Get recent lobby messages for context from Ref
-      const recentMessages = (roomMessagesRef.current['lobby'] || []).slice(-10).map(m => ({
-        senderName: m.senderName,
-        content: m.content
-      }));
-
-      const chatter = await generateLobbyChatter(
-        lobbyDummies.map(u => ({ nickname: u.nickname, gender: u.gender as string })),
-        recentMessages
-      );
-      
-      const newMessage: ChatMessage = {
-        id: `dummy-lobby-${Date.now()}`,
-        senderId: lobbyDummies.find(u => u.nickname === chatter.senderName)?.id || 'unknown',
-        senderName: chatter.senderName,
-        content: chatter.content,
-        timestamp: Date.now(),
-        roomId: 'lobby',
-        type: 'public'
-      };
-
-      setRoomMessages(prev => ({
-        ...prev,
-        'lobby': [...(prev['lobby'] || []), newMessage].slice(-100)
-      }));
-    }, 20000); 
-
-    return () => clearInterval(chatInterval);
-  }, [dummyUsers]); 
-
-  // Dummy Private Response Logic
-  useEffect(() => {
-    const handleDummyResponse = async (otherId: string, profile: ResponseProfile) => {
-      const dummyUser = dummyUsers.find(u => u.id === otherId);
-      if (!dummyUser || dummyUser.gender === 'Male' || profile === 'Lurker') return;
-
-      const delay = getResponseDelay(profile);
-      if (!delay) return;
-
-      // Response delay logic
-      setTimeout(async () => {
-        // Double check count at execution time
-        if ((dummyReplyCountsRef.current[otherId] || 0) >= 2) return;
-
-        const thread = privateThreadsRef.current[otherId] || [];
-        if (thread.length === 0 || thread[thread.length - 1].senderId !== user.id) {
-          return;
-        }
-
-        // Predefined response pools grouped by category
-        const responsePools = [
-          ['hi', 'hii', 'hey'],           // 0: Greetings
-          ['asl', 'asl?', 'ur asl'],      // 1: Identity/ASL
-          ['from', 'from?', 'frm'],       // 2: Location
-          ['age', 'age?', 'ur age']       // 3: Age
-        ];
-
-        // Pick a pool that hasn't been used yet for this specific chat
-        const getUnusedPoolIndex = (excludeIndices: number[] = []) => {
-          const usedSoFar = usedDummyPoolsRef.current[otherId] || [];
-          const allExcludes = [...usedSoFar, ...excludeIndices];
-          const availableIndices = [0, 1, 2, 3].filter(idx => !allExcludes.includes(idx));
-          
-          if (availableIndices.length === 0) return null;
-          return availableIndices[Math.floor(Math.random() * availableIndices.length)];
-        };
-
-        const firstPoolIdx = getUnusedPoolIndex();
-        if (firstPoolIdx === null) return;
-
-        const responseText = responsePools[firstPoolIdx][Math.floor(Math.random() * responsePools[firstPoolIdx].length)];
-
-        // Multiple response logic (up to 2 messages total session limit)
-        const sendSequence = async (count: number, max: number, usedInThisSequence: number[]) => {
-          if (count >= max) {
-            return;
-          }
-
-          const currentPoolIdx = count === 0 ? firstPoolIdx : getUnusedPoolIndex(usedInThisSequence);
-          if (currentPoolIdx === null) return;
-
-          const text = count === 0 ? responseText : responsePools[currentPoolIdx][Math.floor(Math.random() * responsePools[currentPoolIdx].length)];
-          
-          const msg: ChatMessage = {
-            id: `dummy-reply-${Date.now()}-${count}`,
-            senderId: otherId,
-            senderName: dummyUser.nickname,
-            senderGender: dummyUser.gender,
-            content: text,
-            timestamp: Date.now(),
-            recipientId: user.id,
-            type: 'private'
-          };
-
-          setPrivateThreads(prev => ({
-            ...prev,
-            [otherId]: [...(prev[otherId] || []), msg]
-          }));
-
-          setDummyReplyCounts(prev => ({
-            ...prev,
-            [otherId]: (prev[otherId] || 0) + 1
-          }));
-
-          // Mark pool as used
-          setUsedDummyPools(prev => ({
-            ...prev,
-            [otherId]: [...(prev[otherId] || []), currentPoolIdx]
-          }));
-
-          // Decide if we send another one in THIS sequence
-          // We limit a single "trigger" to 1-2 messages for realism, 
-          // but the total lifetime limit is 2 (across all triggers).
-          const shouldFollowUp = Math.random() < 0.15 && count < max - 1;
-          if (shouldFollowUp) {
-            setTimeout(() => sendSequence(count + 1, max, [...usedInThisSequence, currentPoolIdx]), Math.random() * 4000 + 2000);
-          }
-        };
-
-        const currentCount = dummyReplyCountsRef.current[otherId] || 0;
-        const remainingToReplyCount = 2 - currentCount;
-        if (remainingToReplyCount <= 0) return;
-
-        // How many messages to send in this specific reply trigger
-        // Usually 1, occasionally 2 if user is 'Quick'
-        const totalToSendMessage = Math.min(remainingToReplyCount, profile === 'Quick' 
-          ? (Math.random() < 0.25 ? 2 : 1) 
-          : 1);
-        
-        await sendSequence(0, totalToSendMessage, []);
-
-        if (activePrivateChatRef.current !== otherId) {
-          setUnreadThreads(prev => {
-            const next = new Set(prev);
-            next.add(otherId);
-            return next;
-          });
-        }
-      }, delay);
-    };
-
-    // Check for recent messages from user to dummies
-    Object.keys(privateThreads).forEach(otherId => {
-      if (otherId.startsWith('dummy-')) {
-        const thread = privateThreads[otherId];
-        const lastMsg = thread[thread.length - 1];
-        if (lastMsg && lastMsg.senderId === user.id) {
-          const dummyUser = dummyUsers.find(u => u.id === otherId);
-          // Only allow up to 2 replies from each dummy (unique pools Greeting, Identity, Location, Age)
-          const replyCount = dummyReplyCountsRef.current[otherId] || 0;
-          if (dummyUser && replyCount < 2) {
-            const timeSinceLastMsg = Date.now() - lastMsg.timestamp;
-            // Only trigger if message was sent in last 2 seconds
-            if (timeSinceLastMsg < 2000) { 
-              handleDummyResponse(otherId, dummyUser.responseProfile);
-            }
-          }
-        }
-      }
-    });
-  }, [privateThreads, dummyUsers, user.id]);
-
+  // Total removal of ResponsePools and Bot logic as per 'recommendations' removal request.
+  
   // Close pickers when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -431,10 +234,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   }, [roomMessages, activePrivateChat, privateThreads, currentRoom]);
 
   useEffect(() => {
+    // Clear old error when switching chat or room
+    setError(null);
+    
     if (activePrivateChat) {
-      // Clear old error when switching chat
-      setError(null);
-      
       // Clear unread
       setUnreadThreads(prev => {
         if (!prev.has(activePrivateChat)) return prev;
@@ -453,7 +256,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         setError("User is no longer online.");
       }
     }
-  }, [activePrivateChat, dummyUsers, onlineUsers, setError]);
+  }, [activePrivateChat, currentRoom, dummyUsers, onlineUsers, setError]);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -504,6 +307,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
       setMobileSidebarOpen(false);
       return;
     }
+    setError(null);
     setCurrentRoom(roomId);
     setActivePrivateChat(null);
     // Don't clear messages anymore, we use roomMessages dictionary
@@ -869,7 +673,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                                   }}
                                   className="flex items-center gap-3 flex-1 text-left"
                                 >
-                                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black uppercase tracking-widest shadow-sm ${
+                                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black uppercase tracking-widest shadow-sm relative shrink-0 ${
                                      u.gender === 'Male' ? 'bg-blue-500 text-white' :
                                      u.gender === 'Female' ? 'bg-pink-500 text-white' :
                                      u.gender === 'Non-binary' ? 'bg-indigo-500 text-white' :
@@ -879,6 +683,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                                       {u.gender === 'Female' && <Venus size={16} />}
                                       {u.gender === 'Non-binary' && <span>NB</span>}
                                       {(u.gender === 'Prefer not to say' || u.gender === 'Other' || !u.gender) && <span>P</span>}
+                                      <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 border border-white rounded-full transition-colors duration-500 ${u.id === user.id || onlineUsers.some(ou => ou.id === u.id) || dummyUsers.some(du => du.id === u.id) ? 'bg-green-500' : 'bg-slate-300'}`} />
                                   </div>
                                   <div>
                                      <div className="flex items-center gap-2">
@@ -968,7 +773,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                                       {otherUser?.gender === 'Female' && <Venus size={18} />}
                                       {otherUser?.gender === 'Non-binary' && <span>NB</span>}
                                       {(otherUser?.gender === 'Prefer not to say' || otherUser?.gender === 'Other' || !otherUser?.gender) && <span>P</span>}
-                                      <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full shadow-sm" />
+                                      <div className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 border-2 border-white rounded-full shadow-sm transition-colors duration-500 ${ (onlineUsers.some(u => u.id === otherId) || dummyUsers.some(du => du.id === otherId)) ? 'bg-green-500' : 'bg-slate-300'}`} />
                                   </div>
                                   <div className="flex-1 min-w-0">
                                      <div className="flex justify-between items-center mb-0.5">
