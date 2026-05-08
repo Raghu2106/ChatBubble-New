@@ -54,6 +54,7 @@ export interface ServerToClientEvents {
   'match:found': (data: { peerId: string; peerNickname: string; peerGender?: Gender }) => void;
   'match:left': () => void;
   'registration:success': (data: { userId: string }) => void;
+  'users:total': (data: { total: number }) => void;
 }
 
 export interface ClientToServerEvents {
@@ -182,7 +183,12 @@ function generateNickname(isMale: boolean, roomId: string, existingFullNicknames
   return nickname;
 }
 
-function initDummyUsers() {
+function broadcastTotalUsers(io: Server) {
+  const total = users.size + serverDummyUsers.length;
+  io.emit('users:total' as any, { total });
+}
+
+function initDummyUsers(io: Server) {
   const initialCount = Math.floor(Math.random() * (TARGET_MAX_DUMMIES - TARGET_MIN_DUMMIES + 1)) + TARGET_MIN_DUMMIES;
   const usedNicknames = new Set<string>();
   const dummies = [];
@@ -206,6 +212,7 @@ function initDummyUsers() {
     });
   }
   serverDummyUsers = dummies;
+  broadcastTotalUsers(io);
 }
 
 function startDummySimulation(io: Server) {
@@ -233,6 +240,7 @@ function startDummySimulation(io: Server) {
       };
       
       io.emit('dummies:update' as any, serverDummyUsers);
+      broadcastTotalUsers(io);
     } catch (err) {
       console.error('Dummy cycle error:', err);
     }
@@ -268,6 +276,7 @@ function startDummySimulation(io: Server) {
       }
       
       io.emit('dummies:update' as any, serverDummyUsers);
+      broadcastTotalUsers(io);
     } catch (err) {
       console.error('Traffic simulation error:', err);
     }
@@ -393,7 +402,7 @@ async function startServer() {
   });
 
   // Initialize and start dummy simulation
-  initDummyUsers();
+  initDummyUsers(io);
   startDummySimulation(io);
 
   // Admin middleware or routes can go here
@@ -404,6 +413,8 @@ async function startServer() {
 
     // Send initial dummy list immediately on connection
     socket.emit('dummies:update' as any, serverDummyUsers);
+    const total = users.size + serverDummyUsers.length;
+    socket.emit('users:total' as any, { total });
 
     // Check if IP is banned
     const banTime = bannedIps.get(ip);
@@ -475,6 +486,7 @@ async function startServer() {
         sessions.set(socket.id, userId);
         
         socket.emit('registration:success', { userId });
+        broadcastTotalUsers(io);
         console.log(`User ${newUser.nickname} registered successfully. (Total users: ${users.size})`);
       } catch (err) {
         console.error('Registration system error:', err);
@@ -705,6 +717,7 @@ async function startServer() {
           
           io.emit('user:left', user.id);
           users.delete(userId);
+          broadcastTotalUsers(io);
           console.log(`User ${user.nickname} removed immediately on disconnect.`);
         }
       }

@@ -13,10 +13,14 @@ import { AdUnit } from './components/AdUnit';
 
 interface LandingPageProps {
   onStart: () => void;
+  totalUsers?: number;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 0 }) => {
   const [modalType, setModalType] = useState<'privacy' | 'terms' | 'about' | 'contact' | null>(null);
+
+  // Format totalUsers with comma if it's a large number
+  const formattedUserCount = totalUsers.toLocaleString();
 
   return (
     <div className="min-h-full bg-[#fafafa] text-slate-900 flex flex-col items-center justify-between font-sans relative overflow-x-hidden">
@@ -32,9 +36,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand/10 text-brand rounded-full mb-6 border border-brand/5 transform hover:scale-105 transition-transform cursor-default">
-              <span className="w-2 h-2 bg-brand rounded-full animate-pulse" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Real-time anonymous chat</span>
+            <div className="flex flex-col items-center gap-4 mb-8">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand/10 text-brand rounded-full border border-brand/5 transform hover:scale-105 transition-transform cursor-default">
+                <span className="w-2 h-2 bg-brand rounded-full animate-pulse" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Real-time anonymous chat</span>
+              </div>
+              
+              {totalUsers > 0 && (
+                <div className="flex items-center gap-2 px-3 py-1 bg-slate-900/5 rounded-lg border border-slate-900/5">
+                  <Users size={14} className="text-slate-400" />
+                  <span className="text-xs font-black text-slate-600 tracking-tight">
+                    <span className="text-brand tabular-nums">{formattedUserCount}</span> USERS ONLINE
+                  </span>
+                </div>
+              )}
             </div>
 
             <h1 className="text-4xl md:text-7xl font-bold mb-6 tracking-tighter leading-[0.95] font-display text-slate-950">

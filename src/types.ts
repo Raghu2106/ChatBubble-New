@@ -59,6 +59,7 @@ export interface ServerToClientEvents {
   'match:found': (data: { peerId: string; peerNickname: string; peerGender?: Gender }) => void;
   'match:left': () => void;
   'registration:success': (data: { userId: string }) => void;
+  'users:total': (data: { total: number }) => void;
 }
 
 export interface ClientToServerEvents {

@@ -25,6 +25,7 @@ export default function App() {
   const stepRef = React.useRef(step);
   stepRef.current = step;
   const [user, setUser] = useState<{ id: string; nickname: string; gender?: Gender; interests: string[] } | null>(null);
+  const [totalUsers, setTotalUsers] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(window.location.pathname === '/admin');
   const lastResetRef = React.useRef(Date.now());
@@ -101,11 +102,16 @@ export default function App() {
       setDisconnectReason(`You have been reported by 5 users. According to the website policy, you will be restricted to use this site for the next 30 minutes.`);
     });
 
+    socket.on('users:total', ({ total }: { total: number }) => {
+      setTotalUsers(total);
+    });
+
     return () => {
       socket.disconnect();
       socket.off('error');
       socket.off('registration:success' as any);
       socket.off('ban');
+      socket.off('users:total');
     };
   }, [isAdmin]);
 
@@ -216,7 +222,7 @@ export default function App() {
                   </div>
                 </div>
               )}
-              <LandingPage onStart={() => setStep('entry')} />
+              <LandingPage onStart={() => setStep('entry')} totalUsers={totalUsers} />
               {step === 'entry' && (
                 <EntryScreen 
                   onJoin={handleJoin} 
