@@ -78,9 +78,9 @@ const sessions = new Map<string, string>(); // socketId -> userId
 const userTimers = new Map<string, NodeJS.Timeout>();
 
 // --- DUMMY USER MANAGEMENT (SERVER-SIDE SOURCE OF TRUTH) ---
-const TARGET_MIN_DUMMIES = 186;
-const TARGET_MAX_DUMMIES = 222;
-const MALE_PROBABILITY = 0.85;
+const TARGET_MIN_DUMMIES = 240;
+const TARGET_MAX_DUMMIES = 280;
+const MALE_PROBABILITY = 0.85; // 85:15 ratio maintained
 const CYCLE_INTERVAL_MS = (2 * 60 * 60 * 1000) / TARGET_MIN_DUMMIES;
 const TRAFFIC_SIMULATION_INTERVAL_MS = 15000;
 
@@ -310,11 +310,11 @@ function handleDummyResponses(io: Server, roomId: string, senderId: string) {
           let availablePoolIndices: number[] = [];
           
           if (stillExists.repliesCount === 0) {
-            // First reply can use any pool (0, 1, 2, 3)
+            // First reply can use any pool (index 0, 1, 2, 3)
             availablePoolIndices = [0, 1, 2, 3];
           } else if (stillExists.repliesCount === 1) {
-            // Second reply can use pools 1, 2, 3 (index 1, 2, 3) EXCLUDING the one already used
-            // Index 0 (Pool 1) is strictly for first reply
+            // Second reply can ONLY use pools 2, 3, 4 (index 1, 2, 3)
+            // AND must exclude the pool used in first reply
             availablePoolIndices = [1, 2, 3].filter(idx => !stillExists.usedPools.includes(idx));
           }
 
