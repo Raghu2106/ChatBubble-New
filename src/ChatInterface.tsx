@@ -63,16 +63,22 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
       const lastMsgA = threadA[threadA.length - 1];
       const lastMsgB = threadB[threadB.length - 1];
       
-      const timeA = lastMsgA?.timestamp || 0;
-      const timeB = lastMsgB?.timestamp || 0;
+      const timeA = lastMsgA ? lastMsgA.timestamp : 0;
+      const timeB = lastMsgB ? lastMsgB.timestamp : 0;
       
-      // If timestamps are equal, sort by ID for stability
+      // Secondary sort by unread status (unread on top if timestamps match)
       if (timeB === timeA) {
+        const unreadA = unreadThreads.has(a);
+        const unreadB = unreadThreads.has(b);
+        if (unreadA !== unreadB) {
+          return unreadB ? 1 : -1;
+        }
         return b.localeCompare(a);
       }
+      
       return timeB - timeA;
     });
-  }, [privateThreads]);
+  }, [privateThreads, unreadThreads]);
 
   const roomMessagesRef = useRef(roomMessages);
   const privateThreadsRef = useRef(privateThreads);
@@ -276,22 +282,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
       }
 
       if (isDummy) {
-
-        // Handle dummy user message locally
-        const newMessage = {
-          id: `local-${Date.now()}`,
-          senderId: user.id,
-          senderName: user.nickname,
-          senderGender: user.gender,
-          content: inputText,
-          timestamp: Date.now(),
-          recipientId: activePrivateChat,
-          type: 'private' as const
-        };
-        setPrivateThreads(prev => ({
-          ...prev,
-          [activePrivateChat]: [...(prev[activePrivateChat] || []), newMessage]
-        }));
+        // Notify server so auto-reply can trigger. server-echo will handle UI update.
+        socket.emit('send:private', { recipientId: activePrivateChat, content: inputText });
       } else {
         // Real user: server handles the check globally (across rooms)
         socket.emit('send:private', { recipientId: activePrivateChat, content: inputText });
@@ -657,6 +649,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                                 comparison = a.nickname.localeCompare(b.nickname);
                               } else {
                                 comparison = (a.gender || '').localeCompare(b.gender || '');
+                                if (comparison === 0) {
+                                  comparison = a.nickname.localeCompare(b.nickname);
+                                }
                               }
                               return peopleSortOrder === 'asc' ? comparison : -comparison;
                             })
@@ -679,8 +674,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                                      u.gender === 'Non-binary' ? 'bg-indigo-500 text-white' :
                                      'bg-slate-500 text-white'
                                    }`}>
-                                      {u.gender === 'Male' && <Mars size={16} />}
-                                      {u.gender === 'Female' && <Venus size={16} />}
+                                      {u.gender === 'Male' && <Mars size={12} />}
+                                      {u.gender === 'Female' && <Venus size={12} />}
                                       {u.gender === 'Non-binary' && <span>NB</span>}
                                       {(u.gender === 'Prefer not to say' || u.gender === 'Other' || !u.gender) && <span>P</span>}
                                       <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 border border-white rounded-full transition-colors duration-500 ${u.id === user.id || onlineUsers.some(ou => ou.id === u.id) || dummyUsers.some(du => du.id === u.id) ? 'bg-green-500' : 'bg-slate-300'}`} />
@@ -734,8 +729,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                         </div>
                       ) : (
                         sortedPrivateChatIds.map(otherId => {
-                          const thread = privateThreads[otherId];
+                          const thread = privateThreads[otherId] || [];
                           const lastMsg = thread[thread.length - 1];
+                          if (!lastMsg) return null; // Skip threads with no messages
+
                           const otherUser = [...onlineUsers, ...dummyUsers].find(u => u.id === otherId);
                           
                           // Fallback to name from the last message sent by them or to them
@@ -745,10 +742,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                           return (
                             <div 
                               key={otherId} 
-                              className={`w-full flex items-center justify-between p-3 rounded-2xl transition-all group relative border border-transparent ${activePrivateChat === otherId ? 'bg-indigo-50 border-indigo-100 shadow-sm' : unreadThreads.has(otherId) ? 'bg-brand/5 border-brand/20' : 'hover:bg-slate-50'}`}
+                              className={`w-full flex items-center justify-between p-2 rounded-2xl transition-all group relative border border-transparent ${activePrivateChat === otherId ? 'bg-indigo-50 border-indigo-100 shadow-sm' : unreadThreads.has(otherId) ? 'bg-brand/5 border-brand/20' : 'hover:bg-slate-50'}`}
                             >
                                {unreadThreads.has(otherId) && (
-                                 <div className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1 h-8 bg-brand rounded-full" />
+                                 <div className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1 h-6 bg-brand rounded-full" />
                                )}
                                <button 
                                  onClick={() => {
@@ -761,31 +758,26 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                                      return next;
                                    });
                                  }}
-                                 className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                                 className="flex items-center gap-2 flex-1 min-w-0 text-left"
                                >
-                                   <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-[10px] font-bold uppercase tracking-widest shadow-sm relative shrink-0 ${
+                                   <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[8px] font-bold uppercase tracking-widest shadow-sm relative shrink-0 ${
                                      otherUser?.gender === 'Male' ? 'bg-indigo-100 text-indigo-600' :
                                      otherUser?.gender === 'Female' ? 'bg-rose-100 text-rose-600' :
                                      otherUser?.gender === 'Non-binary' ? 'bg-amber-100 text-amber-600' :
                                      'bg-slate-100 text-slate-600'
                                    }`}>
-                                      {otherUser?.gender === 'Male' && <Mars size={18} />}
-                                      {otherUser?.gender === 'Female' && <Venus size={18} />}
+                                      {otherUser?.gender === 'Male' && <Mars size={12} />}
+                                      {otherUser?.gender === 'Female' && <Venus size={12} />}
                                       {otherUser?.gender === 'Non-binary' && <span>NB</span>}
                                       {(otherUser?.gender === 'Prefer not to say' || otherUser?.gender === 'Other' || !otherUser?.gender) && <span>P</span>}
-                                      <div className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 border-2 border-white rounded-full shadow-sm transition-colors duration-500 ${ (onlineUsers.some(u => u.id === otherId) || dummyUsers.some(du => du.id === otherId)) ? 'bg-green-500' : 'bg-slate-300'}`} />
+                                      <div className={`absolute -bottom-1 -right-1 w-2.5 h-2.5 border-2 border-white rounded-full shadow-sm z-10 ${ (onlineUsers.some(u => u.id === otherId) || dummyUsers.some(du => du.id === otherId)) ? 'bg-green-500' : 'bg-slate-300'}`} />
                                   </div>
                                   <div className="flex-1 min-w-0">
-                                     <div className="flex justify-between items-center mb-0.5">
-                                        <div className="flex items-center gap-1.5 min-w-0">
-                                          <p className="text-sm font-bold tracking-tight truncate text-slate-900">{displayName}</p>
-                                          {globalStatuses[otherId]?.isDND && <div className="w-1.5 h-1.5 bg-amber-500 rounded-full" />}
-                                        </div>
-                                        <span className={`text-[9px] font-bold ${unreadThreads.has(otherId) ? 'text-brand' : 'text-slate-400'}`}>
-                                          {new Date(lastMsg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </span>
-                                     </div>
-                                     <p className={`text-[11px] truncate leading-tight ${unreadThreads.has(otherId) ? 'text-slate-950 font-bold' : 'text-slate-500'}`}>{lastMsg.content}</p>
+                                      <div className="flex items-center gap-1.5 min-w-0">
+                                        <p className="text-[13px] font-extrabold tracking-tight truncate text-slate-900 leading-none">{displayName}</p>
+                                        {globalStatuses[otherId]?.isDND && <div className="w-1.5 h-1.5 bg-amber-500 rounded-full" />}
+                                      </div>
+                                     <p className={`text-[10px] truncate leading-tight mt-0.5 ${unreadThreads.has(otherId) ? 'text-slate-950 font-bold' : 'text-slate-500'}`}>{lastMsg.content}</p>
                                   </div>
                                </button>
                                
