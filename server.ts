@@ -291,11 +291,14 @@ function handleDummyResponses(io: Server, roomId: string, senderId: string, targ
     }
   } else {
     // Public message: random active female dummies in room respond
+    // Limit to 1 reply in public spaces (lobby)
+    // AND apply a 2% chance filter for who responds in the lobby
     const availableDummies = serverDummyUsers.filter(d => 
       d.currentRoom === roomId && 
       d.gender === 'Female' && 
       d.responseProfile !== 'Lurker' && 
-      d.repliesCount < 2
+      d.repliesCount < 1 &&
+      Math.random() < 0.02 // Only 2% chance to respond in public space
     );
     
     if (availableDummies.length > 0) {
@@ -311,21 +314,37 @@ function handleDummyResponses(io: Server, roomId: string, senderId: string, targ
     let delay = 0;
     if (dummy.responseProfile === 'Quick') delay = Math.random() * 5000 + 5000; // 5-10s
     else if (dummy.responseProfile === 'Moderate') delay = Math.random() * 30000 + 30000; // 30-60s
-    else delay = 120000; // Fixed 2-minute delay
+    else if (dummy.responseProfile === 'Sluggish') delay = 120000; // Fixed 2-minute delay
+    else return;
 
     setTimeout(() => {
       // Re-verify dummy exists and should still respond
       const currentDummy = serverDummyUsers.find(d => d.id === dummy.id);
-      if (!currentDummy || currentDummy.repliesCount >= 2) return;
+      if (!currentDummy) return;
+
+      // Check reply limits: 2 for private, 1 for public
+      if (targetDummyId) {
+        if (currentDummy.repliesCount >= 2) return;
+      } else {
+        if (currentDummy.repliesCount >= 1) return;
+      }
 
       let poolIndex = 0;
-      if (currentDummy.repliesCount === 0) {
-        // First reply MUST use Pool 1 (index 0)
-        poolIndex = 0;
+      if (targetDummyId) {
+        // Private Message Logic: 2 replies, No Pool Repeats, Pool 1 Lock (First only)
+        if (currentDummy.repliesCount === 0) {
+          // First reply can pick from any pool (indices 0, 1, 2, 3)
+          poolIndex = Math.floor(Math.random() * 4);
+        } else {
+          // Second reply picks from Pools 2, 3, or 4 (indices 1, 2, 3) 
+          // excluding whatever was used in the first reply
+          const firstPool = currentDummy.usedPools[0];
+          const availableSecondary = [1, 2, 3].filter(p => p !== firstPool);
+          poolIndex = availableSecondary[Math.floor(Math.random() * availableSecondary.length)];
+        }
       } else {
-        // Second reply MUST use Pools 2, 3, or 4 (index 1, 2, 3)
-        const secondaryPools = [1, 2, 3];
-        poolIndex = secondaryPools[Math.floor(Math.random() * secondaryPools.length)];
+        // Public (Lobby) Message Logic: Only Pool 1
+        poolIndex = 0;
       }
 
       const pool = RESPONSE_POOLS[poolIndex];
@@ -467,11 +486,25 @@ async function startServer() {
 
         // Check if nickname is already taken across all users
         const allUsers = Array.from(users.values());
-        const existingUser = allUsers.find(u => 
-          (u.nickname || '').trim().toLowerCase() === cleanNickname.toLowerCase()
-        );
+        const existingSessionId = Array.from(sessions.entries())
+          .find(([sid, uid]) => {
+            const u = users.get(uid);
+            return u && (u.nickname || '').trim().toLowerCase() === cleanNickname.toLowerCase();
+          })?.[0];
 
-        if (existingUser) {
+        if (existingSessionId && existingSessionId !== socket.id) {
+          const oldUserId = sessions.get(existingSessionId);
+          const oldUser = oldUserId ? users.get(oldUserId) : null;
+          
+          // If it's the same IP or just a lingering connection, allow takeover
+          if (oldUser && oldUser.ip === ip) {
+            console.log(`Socket ${socket.id} taking over nickname ${cleanNickname} from old socket ${existingSessionId}`);
+            sessions.delete(existingSessionId);
+            sessions.set(socket.id, oldUserId!);
+            socket.emit('registration:success', { userId: oldUserId! });
+            return;
+          }
+
           socket.emit('error', 'This nickname is already in use. Please choose another one.');
           return;
         }
@@ -521,9 +554,15 @@ async function startServer() {
 
     socket.on('send:message', (data) => {
       const userId = sessions.get(socket.id);
-      if (!userId) return;
+      if (!userId) {
+        socket.emit('error', 'Authentication failed. Please refresh.');
+        return;
+      }
       const user = users.get(userId);
-      if (!user) return;
+      if (!user) {
+        socket.emit('error', 'User data not found.');
+        return;
+      }
 
       // Rate limit removed by user request
       const now = Date.now();
@@ -546,9 +585,15 @@ async function startServer() {
 
     socket.on('send:private', (data) => {
       const userId = sessions.get(socket.id);
-      if (!userId) return;
+      if (!userId) {
+        socket.emit('error', 'Authentication failed. Please refresh.');
+        return;
+      }
       const user = users.get(userId);
-      if (!user) return;
+      if (!user) {
+        socket.emit('error', 'User data not found.');
+        return;
+      }
 
       const dummyRecipient = serverDummyUsers.find(d => d.id === data.recipientId);
       const realRecipient = users.get(data.recipientId);
