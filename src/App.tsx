@@ -22,9 +22,14 @@ const WARNING_DURATION = 60; // 60 seconds
 export default function App() {
   const dummyUsers = useDummyUsers();
   const [step, setStep] = useState<'landing' | 'entry' | 'chat'>('landing');
+  const [user, setUser] = useState<{ id: string; nickname: string; gender?: Gender; interests: string[] } | null>(() => {
+    const saved = localStorage.getItem('chat_user');
+    return saved ? JSON.parse(saved) : null;
+  });
   const stepRef = React.useRef(step);
+  const userRef = React.useRef(user);
   stepRef.current = step;
-  const [user, setUser] = useState<{ id: string; nickname: string; gender?: Gender; interests: string[] } | null>(null);
+  userRef.current = user;
   const [totalUsers, setTotalUsers] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(window.location.pathname === '/admin');
@@ -67,24 +72,37 @@ export default function App() {
   }, [step, resetInactivityTimer]);
 
   useEffect(() => {
+    if (user && user.id !== 'pending') {
+      localStorage.setItem('chat_user', JSON.stringify(user));
+    } else if (!user) {
+      localStorage.removeItem('chat_user');
+    }
+  }, [user]);
+
+  useEffect(() => {
     if (isAdmin) return;
     socket.connect();
 
     socket.on('connect', () => {
       // If we already have a user and we are in the chat step, re-register automatically on reconnect
-      if (stepRef.current === 'chat' && user) {
+      if (stepRef.current === 'chat' && userRef.current) {
         socket.emit('register', { 
-          nickname: user.nickname, 
-          gender: user.gender, 
-          interests: user.interests 
+          nickname: userRef.current.nickname, 
+          gender: userRef.current.gender, 
+          interests: userRef.current.interests,
+          userId: userRef.current.id // Send ID for session recovery
         });
       }
     });
 
     socket.on('error', (msg) => {
       setError(msg);
-      // If session expired, force logout regardless of current step
-      if (msg.toLowerCase().includes('session expired')) {
+      // If session expired or nickname issue, check if we need to reset
+      if (msg.toLowerCase().includes('already in use') && stepRef.current === 'chat') {
+        // This might happen if IP changed and server rejected the takeover
+        // We'll try to re-register without the ID or just let the user know
+      }
+      if (msg.toLowerCase().includes('session expired') || msg.toLowerCase().includes('authentication failed')) {
         handleExit();
       } else if (stepRef.current !== 'chat') {
         setUser(null);

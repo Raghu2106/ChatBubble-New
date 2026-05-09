@@ -73,7 +73,7 @@ export interface ClientToServerEvents {
   'match:find': () => void;
   'match:cancel': () => void;
   'match:leave': () => void;
-  'register': (data: { nickname: string; gender?: Gender; interests?: string[] }) => void;
+  'register': (data: { nickname: string; gender?: Gender; interests?: string[]; userId?: string }) => void;
 }
 
 export interface SessionData {

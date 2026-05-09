@@ -68,7 +68,7 @@ export interface ClientToServerEvents {
   'match:find': () => void;
   'match:cancel': () => void;
   'match:leave': () => void;
-  'register': (data: { nickname: string; gender?: Gender; interests?: string[] }) => void;
+  'register': (data: { nickname: string; gender?: Gender; interests?: string[]; userId?: string }) => void;
 }
 
 const PORT = Number(process.env.PORT) || 3000;
@@ -478,14 +478,35 @@ async function startServer() {
         }
 
         const cleanNickname = (data.nickname || '').trim();
+        const clientUserId = data.userId;
         
         if (!cleanNickname) {
           socket.emit('error', 'Nickname cannot be empty.');
           return;
         }
 
-        // Check if nickname is already taken across all users
-        const allUsers = Array.from(users.values());
+        // 1. Session recovery by userId (Highest priority)
+        if (clientUserId && users.has(clientUserId)) {
+          const existingUser = users.get(clientUserId)!;
+          if (existingUser.nickname.toLowerCase() === cleanNickname.toLowerCase()) {
+            console.log(`User ${cleanNickname} recovered session via ID ${clientUserId}`);
+            
+            // Clear any pending removal timer
+            const timer = userTimers.get(clientUserId);
+            if (timer) {
+              clearTimeout(timer);
+              userTimers.delete(clientUserId);
+            }
+
+            // Bind new socket to existing user
+            sessions.set(socket.id, clientUserId);
+            socket.emit('registration:success', { userId: clientUserId });
+            broadcastTotalUsers(io);
+            return;
+          }
+        }
+
+        // 2. Check if nickname is already taken by ANOTHER userId
         const existingSessionId = Array.from(sessions.entries())
           .find(([sid, uid]) => {
             const u = users.get(uid);
@@ -499,6 +520,14 @@ async function startServer() {
           // If it's the same IP or just a lingering connection, allow takeover
           if (oldUser && oldUser.ip === ip) {
             console.log(`Socket ${socket.id} taking over nickname ${cleanNickname} from old socket ${existingSessionId}`);
+            
+            // Clear any pending removal timer
+            const timer = userTimers.get(oldUserId!);
+            if (timer) {
+              clearTimeout(timer);
+              userTimers.delete(oldUserId!);
+            }
+
             sessions.delete(existingSessionId);
             sessions.set(socket.id, oldUserId!);
             socket.emit('registration:success', { userId: oldUserId! });
@@ -782,21 +811,32 @@ async function startServer() {
       if (userId) {
         const user = users.get(userId);
         if (user) {
-          sessions.delete(socket.id);
+          // Instead of immediate removal, set a timer to allow for reconnection
+          console.log(`User ${user.nickname} disconnected. Starting 30s grace period.`);
           
-          // Immediate removal
-          if (user.currentRoom) {
-            const roomObj = rooms.find(rm => rm.id === user.currentRoom);
-            if (roomObj) {
-              roomObj.userCount = Math.max(0, roomObj.userCount - 1);
-              io.emit('rooms:updated' as any, rooms);
+          const timer = setTimeout(() => {
+            const currentUserIdForSocket = sessions.get(socket.id);
+            // Only remove if this socket ID is still the one associated with the user
+            // and no other socket has taken over this user yet.
+            if (users.has(userId) && !Array.from(sessions.values()).includes(userId)) {
+              if (user.currentRoom) {
+                const roomObj = rooms.find(rm => rm.id === user.currentRoom);
+                if (roomObj) {
+                  roomObj.userCount = Math.max(0, roomObj.userCount - 1);
+                  io.emit('rooms:updated' as any, rooms);
+                }
+              }
+              
+              io.emit('user:left', user.id);
+              users.delete(userId);
+              broadcastTotalUsers(io);
+              console.log(`User ${user.nickname} removed after grace period.`);
             }
-          }
+            userTimers.delete(userId);
+            sessions.delete(socket.id);
+          }, 30000); // 30 second grace period
           
-          io.emit('user:left', user.id);
-          users.delete(userId);
-          broadcastTotalUsers(io);
-          console.log(`User ${user.nickname} removed immediately on disconnect.`);
+          userTimers.set(userId, timer);
         }
       }
     });
