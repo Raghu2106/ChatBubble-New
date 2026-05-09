@@ -774,7 +774,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                                   </div>
                                   <div className="flex-1 min-w-0">
                                       <div className="flex items-center gap-1.5 min-w-0">
-                                        <p className="text-[13px] font-extrabold tracking-tight truncate text-slate-900 leading-none">{displayName}</p>
+                                        <p className="text-[13px] font-extrabold tracking-tight truncate text-text-highlight leading-none">{displayName}</p>
                                         {globalStatuses[otherId]?.isDND && <div className="w-1.5 h-1.5 bg-amber-500 rounded-full" />}
                                       </div>
                                      <p className={`text-[10px] truncate leading-tight mt-0.5 ${unreadThreads.has(otherId) ? 'text-slate-950 font-bold' : 'text-slate-500'}`}>{lastMsg.content}</p>
