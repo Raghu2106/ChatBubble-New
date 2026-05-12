@@ -102,21 +102,9 @@ export default function App() {
         // This might happen if IP changed and server rejected the takeover
         // We'll try to re-register without the ID or just let the user know
       }
-      if (msg.toLowerCase().includes('session expired')) {
+      if (msg.toLowerCase().includes('session expired') || msg.toLowerCase().includes('authentication failed')) {
+        setDisconnectReason('Your session has expired. Please join the chat again.');
         handleExit();
-      } else if (msg.toLowerCase().includes('authentication failed')) {
-        // Try to re-register automatically if we're in chat step and have user data
-        if (stepRef.current === 'chat' && userRef.current) {
-          console.log('Authentication failed, attempting auto-re-registration');
-          socket.emit('register', { 
-            nickname: userRef.current.nickname, 
-            gender: userRef.current.gender, 
-            interests: userRef.current.interests,
-            userId: userRef.current.id 
-          });
-        } else {
-          handleExit();
-        }
       } else if (stepRef.current !== 'chat') {
         setUser(null);
         setStep('entry');

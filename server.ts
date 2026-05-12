@@ -601,12 +601,12 @@ async function startServer() {
     socket.on('send:message', (data) => {
       const userId = sessions.get(socket.id);
       if (!userId) {
-        socket.emit('error', 'Authentication failed. Please refresh.');
+        socket.emit('error', 'Your session has expired. Please join the chat again.');
         return;
       }
       const user = users.get(userId);
       if (!user) {
-        socket.emit('error', 'User data not found.');
+        socket.emit('error', 'Your session has expired. Please join the chat again.');
         return;
       }
 
@@ -632,12 +632,12 @@ async function startServer() {
     socket.on('send:private', (data) => {
       const userId = sessions.get(socket.id);
       if (!userId) {
-        socket.emit('error', 'Authentication failed. Please refresh.');
+        socket.emit('error', 'Your session has expired. Please join the chat again.');
         return;
       }
       const user = users.get(userId);
       if (!user) {
-        socket.emit('error', 'User data not found.');
+        socket.emit('error', 'Your session has expired. Please join the chat again.');
         return;
       }
 
