@@ -30,6 +30,7 @@ export default function App() {
   const userRef = React.useRef(user);
   stepRef.current = step;
   userRef.current = user;
+  const [isRegistering, setIsRegistering] = useState(false);
   const [totalUsers, setTotalUsers] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(window.location.pathname === '/admin');
@@ -63,9 +64,19 @@ export default function App() {
       // Track all common UI interactions
       const events = ['mousemove', 'pointermove', 'keydown', 'click', 'scroll', 'touchstart', 'mousedown', 'wheel'];
       const handler = () => resetInactivityTimer();
-      events.forEach(event => window.addEventListener(event, handler, { passive: true }));
+      events.forEach(event => window.addEventListener(event, handler, { passive: true, capture: true }));
+      
+      // Also reset on visibility change (coming back to the tab)
+      const visibilityHandler = () => {
+        if (document.visibilityState === 'visible') {
+          resetInactivityTimer(true);
+        }
+      };
+      document.addEventListener('visibilitychange', visibilityHandler);
+
       return () => {
-        events.forEach(event => window.removeEventListener(event, handler));
+        events.forEach(event => window.removeEventListener(event, handler, { capture: true }));
+        document.removeEventListener('visibilitychange', visibilityHandler);
         if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
       };
     }
@@ -86,6 +97,7 @@ export default function App() {
     socket.on('connect', () => {
       // If we already have a user and we are in the chat step, re-register automatically on reconnect
       if (stepRef.current === 'chat' && userRef.current) {
+        setIsRegistering(true);
         socket.emit('register', { 
           nickname: userRef.current.nickname, 
           gender: userRef.current.gender, 
@@ -97,6 +109,7 @@ export default function App() {
 
     socket.on('error', (msg) => {
       setError(msg);
+      setIsRegistering(false);
       // If session expired or nickname issue, check if we need to reset
       if (msg.toLowerCase().includes('already in use') && stepRef.current === 'chat') {
         // This might happen if IP changed and server rejected the takeover
@@ -112,6 +125,7 @@ export default function App() {
     });
 
     socket.on('registration:success', ({ userId }: { userId: string }) => {
+      setIsRegistering(false);
       setUser(prev => prev ? { ...prev, id: userId } : null);
       setStep('chat');
     });
@@ -218,7 +232,14 @@ export default function App() {
                 </div>
               </div>
               <div className="flex-1 overflow-hidden">
-                <ChatInterface user={user} onExit={handleExit} error={error} setError={setError} dummyUsers={dummyUsers} />
+                <ChatInterface 
+                  user={user} 
+                  onExit={handleExit} 
+                  error={error} 
+                  setError={setError} 
+                  dummyUsers={dummyUsers}
+                  isRegistering={isRegistering}
+                />
               </div>
             </div>
           ) : (

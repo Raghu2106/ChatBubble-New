@@ -24,6 +24,7 @@ interface ChatInterfaceProps {
   error?: string | null;
   setError: (err: string | null) => void;
   dummyUsers: DummyUser[];
+  isRegistering?: boolean;
 }
 
 type Tab = 'Rooms' | 'Messages' | 'People';
@@ -35,7 +36,9 @@ const CATEGORIES = [
   { id: 'global', name: 'Global Connections', icon: Globe },
 ];
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, error, setError, dummyUsers }) => {
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ 
+  user, onExit, error, setError, dummyUsers, isRegistering 
+}) => {
   const [activeTab, setActiveTab] = useState<Tab>('Rooms');
   const [currentRoom, setCurrentRoom] = useState<string>('lobby');
   const [roomMessages, setRoomMessages] = useState<Record<string, ChatMessage[]>>({});
@@ -1162,8 +1165,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                             setInputText(e.target.value);
                             if (error) setError(null);
                           }}
-                          placeholder={`Message ${currentChatName}...`}
-                          className="w-full bg-bg/50 rounded-lg py-2 px-4 text-base md:text-sm focus:outline-none border border-border focus:border-brand transition-all font-medium placeholder:text-text-muted/30 shadow-inner"
+                          placeholder={isRegistering ? 'Connecting...' : `Message ${currentChatName}...`} disabled={isRegistering}
+                          className={`w-full bg-bg/50 rounded-lg py-2 px-4 text-base md:text-sm focus:outline-none border border-border focus:border-brand transition-all font-medium placeholder:text-text-muted/30 shadow-inner ${isRegistering ? 'opacity-50 cursor-not-allowed' : ''}`}
                           autoComplete="off"
                         />
                      </div>
