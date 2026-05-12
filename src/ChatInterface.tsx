@@ -427,7 +427,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="md:hidden p-2 hover:bg-slate-50 rounded-xl text-slate-400 transition-colors"
+            className="md:hidden p-2 hover:bg-slate-50 rounded-lg text-slate-400 transition-colors"
             aria-label={mobileSidebarOpen ? "Close menu" : "Open menu"}
           >
             <Menu size={22} className={mobileSidebarOpen ? 'rotate-90 transition-transform' : 'transition-transform'} />
@@ -444,15 +444,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
           {!isConnected && (
             <button 
               onClick={() => socket.connect()}
-              className="flex items-center gap-2 px-3 py-1.5 bg-rose-500 text-white rounded-xl text-[10px] font-bold uppercase animate-pulse"
+              className="flex items-center gap-2 px-3 py-1.5 bg-rose-500 text-white rounded-lg text-[10px] font-bold uppercase animate-pulse"
             >
-              <RefreshCw size={14} className="animate-spin" />
+              <RefreshCw size={13} className="animate-spin" />
               Reconnect
             </button>
           )}
           <button 
             onClick={toggleDND}
-            className={`flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-xl border transition-all duration-300 ${
+            className={`flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-lg border transition-all duration-300 ${
               isDND 
                 ? 'bg-amber-50 border-amber-200 text-amber-600 shadow-sm shadow-amber-100' 
                 : 'bg-white border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50'
@@ -465,7 +465,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
           
           <button 
             onClick={onExit}
-            className="group flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 bg-slate-900 hover:bg-red-600 border border-slate-800 hover:border-red-500 text-white rounded-xl transition-all font-bold text-[10px] uppercase tracking-wider shadow-lg shadow-slate-900/10"
+            className="group flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 bg-slate-900 hover:bg-red-600 border border-slate-800 hover:border-red-500 text-white rounded-lg transition-all font-bold text-[10px] uppercase tracking-wider shadow-lg shadow-slate-900/10"
           >
             <DoorOpen size={16} />
             <span className="hidden sm:inline">Exit App</span>
@@ -522,9 +522,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                   >
                     <div className="flex flex-col items-center">
                       <div className="relative">
-                        {tab === 'Rooms' && <Hash size={14} />}
-                        {tab === 'Messages' && <MessageSquare size={14} />}
-                        {tab === 'People' && <Users size={14} />}
+                        {tab === 'Rooms' && <Hash size={13} />}
+                        {tab === 'Messages' && <MessageSquare size={13} />}
+                        {tab === 'People' && <Users size={13} />}
                         
                         {count > 0 && (
                           <div className={`absolute -top-1.5 -right-2 px-1 py-0.5 min-w-[14px] rounded-full text-[7px] flex items-center justify-center font-black ${
@@ -559,7 +559,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                           }`}
                         >
                            <div className="flex items-center gap-3">
-                              <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${currentRoom === 'lobby' ? 'bg-white/10 text-white' : 'bg-slate-100 text-slate-400 group-hover:bg-brand/10 group-hover:text-brand'}`}>
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${currentRoom === 'lobby' ? 'bg-white/10 text-white' : 'bg-slate-100 text-slate-400 group-hover:bg-brand/10 group-hover:text-brand'}`}>
                                 <MessageSquare size={16} />
                               </div>
                               <span className="text-xs font-bold tracking-tight">General Lobby</span>
@@ -594,12 +594,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                             >
                               <div className="flex items-center gap-2">
                                  <ChevronDown 
-                                   size={14} 
+                                   size={13} 
                                    className={`text-text-muted transition-transform ${isCollapsed ? '-rotate-90' : ''}`} 
                                  />
                                    <span className="text-[10px] font-black uppercase tracking-widest text-brand">{category.name}</span>
                               </div>
-                              <Plus size={14} className="text-text-muted/40 group-hover:text-text-muted transition-colors" />
+                              <Plus size={13} className="text-text-muted/40 group-hover:text-text-muted transition-colors" />
                             </div>
                             
                             {!isCollapsed && (
@@ -642,7 +642,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                             placeholder="Search people..."
                             value={peopleSearchQuery}
                             onChange={(e) => setPeopleSearchQuery(e.target.value)}
-                            className="w-full pl-8 pr-3 py-2 bg-slate-100 border-none rounded-xl text-[11px] focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-400"
+                            className="w-full pl-8 pr-3 py-2 bg-slate-100 border-none rounded-lg text-[11px] focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-400"
                           />
                         </div>
 
@@ -703,7 +703,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                             .map(u => (
                             <div 
                               key={u.id} 
-                              className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-surface-hover transition-all group"
+                              className="w-full flex items-center justify-between p-2.5 rounded-lg hover:bg-surface-hover transition-all group"
                             >
                                 <button 
                                   onClick={() => {
@@ -857,7 +857,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                   
                   {/* Adsterra Native Banner in Sidebar Bottom */}
                   <div className="mt-auto p-2">
-                    <AdUnit id="1418012d844b1648216870293d3858dc" format="native" className="rounded-xl border border-border bg-surface-hover/20" />
+                    <AdUnit id="1418012d844b1648216870293d3858dc" format="native" className="rounded-lg border border-border bg-surface-hover/20" />
                   </div>
 
                   {/* SEO / Crawler Content Helper */}
@@ -896,7 +896,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                      </p>
                    </div>
                    <button onClick={() => setReportNotification(null)} className="shrink-0 opacity-60 hover:opacity-100">
-                     <X size={14} />
+                     <X size={13} />
                    </button>
                  </div>
                </motion.div>
@@ -911,10 +911,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                  exit={{ opacity: 0, y: 20, scale: 0.95 }}
                  className="absolute bottom-20 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-md px-4"
                >
-                 <div className="bg-text-highlight text-white p-3.5 rounded-xl shadow-2xl border border-white/10 flex items-center gap-3 backdrop-blur-md bg-opacity-95">
+                 <div className="bg-text-highlight text-white p-3.5 rounded-lg shadow-2xl border border-white/10 flex items-center gap-3 backdrop-blur-md bg-opacity-95">
                    <div className="flex items-center justify-center gap-3 flex-1">
                      <div className="p-1.5 bg-white/10 rounded-lg shrink-0">
-                       <BellOff size={14} className="text-white" />
+                       <BellOff size={13} className="text-white" />
                      </div>
                      <p className="text-[11px] font-bold text-white leading-tight text-center">
                        Your DND is on. Turn it off to receive private messages.
@@ -924,7 +924,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                      onClick={() => setShowDNDToast(false)}
                      className="p-1 hover:bg-white/10 rounded-md transition-colors shrink-0"
                    >
-                     <X size={14} />
+                     <X size={13} />
                    </button>
                  </div>
                </motion.div>
@@ -932,7 +932,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
            </AnimatePresence>
            {/* Window Header */}
            <div className="px-4 py-3 flex items-center gap-3 border-b border-border bg-surface/50 backdrop-blur-sm sticky top-0 z-20">
-              <div className="w-9 h-9 bg-brand/10 rounded-xl flex items-center justify-center border border-brand/5 shrink-0">
+              <div className="w-9 h-9 bg-brand/10 rounded-lg flex items-center justify-center border border-brand/5 shrink-0">
                  <MessageSquare size={18} className="text-brand" />
               </div>
               <div className="flex-1 min-w-0 leading-tight">
@@ -956,7 +956,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                     className="flex items-center gap-1.5 px-2 py-1.5 bg-surface/50 hover:bg-orange-500/10 text-text-muted hover:text-orange-500 rounded-lg transition-all font-black text-[9px] sm:text-[10px] uppercase tracking-widest border border-border hover:border-orange-500/20"
                     title="Report User"
                   >
-                    <ShieldAlert size={14} />
+                    <ShieldAlert size={13} />
                     <span className="hidden xs:inline">Report</span>
                   </button>
                   {!blockedUsers.has(activePrivateChat) && (
@@ -965,7 +965,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                       className="flex items-center gap-1.5 px-2 py-1.5 bg-surface/50 hover:bg-red-500/10 text-text-muted hover:text-red-500 rounded-lg transition-all font-black text-[9px] sm:text-[10px] uppercase tracking-widest border border-border hover:border-red-500/20"
                       title="Restrict User"
                     >
-                      <Shield size={14} />
+                      <Shield size={13} />
                       <span className="hidden xs:inline">Restrict</span>
                     </button>
                   )}
@@ -979,7 +979,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                 {blockedUsers.has(activePrivateChat) && (
                   <div className="bg-red-500/10 border-b border-red-500/20 px-4 py-2 flex items-center justify-between animate-in slide-in-from-top-1">
                     <div className="flex items-center gap-2">
-                       <Shield size={14} className="text-red-500" />
+                       <Shield size={13} className="text-red-500" />
                        <span className="text-[11px] font-bold text-red-600">You have restricted this user. Unrestrict them to receive private messages.</span>
                     </div>
                     <button 
@@ -992,7 +992,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                 )}
                 {whoBlockedMe.has(activePrivateChat) && (
                   <div className="bg-orange-500/10 border-b border-orange-500/20 px-4 py-2 flex items-center gap-2 animate-in slide-in-from-top-1">
-                    <ShieldAlert size={14} className="text-orange-500" />
+                    <ShieldAlert size={13} className="text-orange-500" />
                     <span className="text-[11px] font-bold text-orange-600">Communication with this user is currently restricted.</span>
                   </div>
                 )}
@@ -1076,21 +1076,21 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                    left: Math.min(activeUserMenu.x, window.innerWidth - 180), 
                    top: Math.min(activeUserMenu.y, window.innerHeight - 150) 
                  }}
-                 className="fixed z-[100] w-44 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden"
+                 className="fixed z-[100] w-36 bg-white rounded-lg shadow-2xl border border-slate-100 overflow-hidden"
                  onClick={(e) => e.stopPropagation()}
                >
-                 <div className="px-4 py-3 bg-slate-50 border-b border-slate-100">
-                   <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest truncate">{activeUserMenu.nickname}</p>
+                 <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
+                   <p className="text-[9px] font-black text-slate-900 uppercase tracking-widest truncate">{activeUserMenu.nickname}</p>
                  </div>
-                 <div className="p-1.5 space-y-1">
+                 <div className="p-1 space-y-0.5">
                    <button 
                      onClick={() => {
                        setActivePrivateChat(activeUserMenu.userId);
                        setActiveUserMenu(null);
                      }}
-                     className="w-full flex items-center gap-3 px-3 py-2 text-[12px] font-medium text-slate-700 hover:bg-slate-50 hover:text-indigo-600 rounded-xl transition-colors"
+                     className="w-full flex items-center gap-2 px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 hover:text-indigo-600 rounded-lg transition-colors"
                    >
-                     <MessageSquare size={14} /> Send Message
+                     <MessageSquare size={13} /> Send Message
                    </button>
                    <button 
                      onClick={() => {
@@ -1098,25 +1098,25 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                        else handleBlock(activeUserMenu.userId);
                        setActiveUserMenu(null);
                      }}
-                     className="w-full flex items-center gap-3 px-3 py-2 text-[12px] font-medium text-slate-700 hover:bg-slate-50 hover:text-amber-600 rounded-xl transition-colors"
+                     className="w-full flex items-center gap-2 px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 hover:text-amber-600 rounded-lg transition-colors"
                    >
-                     <Shield size={14} /> {blockedUsers.has(activeUserMenu.userId) ? 'Unrestrict' : 'Restrict'}
+                     <Shield size={13} /> {blockedUsers.has(activeUserMenu.userId) ? 'Unrestrict' : 'Restrict'}
                    </button>
                    <button 
                      onClick={() => {
                        handleReport(activeUserMenu.userId);
                        setActiveUserMenu(null);
                      }}
-                     className="w-full flex items-center gap-3 px-3 py-2 text-[12px] font-medium text-slate-700 hover:bg-slate-50 hover:text-red-600 rounded-xl transition-colors"
+                     className="w-full flex items-center gap-2 px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 hover:text-red-600 rounded-lg transition-colors"
                    >
-                     <ShieldAlert size={14} /> Report User
+                     <ShieldAlert size={13} /> Report User
                    </button>
-                   <div className="border-t border-slate-100 pt-1">
+                   <div className="border-t border-slate-100 pt-0.5">
                      <button 
                        onClick={() => setActiveUserMenu(null)}
-                       className="w-full flex items-center gap-3 px-3 py-2 text-[12px] font-medium text-slate-400 hover:bg-slate-50 rounded-xl transition-colors"
+                       className="w-full flex items-center gap-2 px-2 py-1.5 text-[11px] font-medium text-slate-400 hover:bg-slate-50 rounded-lg transition-colors"
                      >
-                       <X size={14} /> Cancel
+                       <X size={13} /> Cancel
                      </button>
                    </div>
                  </div>
