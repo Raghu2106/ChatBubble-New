@@ -80,7 +80,8 @@
   </head>
   <body>
     <div id="root">
-      <div style="padding: 20px; font-family: sans-serif; max-width: 800px; margin: 0 auto; color: #333;">
+      <!-- Static content for SEO/Indexers - Hidden from users during loading -->
+      <div style="display: none;">
         <h1>ChatBubble | Premium Free Chatrooms Without Registration</h1>
         <p>ChatBubble is a leading platform providing <strong>free chatrooms without registration</strong>. Connect instantly with people from around the world in our secure, anonymous environment. Our mission is to provide a seamless social experience where anyone can talk to strangers without the barriers of modern social media.</p>
         <h2>Why Choose ChatBubble for Anonymous Chat?</h2>
@@ -91,6 +92,15 @@
           <li><strong>Global Networking:</strong> Meet thousands of active users daily and expand your social circle safely.</li>
         </ul>
         <p>ChatBubble is committed to being the best destination for registration-free chatting, offering a safe and moderated space for meaningful interactions.</p>
+      </div>
+      
+      <!-- Loading State Spinner -->
+      <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #ffffff; font-family: sans-serif;">
+         <div style="width: 40px; height: 40px; border: 3px solid #f3f3f3; border-top: 3px solid #6366f1; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+         <style>
+           @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+         </style>
+         <p style="margin-top: 20px; font-weight: 700; color: #6366f1; letter-spacing: 0.1em; text-transform: uppercase; font-size: 12px;">Loading ChatBubble</p>
       </div>
     </div>
     <script type="module" src="/src/main.tsx"></script>
