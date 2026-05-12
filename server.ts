@@ -448,6 +448,11 @@ async function startServer() {
   // Admin middleware or routes can go here
   app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 
+  // --- Throttled Room Updates ---
+  setInterval(() => {
+    io.emit('rooms:updated' as any, rooms);
+  }, 5000); // Update every 5 seconds instead of on every join/leave
+
   io.on("connection", (socket) => {
     const ip = socket.handshake.address;
 
@@ -808,22 +813,25 @@ async function startServer() {
       if (idx > -1) matchingQueue.splice(idx, 1);
       
       const userId = sessions.get(socket.id);
-      if (userId) {
+        if (userId) {
         const user = users.get(userId);
         if (user) {
+          // Clear any existing timer for this user to avoid overlaps
+          const existingTimer = userTimers.get(userId);
+          if (existingTimer) {
+            clearTimeout(existingTimer);
+          }
+
           // Instead of immediate removal, set a timer to allow for reconnection
           console.log(`User ${user.nickname} disconnected. Starting 30s grace period.`);
           
           const timer = setTimeout(() => {
-            const currentUserIdForSocket = sessions.get(socket.id);
-            // Only remove if this socket ID is still the one associated with the user
-            // and no other socket has taken over this user yet.
+            // Only remove if no other socket has taken over this user yet.
             if (users.has(userId) && !Array.from(sessions.values()).includes(userId)) {
               if (user.currentRoom) {
                 const roomObj = rooms.find(rm => rm.id === user.currentRoom);
                 if (roomObj) {
                   roomObj.userCount = Math.max(0, roomObj.userCount - 1);
-                  io.emit('rooms:updated' as any, rooms);
                 }
               }
               
@@ -834,10 +842,14 @@ async function startServer() {
             }
             userTimers.delete(userId);
             sessions.delete(socket.id);
-          }, 30000); // 30 second grace period
+          }, 60000); // 60 second grace period
           
           userTimers.set(userId, timer);
+        } else {
+          sessions.delete(socket.id);
         }
+      } else {
+        sessions.delete(socket.id);
       }
     });
   });
@@ -870,9 +882,6 @@ async function startServer() {
     if (targetRoom) targetRoom.userCount++;
 
     console.log(`User ${user.nickname} joined room ${roomId}. New count: ${targetRoom?.userCount}`);
-
-    // Notify all about room counts immediately to reflect changes accurately
-    io.emit('rooms:updated' as any, rooms);
 
     // Notify others in the room
     socket.to(roomId).emit('user:joined', { 
@@ -907,9 +916,6 @@ async function startServer() {
     
     console.log(`Room ${roomId} members list generated: ${members.length} unique users`);
     socket.emit('users:list', members as any);
-    
-    // Notify all about room counts
-    io.emit('rooms:updated' as any, rooms);
   }
 
   // Vite + Express setup

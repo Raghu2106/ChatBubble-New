@@ -46,6 +46,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   const [peopleSortOrder, setPeopleSortOrder] = useState<SortOrder>('asc');
   const [inputText, setInputText] = useState('');
   const [isDND, setIsDND] = useState(false);
+  const [isConnected, setIsConnected] = useState(socket.connected);
   const [showDNDToast, setShowDNDToast] = useState(false);
   const [reportNotification, setReportNotification] = useState<{ visible: boolean; message: string; type: 'info' | 'warning' | 'success' } | null>(null);
   const [activePrivateChat, setActivePrivateChat] = useState<string | null>(null);
@@ -134,6 +135,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   const scrollRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
+    socket.on('connect', () => setIsConnected(true));
+    socket.on('disconnect', () => setIsConnected(false));
+
     socket.on('room:message', (msg) => {
       setRoomMessages(prev => ({
         ...prev,
@@ -145,7 +149,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
       const otherId = msg.senderId === user.id ? msg.recipientId! : msg.senderId;
       setPrivateThreads(prev => ({
         ...prev,
-        [otherId]: [...(prev[otherId] || []), msg]
+        [otherId]: [...(prev[otherId] || []), msg].slice(-100)
       }));
       
       if (activePrivateChatRef.current !== otherId && msg.senderId !== user.id) {
@@ -230,6 +234,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
       socket.off('status:update');
       socket.off('restriction:update' as any);
       socket.off('user:reported' as any);
+      socket.off('connect');
+      socket.off('disconnect');
     };
   }, [currentRoom, user.id]);
 
@@ -266,7 +272,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputText.trim()) return;
+    const cleanInput = inputText.trim();
+    if (!cleanInput) return;
+
+    if (!socket.connected) {
+      setError("Waiting for connection...");
+      // We don't return here because socket.io will buffer it, 
+      // but the user should know why it might be delayed.
+    }
 
     setError(null);
     if (activePrivateChat) {
@@ -276,20 +289,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         ? dummyUsers.some(u => u.id === activePrivateChat)
         : onlineUsers.some(u => u.id === activePrivateChat);
 
-      if (!isOnline) {
+      if (!isOnline && !isDummy) {
         setError("User is no longer online.");
         return;
       }
 
-      if (isDummy) {
-        // Notify server so auto-reply can trigger. server-echo will handle UI update.
-        socket.emit('send:private', { recipientId: activePrivateChat, content: inputText });
-      } else {
-        // Real user: server handles the check globally (across rooms)
-        socket.emit('send:private', { recipientId: activePrivateChat, content: inputText });
-      }
+      socket.emit('send:private', { recipientId: activePrivateChat, content: cleanInput });
     } else {
-      socket.emit('send:message', { roomId: currentRoom, content: inputText });
+      socket.emit('send:message', { roomId: currentRoom, content: cleanInput });
     }
     setInputText('');
   };
@@ -428,6 +435,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
         </div>
 
         <div className="flex items-center gap-2 md:gap-4">
+          {!isConnected && (
+            <button 
+              onClick={() => socket.connect()}
+              className="flex items-center gap-2 px-3 py-1.5 bg-rose-500 text-white rounded-xl text-[10px] font-bold uppercase animate-pulse"
+            >
+              <RefreshCw size={14} className="animate-spin" />
+              Reconnect
+            </button>
+          )}
           <button 
             onClick={toggleDND}
             className={`flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-xl border transition-all duration-300 ${
