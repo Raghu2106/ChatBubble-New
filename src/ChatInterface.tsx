@@ -131,12 +131,17 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
   const [whoBlockedMe, setWhoBlockedMe] = useState<Set<string>>(new Set());
   const [globalStatuses, setGlobalStatuses] = useState<Record<string, { isDND?: boolean }>>({});
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [peopleSearchQuery, setPeopleSearchQuery] = useState('');
+  const [activeUserMenu, setActiveUserMenu] = useState<{ userId: string; nickname: string; x: number; y: number } | null>(null);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
     socket.on('connect', () => setIsConnected(true));
     socket.on('disconnect', () => setIsConnected(false));
+
+    const handleGlobalClick = () => setActiveUserMenu(null);
+    document.addEventListener('click', handleGlobalClick);
 
     socket.on('room:message', (msg) => {
       setRoomMessages(prev => ({
@@ -236,6 +241,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
       socket.off('user:reported' as any);
       socket.off('connect');
       socket.off('disconnect');
+      document.removeEventListener('click', handleGlobalClick);
     };
   }, [currentRoom, user.id]);
 
@@ -521,7 +527,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                         {tab === 'People' && <Users size={14} />}
                         
                         {count > 0 && (
-                          <div className={`absolute -top-1.5 -right-2 px-1.5 py-0.5 rounded-full text-[8px] flex items-center justify-center font-black ${
+                          <div className={`absolute -top-1.5 -right-2 px-1 py-0.5 min-w-[14px] rounded-full text-[7px] flex items-center justify-center font-black ${
                             activeTab === tab ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-200' : 'bg-slate-200 text-slate-600'
                           }`}>
                             {count}
@@ -625,40 +631,63 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                    </div>
                  )}
                  
-                 {activeTab === 'People' && (
-                    <div className="space-y-4">
-                      {/* Sort Controls */}
-                      <div className="flex items-center justify-between px-2 pb-1 border-b border-border">
-                        <div className="flex gap-2">
-                           <button 
-                             onClick={() => setPeopleSortBy('alphabet')}
-                             className={`text-[8px] font-black uppercase tracking-tighter px-2 py-1 rounded ${peopleSortBy === 'alphabet' ? 'bg-brand text-white' : 'bg-surface-hover text-text-muted'}`}
-                           >A-Z</button>
-                           <button 
-                             onClick={() => setPeopleSortBy('gender')}
-                             className={`text-[8px] font-black uppercase tracking-tighter px-2 py-1 rounded ${peopleSortBy === 'gender' ? 'bg-brand text-white' : 'bg-surface-hover text-text-muted'}`}
-                           >Gender</button>
+                  {activeTab === 'People' && (
+                    <div className="space-y-3">
+                      {/* Search & Filter Header */}
+                      <div className="px-2 space-y-2">
+                        <div className="relative">
+                          <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                          <input 
+                            type="text"
+                            placeholder="Search people..."
+                            value={peopleSearchQuery}
+                            onChange={(e) => setPeopleSearchQuery(e.target.value)}
+                            className="w-full pl-8 pr-3 py-2 bg-slate-100 border-none rounded-xl text-[11px] focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-400"
+                          />
                         </div>
-                        <button 
-                          onClick={() => setPeopleSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                          className="text-[8px] font-black uppercase tracking-tighter text-brand hover:text-brand-dark"
-                        >
-                          {peopleSortOrder === 'asc' ? 'Ascending ↑' : 'Descending ↓'}
-                        </button>
+
+                        {/* Sort Controls */}
+                        <div className="flex items-center justify-between pb-1">
+                          <div className="flex gap-1.5">
+                             <button 
+                               onClick={() => setPeopleSortBy('alphabet')}
+                               className={`text-[8px] font-black uppercase tracking-tighter px-2 py-1 rounded transition-colors ${peopleSortBy === 'alphabet' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                             >A-Z</button>
+                             <button 
+                               onClick={() => setPeopleSortBy('gender')}
+                               className={`text-[8px] font-black uppercase tracking-tighter px-2 py-1 rounded transition-colors ${peopleSortBy === 'gender' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                             >Gender</button>
+                          </div>
+                          <button 
+                            onClick={() => setPeopleSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                            className="text-[8px] font-black uppercase tracking-tighter text-indigo-600 hover:text-indigo-800"
+                          >
+                            {peopleSortOrder === 'asc' ? 'Ascending ↑' : 'Descending ↓'}
+                          </button>
+                        </div>
                       </div>
 
-                      <div className="space-y-1">
+                      <div className="space-y-1 px-1">
                         {(() => {
                            const allUsers = [...onlineUsers, ...dummyUsers];
                            const isSelfInList = allUsers.some(u => u.id === user.id);
                            const finalUserList = isSelfInList ? allUsers : [...allUsers, { id: user.id, nickname: user.nickname, gender: user.gender, currentRoom }];
                            
-                           return finalUserList
+                           const filteredList = finalUserList
                             .filter(u => 
-                              currentRoom === 'lobby' ||
-                              (u.currentRoom?.toLowerCase() === currentRoom.toLowerCase()) || 
-                              (u.id === user.id)
-                            )
+                              (currentRoom === 'lobby' || (u.currentRoom?.toLowerCase() === currentRoom.toLowerCase()) || (u.id === user.id)) &&
+                              (u.nickname.toLowerCase().includes(peopleSearchQuery.toLowerCase()))
+                            );
+
+                           if (filteredList.length === 0) {
+                             return (
+                               <div className="py-8 text-center text-slate-400">
+                                 <p className="text-[10px] font-bold uppercase tracking-widest">No results</p>
+                               </div>
+                             );
+                           }
+
+                           return filteredList
                             .sort((a, b) => {
                               let comparison = 0;
                               if (peopleSortBy === 'alphabet') {
@@ -1004,10 +1033,24 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                   </div>
                 )}
 
-               {((activePrivateChat ? (privateThreads[activePrivateChat] || []) : (roomMessages[currentRoom] || []))).map((msg, idx) => (
+                {((activePrivateChat ? (privateThreads[activePrivateChat] || []) : (roomMessages[currentRoom] || []))).map((msg, idx) => (
                  <div key={msg.id} className="flex flex-col gap-1.5 animate-in fade-in slide-in-from-bottom-2">
                     <div className={`flex items-center gap-2 px-1 ${msg.senderId === user.id ? 'justify-end' : 'justify-start'}`}>
-                       <span className="text-[10px] font-bold text-text mb-0.5">{msg.senderName}</span>
+                       <button 
+                         onClick={(e) => {
+                           if (msg.senderId === user.id) return;
+                           e.stopPropagation();
+                           setActiveUserMenu({ 
+                             userId: msg.senderId, 
+                             nickname: msg.senderName, 
+                             x: e.clientX, 
+                             y: e.clientY 
+                           });
+                         }}
+                         className={`text-[10px] font-bold mb-0.5 hover:underline transition-all ${msg.senderId === user.id ? 'text-text' : 'text-indigo-600'}`}
+                       >
+                         {msg.senderName}
+                       </button>
                        <span className="text-[9px] text-text-muted/40 font-medium tracking-tighter">
                          {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                        </span>
@@ -1023,8 +1066,66 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                ))}
              </div>
            </div>
+           <AnimatePresence>
+             {activeUserMenu && (
+               <motion.div
+                 initial={{ opacity: 0, scale: 0.9, y: -10 }}
+                 animate={{ opacity: 1, scale: 1, y: 0 }}
+                 exit={{ opacity: 0, scale: 0.9, y: -10 }}
+                 style={{ 
+                   left: Math.min(activeUserMenu.x, window.innerWidth - 180), 
+                   top: Math.min(activeUserMenu.y, window.innerHeight - 150) 
+                 }}
+                 className="fixed z-[100] w-44 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden"
+                 onClick={(e) => e.stopPropagation()}
+               >
+                 <div className="px-4 py-3 bg-slate-50 border-b border-slate-100">
+                   <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest truncate">{activeUserMenu.nickname}</p>
+                 </div>
+                 <div className="p-1.5 space-y-1">
+                   <button 
+                     onClick={() => {
+                       setActivePrivateChat(activeUserMenu.userId);
+                       setActiveUserMenu(null);
+                     }}
+                     className="w-full flex items-center gap-3 px-3 py-2 text-[12px] font-medium text-slate-700 hover:bg-slate-50 hover:text-indigo-600 rounded-xl transition-colors"
+                   >
+                     <MessageSquare size={14} /> Send Message
+                   </button>
+                   <button 
+                     onClick={() => {
+                       if (blockedUsers.has(activeUserMenu.userId)) handleUnblock(activeUserMenu.userId);
+                       else handleBlock(activeUserMenu.userId);
+                       setActiveUserMenu(null);
+                     }}
+                     className="w-full flex items-center gap-3 px-3 py-2 text-[12px] font-medium text-slate-700 hover:bg-slate-50 hover:text-amber-600 rounded-xl transition-colors"
+                   >
+                     <Shield size={14} /> {blockedUsers.has(activeUserMenu.userId) ? 'Unrestrict' : 'Restrict'}
+                   </button>
+                   <button 
+                     onClick={() => {
+                       handleReport(activeUserMenu.userId);
+                       setActiveUserMenu(null);
+                     }}
+                     className="w-full flex items-center gap-3 px-3 py-2 text-[12px] font-medium text-slate-700 hover:bg-slate-50 hover:text-red-600 rounded-xl transition-colors"
+                   >
+                     <ShieldAlert size={14} /> Report User
+                   </button>
+                   <div className="border-t border-slate-100 pt-1">
+                     <button 
+                       onClick={() => setActiveUserMenu(null)}
+                       className="w-full flex items-center gap-3 px-3 py-2 text-[12px] font-medium text-slate-400 hover:bg-slate-50 rounded-xl transition-colors"
+                     >
+                       <X size={14} /> Cancel
+                     </button>
+                   </div>
+                 </div>
+               </motion.div>
+             )}
+           </AnimatePresence>
 
-           {/* Message Input Container */}
+            {/* Message Input Container */}
+
            <div className="p-3 pt-0 transition-all">
               {error && (
                 <div className="mb-2 text-center animate-in fade-in slide-in-from-top-2">
