@@ -1,9 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 
 interface AdUnitProps {
-  id: string;
-  format: '728x90' | '300x250' | '468x60' | '160x300' | '160x600' | '320x50' | 'native';
+  id: string; // This will be the Slot ID for AdSense or the Key for Adsterra
+  format: '728x90' | '300x250' | '468x60' | '160x300' | '160x600' | '320x50' | 'native' | 'adsense';
   className?: string;
+  adClient?: string; // Optional: ca-pub-XXXX
 }
 
 const formatDimensions = {
@@ -13,15 +14,42 @@ const formatDimensions = {
   '160x300': { width: 160, height: 300 },
   '160x600': { width: 160, height: 600 },
   '320x50': { width: 320, height: 50 },
-  'native': { width: 0, height: 0 } // Native handled differently usually, but we'll adapt
+  'native': { width: 0, height: 0 },
+  'adsense': { width: 0, height: 0 }
 };
 
-export const AdUnit: React.FC<AdUnitProps> = ({ id, format, className }) => {
+export const AdUnit: React.FC<AdUnitProps> = ({ id, format, className, adClient = "ca-pub-9842476646609926" }) => {
   const adRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (adRef.current && !adRef.current.firstChild) {
-      if (format === 'native') {
+    if (!adRef.current) return;
+    
+    // AdSense Logic
+    if (format === 'adsense') {
+      try {
+        const ins = document.createElement('ins');
+        ins.className = 'adsbygoogle';
+        ins.style.display = 'block';
+        ins.setAttribute('data-ad-client', adClient);
+        ins.setAttribute('data-ad-slot', id);
+        ins.setAttribute('data-ad-format', 'auto');
+        ins.setAttribute('data-full-width-responsive', 'true');
+        
+        adRef.current.innerHTML = '';
+        adRef.current.appendChild(ins);
+        
+        (window as any).adsbygoogle = (window as any).adsbygoogle || [];
+        (window as any).adsbygoogle.push({});
+      } catch (err) {
+        console.error('AdSense error:', err);
+      }
+      return;
+    }
+
+    // Existing Adsterra-like logic
+    if (adRef.current.firstChild) return;
+
+    if (format === 'native') {
         const script = document.createElement('script');
         script.src = `https://pl29314388.profitablecpmratenetwork.com/${id}/invoke.js`;
         script.async = true;
@@ -81,7 +109,6 @@ export const AdUnit: React.FC<AdUnitProps> = ({ id, format, className }) => {
 
       // Use a small timeout to ensure iframe is fully inserted and contentWindow is available
       setTimeout(setupIframe, 50);
-    }
   }, [id, format]);
 
   const dimensions = formatDimensions[format];

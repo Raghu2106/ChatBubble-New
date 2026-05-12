@@ -19,7 +19,12 @@ export const PrivacyPolicyContent = () => (
     </section>
 
     <section>
-      <h3 className="text-text font-bold text-lg mb-2">4. Data Security</h3>
+      <h3 className="text-text font-bold text-lg mb-2">4. Your Rights (GDPR & CCPA)</h3>
+      <p>Depending on your location, you may have rights under the General Data Protection Regulation (GDPR) or the California Consumer Privacy Act (CCPA). This includes the right to access, correct, or delete any limited data we may have. Please note that because we are an anonymous platform, we typically hold no personal identifiers beyond temporary technical logs.</p>
+    </section>
+
+    <section>
+      <h3 className="text-text font-bold text-lg mb-2">5. Data Security</h3>
       <p>We have put in place appropriate security measures to prevent your personal data from being accidentally lost, used, or accessed in an unauthorized way, altered, or disclosed.</p>
     </section>
 

@@ -830,6 +830,16 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, onExit, erro
                   <div className="mt-auto p-2">
                     <AdUnit id="1418012d844b1648216870293d3858dc" format="native" className="rounded-xl border border-border bg-surface-hover/20" />
                   </div>
+
+                  {/* SEO / Crawler Content Helper */}
+                  <div className="px-4 py-6 border-t border-border mt-4 opacity-0 pointer-events-none absolute h-0 overflow-hidden">
+                    <h5 className="text-[10px] uppercase font-black tracking-[0.2em] mb-2">About ChatBubble</h5>
+                    <p className="text-[10px] text-text-muted leading-relaxed">
+                      ChatBubble provides premium <strong>free chatrooms without registration</strong>. 
+                      Connect instantly in localized lobbies or <strong>chat anonymously</strong> with private one-on-one sessions.
+                      A secure space for talking to strangers worldwide.
+                    </p>
+                  </div>
               </div>
            </div>
         </aside>

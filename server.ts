@@ -445,8 +445,20 @@ async function startServer() {
   initDummyUsers(io);
   startDummySimulation(io);
 
-  // Admin middleware or routes can go here
+  // API routes go here
   app.get("/api/health", (req, res) => res.json({ status: "ok" }));
+
+  // --- Explicit Ads.txt and Robots.txt Routes ---
+  // Ensuring these are always served correctly for crawlers
+  app.get("/ads.txt", (req, res) => {
+    res.sendFile(path.join(process.cwd(), 'public', 'ads.txt'));
+  });
+  app.get("/robots.txt", (req, res) => {
+    res.sendFile(path.join(process.cwd(), 'public', 'robots.txt'));
+  });
+  app.get("/sitemap.xml", (req, res) => {
+    res.sendFile(path.join(process.cwd(), 'public', 'sitemap.xml'));
+  });
 
   // --- Throttled Room Updates ---
   setInterval(() => {
