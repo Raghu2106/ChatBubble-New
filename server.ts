@@ -1,5 +1,6 @@
 import express from "express";
 import { createServer } from "http";
+import https from "https";
 import { Server } from "socket.io";
 // Vite is imported dynamically in dev mode
 import path from "path";
@@ -447,6 +448,26 @@ async function startServer() {
 
   // API routes go here
   app.get("/api/health", (req, res) => res.json({ status: "ok" }));
+  app.get("/api/ping", (req, res) => res.send("pong"));
+
+  // --- Self-Ping Logic for Render (Keep service awake) ---
+  const SELF_URL = "https://chatbubble.fun"; 
+  const PING_INTERVAL = 14 * 60 * 1000; // 14 minutes
+
+  function keepAwake() {
+    setInterval(() => {
+      https.get(`${SELF_URL}/api/ping`, (res) => {
+        console.log(`Self-ping successful: ${res.statusCode}`);
+      }).on("error", (err) => {
+        console.error(`Self-ping failed: ${err.message}`);
+      });
+    }, PING_INTERVAL);
+  }
+
+  // Only run ping in production
+  if (process.env.NODE_ENV === "production" || process.env.RENDER) {
+    keepAwake();
+  }
 
   // --- Explicit Ads.txt and Robots.txt Routes ---
   // Ensuring these are always served correctly for crawlers
