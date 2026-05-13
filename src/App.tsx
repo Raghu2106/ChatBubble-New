@@ -63,13 +63,26 @@ export default function App() {
       resetInactivityTimer(true);
       // Track all common UI interactions
       const events = ['mousemove', 'pointermove', 'keydown', 'click', 'scroll', 'touchstart', 'mousedown', 'wheel'];
-      const handler = () => resetInactivityTimer();
+      const handler = () => {
+        resetInactivityTimer();
+      };
+      
+      // Send heartbeat periodically when active
+      const heartbeatInterval = setInterval(() => {
+        if (socket.connected && stepRef.current === 'chat') {
+          socket.emit('heartbeat' as any);
+        }
+      }, 30000); // 30 seconds
+
       events.forEach(event => window.addEventListener(event, handler, { passive: true, capture: true }));
       
       // Also reset on visibility change (coming back to the tab)
       const visibilityHandler = () => {
         if (document.visibilityState === 'visible') {
           resetInactivityTimer(true);
+          if (socket.connected) {
+            socket.emit('heartbeat' as any);
+          }
         }
       };
       document.addEventListener('visibilitychange', visibilityHandler);
@@ -77,6 +90,7 @@ export default function App() {
       return () => {
         events.forEach(event => window.removeEventListener(event, handler, { capture: true }));
         document.removeEventListener('visibilitychange', visibilityHandler);
+        clearInterval(heartbeatInterval);
         if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
       };
     }

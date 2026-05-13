@@ -451,15 +451,17 @@ async function startServer() {
   app.get("/api/ping", (req, res) => res.send("pong"));
 
   // --- Self-Ping Logic for Render (Keep service awake) ---
-  const SELF_URL = "https://chatbubble.fun"; 
+  const SELF_URL = process.env.RENDER_EXTERNAL_URL || "https://chatbubble.fun"; 
   const PING_INTERVAL = 14 * 60 * 1000; // 14 minutes
 
   function keepAwake() {
     setInterval(() => {
-      https.get(`${SELF_URL}/api/ping`, (res) => {
-        console.log(`Self-ping successful: ${res.statusCode}`);
-      }).on("error", (err) => {
-        console.error(`Self-ping failed: ${err.message}`);
+      const pingUrl = `${SELF_URL}/api/ping`;
+      const protocol = SELF_URL.startsWith('https') ? https : require('http');
+      protocol.get(pingUrl, (res: any) => {
+        console.log(`Self-ping successful (${SELF_URL}): ${res.statusCode}`);
+      }).on("error", (err: any) => {
+        console.error(`Self-ping failed (${SELF_URL}): ${err.message}`);
       });
     }, PING_INTERVAL);
   }
@@ -617,6 +619,19 @@ async function startServer() {
 
     socket.on('join:room', (roomId) => {
       joinRoom(socket, roomId);
+    });
+
+    // Heartbeat to keep session alive
+    socket.on('heartbeat' as any, () => {
+      const userId = sessions.get(socket.id);
+      if (userId) {
+        // Clear any removal timer if it accidentally started
+        const timer = userTimers.get(userId);
+        if (timer) {
+          clearTimeout(timer);
+          userTimers.delete(userId);
+        }
+      }
     });
 
     socket.on('send:message', (data) => {
@@ -875,7 +890,7 @@ async function startServer() {
             }
             userTimers.delete(userId);
             sessions.delete(socket.id);
-          }, 300000); // 5 minute grace period (300 seconds)
+          }, 1800000); // 30 minute grace period (1800 seconds)
           
           userTimers.set(userId, timer);
         } else {

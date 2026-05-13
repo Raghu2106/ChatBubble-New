@@ -858,9 +858,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     </div>
                   )}
                   
-                  {/* Adsterra Banner Slot in Sidebar Bottom (Wait to be replaced with safe banner or removed) */}
-                  <div className="mt-auto p-2">
-                    <AdUnit id="b4df80321991ad2e3e953641360223af" format="300x250" className="opacity-40 scale-75 rounded-lg border border-border bg-surface-hover/20" />
+                  {/* Adsterra Banner Slot in Sidebar Bottom (Standard banner, no popunders) */}
+                  <div className="mt-auto p-2 flex justify-center">
+                    <AdUnit id="b4df80321991ad2e3e953641360223af" format="300x250" className="opacity-100 md:scale-[0.85] rounded-xl border border-slate-100 bg-white shadow-sm" />
                   </div>
 
                   {/* SEO / Crawler Content Helper */}

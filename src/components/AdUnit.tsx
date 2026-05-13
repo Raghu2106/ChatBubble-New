@@ -45,55 +45,35 @@ export const AdUnit: React.FC<AdUnitProps> = ({ id, format, className, adClient 
       return;
     }
 
-    // Existing Adsterra-like logic
-    if (adRef.current.firstChild) return;
-
+    // Adsterra Banner Logic (Banner formats)
+    // We avoid popunder and social ads as requested, focusing on standard banner formats.
     const dimensions = formatDimensions[format];
-      
-      // We create an internal iframe to isolate the global atOptions for each unit
-      const iframe = document.createElement('iframe');
-      iframe.width = dimensions.width.toString();
-      iframe.height = dimensions.height.toString();
-      iframe.frameBorder = '0';
-      iframe.scrolling = 'no';
-      iframe.style.border = 'none';
-      iframe.style.overflow = 'hidden';
-      
-      adRef.current.innerHTML = ''; // Clear any previous attempts
-      adRef.current.appendChild(iframe);
-      
-      const setupIframe = () => {
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-        if (iframeDoc) {
-          iframeDoc.open();
-          iframeDoc.write(`
-            <!DOCTYPE html>
-            <html>
-              <head>
-                <style>
-                  body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; overflow: hidden; height: ${dimensions.height}px; }
-                </style>
-              </head>
-              <body>
-                <script type="text/javascript">
-                  atOptions = {
-                    'key' : '${id}',
-                    'format' : 'iframe',
-                    'height' : ${dimensions.height},
-                    'width' : ${dimensions.width},
-                    'params' : {}
-                  };
-                  document.write('<scr' + 'ipt type="text/javascript" src="https://www.highperformanceformat.com/${id}/invoke.js"></scr' + 'ipt>');
-                </script>
-              </body>
-            </html>
-          `);
-          iframeDoc.close();
-        }
-      };
-
-      // Use a small timeout to ensure iframe is fully inserted and contentWindow is available
-      setTimeout(setupIframe, 50);
+    if (dimensions && id) {
+      try {
+        adRef.current.innerHTML = '';
+        
+        const confScript = document.createElement('script');
+        confScript.type = 'text/javascript';
+        confScript.innerHTML = `
+          atOptions = {
+            'key' : '${id}',
+            'format' : 'iframe',
+            'height' : ${dimensions.height},
+            'width' : ${dimensions.width},
+            'params' : {}
+          };
+        `;
+        
+        const invokeScript = document.createElement('script');
+        invokeScript.type = 'text/javascript';
+        invokeScript.src = `//www.highperformanceformat.com/${id}/invoke.js`;
+        
+        adRef.current.appendChild(confScript);
+        adRef.current.appendChild(invokeScript);
+      } catch (err) {
+        console.error('Adsterra banner error:', err);
+      }
+    }
   }, [id, format]);
 
   const dimensions = formatDimensions[format];
@@ -103,7 +83,7 @@ export const AdUnit: React.FC<AdUnitProps> = ({ id, format, className, adClient 
       ref={adRef} 
       className={`flex items-center justify-center overflow-hidden bg-surface/5 ${className}`}
       style={{ 
-        minHeight: dimensions.height > 0 ? `${dimensions.height}px` : '100px',
+        minHeight: dimensions.height > 0 ? `${dimensions.height}px` : 'auto',
         minWidth: dimensions.width > 0 ? `${dimensions.width}px` : 'auto'
       }}
     />
@@ -112,7 +92,17 @@ export const AdUnit: React.FC<AdUnitProps> = ({ id, format, className, adClient 
 
 export const GlobalAds: React.FC = () => {
   useEffect(() => {
-    // Popunder and Social Bar disabled per user request to remove popups/suggestions
+    // Global Scripts (e.g. AdSense Auto Ads) can be placed here.
+    // Popunder and Social Bar scripts from Adsterra are EXCLUDED per user safety policy.
+    const addAdSenseGlobal = () => {
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9842476646609926";
+      script.crossOrigin = "anonymous";
+      document.head.appendChild(script);
+    };
+
+    addAdSenseGlobal();
   }, []);
 
   return null;
