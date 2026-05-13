@@ -84,18 +84,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
           </motion.div>
         </div>
 
-          {/* Feature Grid - REORGANIZED FOR AD SUPREMACY & SYMMETRY */}
-          <div className="flex flex-col gap-4 w-full max-w-5xl px-4">
-            
-            {/* Ad Unit - Top Position for Impression Value */}
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.98 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              className="w-full flex items-center justify-center p-2 mb-4"
-            >
-              <AdUnit id="b4df80321991ad2e3e953641360223af" format="300x250" className="opacity-90 hover:opacity-100 transition-all" />
-            </motion.div>
+        {/* Feature Grid - REORGANIZED FOR AD SUPREMACY & SYMMETRY */}
+        <div className="flex flex-col gap-4 w-full max-w-5xl px-4">
+          
+          {/* Ad Unit - Top Position for Impression Value */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.98 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="w-full flex items-center justify-center p-2 mb-4"
+          >
+            <AdUnit id="b4df80321991ad2e3e953641360223af" format="300x250" className="opacity-90 hover:opacity-100 transition-all" />
+          </motion.div>
 
           <section className="bg-white border border-slate-200 rounded-[2.5rem] p-8 md:p-12 mb-12 shadow-sm">
             <h2 className="text-3xl font-bold text-slate-900 mb-8 tracking-tight">The Best Platform for Stranger Chat</h2>
@@ -226,23 +226,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
           </div>
         </div>
 
-          {/* Minimal FAQ */}
-        <div className="mt-32 w-full max-w-5xl px-4 flex flex-col items-center">
-          {/* Bottom Leaderboard Ad */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="w-full flex items-center justify-center p-4 mb-12 overflow-hidden"
-          >
-            <div className="hidden md:block">
-              <AdUnit id="b4df80321991ad2e3e953641360223af" format="728x90" className="opacity-90 grayscale hover:grayscale-0 transition-all rounded-lg border border-slate-100" />
-            </div>
-            <div className="md:hidden">
-              <AdUnit id="b4df80321991ad2e3e953641360223af" format="300x250" className="opacity-90 rounded-lg" />
-            </div>
-          </motion.div>
-
+        {/* Minimal FAQ */}
+        <div className="mt-32 w-full max-w-3xl px-4">
           <h2 className="text-2xl font-bold text-slate-950 mb-12 text-center">Frequently Asked Questions</h2>
           <div className="space-y-12">
             {[
