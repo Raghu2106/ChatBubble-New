@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 
 interface AdUnitProps {
   id: string; // This will be the Slot ID for AdSense or the Key for Adsterra
-  format: '728x90' | '300x250' | '468x60' | '160x300' | '160x600' | '320x50' | 'native' | 'adsense';
+  format: '728x90' | '300x250' | '468x60' | '160x300' | '160x600' | '320x50' | 'adsense';
   className?: string;
   adClient?: string; // Optional: ca-pub-XXXX
 }
@@ -14,7 +14,6 @@ const formatDimensions = {
   '160x300': { width: 160, height: 300 },
   '160x600': { width: 160, height: 600 },
   '320x50': { width: 320, height: 50 },
-  'native': { width: 0, height: 0 },
   'adsense': { width: 0, height: 0 }
 };
 
@@ -49,21 +48,7 @@ export const AdUnit: React.FC<AdUnitProps> = ({ id, format, className, adClient 
     // Existing Adsterra-like logic
     if (adRef.current.firstChild) return;
 
-    if (format === 'native') {
-        const script = document.createElement('script');
-        script.src = `https://pl29314388.profitablecpmratenetwork.com/${id}/invoke.js`;
-        script.async = true;
-        script.setAttribute('data-cfasync', 'false');
-        
-        const container = document.createElement('div');
-        container.id = `container-${id}`;
-        
-        adRef.current.appendChild(script);
-        adRef.current.appendChild(container);
-        return;
-      }
-
-      const dimensions = formatDimensions[format];
+    const dimensions = formatDimensions[format];
       
       // We create an internal iframe to isolate the global atOptions for each unit
       const iframe = document.createElement('iframe');
