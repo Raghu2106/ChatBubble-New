@@ -55,7 +55,7 @@ export const AdUnit: React.FC<AdUnitProps> = ({ id, format, className, adClient 
         const confScript = document.createElement('script');
         confScript.type = 'text/javascript';
         confScript.innerHTML = `
-          atOptions = {
+          window.atOptions = {
             'key' : '${id}',
             'format' : 'iframe',
             'height' : ${dimensions.height},
@@ -66,7 +66,8 @@ export const AdUnit: React.FC<AdUnitProps> = ({ id, format, className, adClient 
         
         const invokeScript = document.createElement('script');
         invokeScript.type = 'text/javascript';
-        invokeScript.src = `//www.highperformanceformat.com/${id}/invoke.js`;
+        // Cache busting to allow multiple loads of same script on same page
+        invokeScript.src = `//www.highperformanceformat.com/${id}/invoke.js?t=${Date.now()}`;
         
         adRef.current.appendChild(confScript);
         adRef.current.appendChild(invokeScript);

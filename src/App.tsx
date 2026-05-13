@@ -227,12 +227,12 @@ export default function App() {
 
       <div className="flex flex-1 relative overflow-hidden">
         {/* GLOBAL LEFT SKYSCRAPER */}
-        <aside className="hidden lg:flex w-[165px] shrink-0 items-start justify-center py-2 border-r border-border bg-surface/5">
-          <AdUnit id="1792c7f73f1077081cad03590a1a650d" format="160x600" className="sticky top-2" />
+        <aside className="hidden lg:flex w-[165px] shrink-0 items-start justify-center py-2 border-r border-border bg-surface/5 z-40">
+          <AdUnit key="left-sky" id="1792c7f73f1077081cad03590a1a650d" format="160x600" className="sticky top-2" />
         </aside>
 
         {/* MAIN CONTENT AREA */}
-        <main className="flex-1 relative overflow-hidden flex flex-col">
+        <main className="flex-1 min-w-0 relative overflow-hidden flex flex-col z-10 shadow-2xl">
           {step === 'chat' && user ? (
             <div className="flex-1 overflow-hidden flex flex-col">
               {/* GLOBAL TOP AD SLOT - Inside Chat (Fixed/Sticky behavior handled by ChatInterface or stayed outside) */}
@@ -290,8 +290,8 @@ export default function App() {
         </main>
 
         {/* GLOBAL RIGHT SKYSCRAPER */}
-        <aside className="hidden lg:flex w-[165px] shrink-0 items-start justify-center py-2 border-l border-border bg-surface/5">
-          <AdUnit id="1792c7f73f1077081cad03590a1a650d" format="160x600" className="sticky top-2" />
+        <aside className="hidden lg:flex w-[165px] shrink-0 items-start justify-center py-2 border-l border-border bg-surface/5 z-40">
+          <AdUnit key="right-sky" id="1792c7f73f1077081cad03590a1a650d" format="160x600" className="sticky top-2" />
         </aside>
       </div>
 
