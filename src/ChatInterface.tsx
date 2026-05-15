@@ -11,7 +11,6 @@ import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 import { Logo } from './components/Logo';
 import { socket } from './socket';
 import { ChatMessage, Room, Gender, DummyUser } from './types';
-import { AdUnit } from './components/AdUnit';
 
 // Helper to sanitize message content and strip clickable links/HTML
 const formatChatMessage = (content: string) => {
@@ -858,11 +857,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     </div>
                   )}
                   
-                  {/* Adsterra Banner Slot in Sidebar Bottom (Wait to be replaced with safe banner or removed) */}
-                  <div className="mt-auto p-2">
-                    <AdUnit id="b4df80321991ad2e3e953641360223af" format="300x250" className="opacity-40 scale-75 rounded-lg border border-border bg-surface-hover/20" />
-                  </div>
-
                   {/* SEO / Crawler Content Helper */}
                   <div className="px-4 py-6 border-t border-border mt-4 opacity-0 pointer-events-none absolute h-0 overflow-hidden">
                     <h5 className="text-[10px] uppercase font-black tracking-[0.2em] mb-2">About ChatBubble</h5>
@@ -1028,13 +1022,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     </p>
                   </div>
                 </div>
-
-                {/* Ad Placement in Chat Stream (Rare) */}
-                {((activePrivateChat ? (privateThreads[activePrivateChat] || []) : (roomMessages[currentRoom] || []))).length > 10 && (
-                  <div className="flex justify-center my-8">
-                    <AdUnit id="b4df80321991ad2e3e953641360223af" format="300x250" className="opacity-60 scale-90" />
-                  </div>
-                )}
 
                 {((activePrivateChat ? (privateThreads[activePrivateChat] || []) : (roomMessages[currentRoom] || []))).map((msg, idx) => (
                  <div key={msg.id} className="flex flex-col gap-1.5 animate-in fade-in slide-in-from-bottom-2">
