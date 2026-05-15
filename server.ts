@@ -480,6 +480,9 @@ async function startServer() {
   app.get("/sitemap.xml", (req, res) => {
     res.sendFile(path.join(process.cwd(), 'public', 'sitemap.xml'));
   });
+  app.get("/sw.js", (req, res) => {
+    res.sendFile(path.join(process.cwd(), 'sw.js'));
+  });
 
   // --- Throttled Room Updates ---
   setInterval(() => {
