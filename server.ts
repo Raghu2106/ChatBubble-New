@@ -110,8 +110,12 @@ const ROOM_DATA = [
 
 const NAME_POOLS: Record<string, { male: string[], female: string[] }> = {
   indian: {
-    male: ['Arjun', 'Ayaan', 'Advait', 'Kabir', 'Rohan', 'Ishaan', 'Aarav', 'Vihaan', 'Aryan', 'Krishna', 'Abhishek', 'Akash', 'Aman', 'Aniket', 'Ankit', 'Gaurav', 'Hardik', 'Kunal', 'Mohit', 'Nikhil', 'Parth', 'Pranav', 'Raghav', 'Rajat', 'Sahil', 'Sanket', 'Shubham', 'Sumit', 'Suraj', 'Vaibhav', 'Vikas', 'Vishal', 'Yuvraj', 'Aditya', 'Vikram', 'Sanjay', 'Rahul', 'Varun', 'Siddharth', 'Kartik', 'Yash', 'Dev', 'Anish', 'Rishi', 'Karan', 'Sameer', 'Amit', 'Prakash', 'Rajesh', 'Manish', 'Suresh', 'Deepak', 'Vijay', 'Sunil', 'Anil', 'Pankaj', 'Abhay', 'Arpit', 'Ashish', 'Bhavin', 'Chaitanya', 'Chirag', 'Darshan', 'Dhaval', 'Harshal', 'Hemant', 'Inder', 'Jatin', 'Jay', 'Jignesh', 'Kailash', 'Kalpesh', 'Lalit', 'Mahesh', 'Mayur', 'Milan', 'Nakul', 'Naman', 'Navin', 'Nihar', 'Nirav', 'Nishant', 'Pranay', 'Prateek', 'Punit', 'Rakesh', 'Rishabh', 'Ritvik', 'Sagar', 'Sarthak', 'Satish', 'Shailesh', 'Shakti', 'Shantanu', 'Sohan', 'Sourabh', 'Tejas', 'Tushar', 'Umesh', 'Utkarsh', 'Vinay', 'Vineet', 'Vipul', 'Yogesh', 'Reyansh', 'Vivaan', 'Atharv', 'Shaurya', 'Aayush', 'Zayan', 'Saif', 'Hrithik', 'Ranbir', 'Ayushmaan', 'Om', 'Shiv', 'Hari', 'Bhuvan', 'Dhruv', 'Swaroop', 'Prasoon', 'Keshav', 'Madhav', 'Gopal', 'Gautam', 'Kashyap', 'Raghu', 'Murthy', 'Samba', 'Venkatesh', 'Rami', 'Kiran', 'Tarun', 'Harsha', 'Anant', 'Eshan', 'Ishir', 'Jairaj', 'Kovid', 'Lakshey', 'Mihir', 'Naveen', 'Ojas', 'Pallav', 'Qadir', 'Ranveer', 'Sohail', 'Tanmay', 'Udbhav', 'Vatsal', 'Wajid'],
-    female: ['Ananya', 'Diya', 'Ishani', 'Kiara', 'Myra', 'Navya', 'Pari', 'Riya', 'Saisha', 'Vanya', 'Zoya', 'Aditi', 'Ishika', 'Kavya', 'Meera', 'Sara', 'Anjali', 'Ankita', 'Deepali', 'Disha', 'Kajal', 'Komal', 'Neha', 'Pooja', 'Priyanka', 'Sakshi', 'Sanjana', 'Sneha', 'Tanvi', 'Shruti', 'Shweta', 'Priya', 'Tanya', 'Avni', 'Gia', 'Ira', 'Khushi', 'Nora', 'Prisha', 'Siya', 'Aadhya', 'Anika', 'Aarohi', 'Amoli', 'Bhavna', 'Chitra', 'Divya', 'Esha', 'Aarti', 'Aashna', 'Akshara', 'Alka', 'Amita', 'Anshika', 'Archana', 'Asha', 'Asmita', 'Bela', 'Bhakti', 'Binal', 'Dhara', 'Dipti', 'Gauri', 'Hansa', 'Harsha', 'Hetal', 'Indira', 'Jagriti', 'Janvi', 'Jaya', 'Jyoti', 'Kalpana', 'Kamini', 'Kanchan', 'Karishma', 'Kruti', 'Latika', 'Leela', 'Madhu', 'Mamta', 'Manasi', 'Manita', 'Mansi', 'Maya', 'Megha', 'Mona', 'Monica', 'Namrata', 'Nandini', 'Nayana', 'Neelam', 'Neeta', 'Nidhi', 'Nikita', 'Nilam', 'Nirali', 'Nisha', 'Padmini', 'Pallavi', 'Payal', 'Poonam', 'Prachi', 'Pragati', 'Pratibha', 'Preeti', 'Prerna', 'Priyal', 'Puja', 'Radha', 'Ragini', 'Raksha', 'Rashmi', 'Raveena', 'Reena', 'Rekha', 'Renuka', 'Rina', 'Ritu', 'Roshni', 'Rupal', 'Saloni', 'Sandhya', 'Sangita', 'Sapna', 'Sarika', 'Savita', 'Seema', 'Shalu', 'Shanti', 'Sheetal', 'Shikha', 'Shilpa', 'Shivani', 'Shraddha', 'Shreya', 'Sonal', 'Sonali', 'Sonia', 'Sudha', 'Sujata', 'Sunita', 'Sushma', 'Swati', 'Trisha', 'Tulsi', 'Urvashi', 'Usha', 'Vaishali', 'Varsha', 'Vidya', 'Vinita', 'Yamini']
+    male: [
+      'Arjun', 'Ayaan', 'Advait', 'Kabir', 'Rohan', 'Ishaan', 'Aarav', 'Vihaan', 'Aryan', 'Krishna', 'Abhishek', 'Akash', 'Aman', 'Aniket', 'Ankit', 'Gaurav', 'Hardik', 'Kunal', 'Mohit', 'Nikhil', 'Parth', 'Pranav', 'Raghav', 'Rajat', 'Sahil', 'Sanket', 'Shubham', 'Sumit', 'Suraj', 'Vaibhav', 'Vikas', 'Vishal', 'Yuvraj', 'Aditya', 'Vikram', 'Sanjay', 'Rahul', 'Varun', 'Siddharth', 'Kartik', 'Yash', 'Dev', 'Anish', 'Rishi', 'Karan', 'Sameer', 'Amit', 'Prakash', 'Rajesh', 'Manish', 'Suresh', 'Deepak', 'Vijay', 'Sunil', 'Anil', 'Pankaj', 'Abhay', 'Arpit', 'Ashish', 'Bhavin', 'Chaitanya', 'Chirag', 'Darshan', 'Dhaval', 'Harshal', 'Hemant', 'Inder', 'Jatin', 'Jay', 'Jignesh', 'Kailash', 'Kalpesh', 'Lalit', 'Mahesh', 'Mayur', 'Milan', 'Nakul', 'Naman', 'Navin', 'Nihar', 'Nirav', 'Nishant', 'Pranay', 'Prateek', 'Punit', 'Rakesh', 'Rishabh', 'Ritvik', 'Sagar', 'Sarthak', 'Satish', 'Shailesh', 'Shakti', 'Shantanu', 'Sohan', 'Sourabh', 'Tejas', 'Tushar', 'Umesh', 'Utkarsh', 'Vinay', 'Vineet', 'Vipul', 'Yogesh', 'Reyansh', 'Vivaan', 'Atharv', 'Shaurya', 'Aayush', 'Zayan', 'Saif', 'Hrithik', 'Ranbir', 'Ayushmaan', 'Om', 'Shiv', 'Hari', 'Bhuvan', 'Dhruv', 'Swaroop', 'Prasoon', 'Keshav', 'Madhav', 'Gopal', 'Gautam', 'Kashyap', 'Raghu', 'Murthy', 'Samba', 'Venkatesh', 'Rami', 'Kiran', 'Tarun', 'Harsha', 'Anant', 'Eshan', 'Ishir', 'Jairaj', 'Kovid', 'Lakshey', 'Mihir', 'Naveen', 'Ojas', 'Pallav', 'Qadir', 'Ranveer', 'Sohail', 'Tanmay', 'Udbhav', 'Vatsal', 'Wajid', 'Abhiman', 'Abhiram', 'Achal', 'Adhiraj', 'Adrit', 'Agastya', 'Ajatshatru', 'Akshaj', 'Amartya', 'Amogh', 'Amrit', 'Anadi', 'Anagh', 'Anand', 'Anvay', 'Aritra', 'Arnav', 'Arush', 'Ashwath', 'Asit', 'Atal', 'Atul', 'Aviral', 'Avyan', 'Badrinath', 'Balram', 'Bhavnish', 'Brijesh', 'Chanakya', 'Chinmay', 'Daksh', 'Daman', 'Damodar', 'Deepit', 'Dhananjay', 'Dheeraj', 'Drona', 'Ekansh', 'Gagan', 'Girish', 'Gulshan', 'Harendra', 'Harshit', 'Himanshu', 'Hriday', 'Indraneel', 'Ishwar', 'Jagdish', 'Jaidev', 'Janardan', 'Jeevan', 'Kailas', 'Kamlesh', 'Kanishk', 'Karanveer', 'Kovidh', 'Lokesh', 'Manav', 'Manas', 'Mehul', 'Moksh', 'Mrigank', 'Mukund', 'Nabhas', 'Nachiket', 'Nalin', 'Nandan', 'Neev', 'Neeraj', 'Nirvaan', 'Onkar', 'Palash', 'Param', 'Pradyumna', 'Pranay', 'Pratyush', 'Pushkar', 'Raag', 'Rachit', 'Raghuvir', 'Ratan', 'Ridhaan', 'Rishi', 'Rupesh', 'Saaket', 'Smaran', 'Srijan', 'Tanish', 'Tanush', 'Ujwal', 'Umang', 'Upamanyu', 'Varaad', 'Varenya', 'Vedant', 'Vidur', 'Vihan', 'Viraaj', 'Vivan', 'Vyom', 'Yajur', 'Yug'
+    ],
+    female: [
+      'Ananya', 'Diya', 'Ishani', 'Kiara', 'Myra', 'Navya', 'Pari', 'Riya', 'Saisha', 'Vanya', 'Zoya', 'Aditi', 'Ishika', 'Kavya', 'Meera', 'Sara', 'Anjali', 'Ankita', 'Deepali', 'Disha', 'Kajal', 'Komal', 'Neha', 'Pooja', 'Priyanka', 'Sakshi', 'Sanjana', 'Sneha', 'Tanvi', 'Shruti', 'Shweta', 'Priya', 'Tanya', 'Avni', 'Gia', 'Ira', 'Khushi', 'Nora', 'Prisha', 'Siya', 'Aadhya', 'Anika', 'Aarohi', 'Amoli', 'Bhavna', 'Chitra', 'Divya', 'Esha', 'Aarti', 'Aashna', 'Akshara', 'Alka', 'Amita', 'Anshika', 'Archana', 'Asha', 'Asmita', 'Bela', 'Bhakti', 'Binal', 'Dhara', 'Dipti', 'Gauri', 'Hansa', 'Harsha', 'Hetal', 'Indira', 'Jagriti', 'Janvi', 'Jaya', 'Jyoti', 'Kalpana', 'Kamini', 'Kanchan', 'Karishma', 'Kruti', 'Latika', 'Leela', 'Madhu', 'Mamta', 'Manasi', 'Manita', 'Mansi', 'Maya', 'Megha', 'Mona', 'Monica', 'Namrata', 'Nandini', 'Nayana', 'Neelam', 'Neeta', 'Nidhi', 'Nikita', 'Nilam', 'Nirali', 'Nisha', 'Padmini', 'Pallavi', 'Payal', 'Poonam', 'Prachi', 'Pragati', 'Pratibha', 'Preeti', 'Prerna', 'Priyal', 'Puja', 'Radha', 'Ragini', 'Raksha', 'Rashmi', 'Raveena', 'Reena', 'Rekha', 'Renuka', 'Rina', 'Ritu', 'Roshni', 'Rupal', 'Saloni', 'Sandhya', 'Sangita', 'Sapna', 'Sarika', 'Savita', 'Seema', 'Shalu', 'Shanti', 'Sheetal', 'Shikha', 'Shilpa', 'Shivani', 'Shraddha', 'Shreya', 'Sonal', 'Sonali', 'Sonia', 'Sudha', 'Sujata', 'Sunita', 'Sushma', 'Swati', 'Trisha', 'Tulsi', 'Urvashi', 'Usha', 'Vaishali', 'Varsha', 'Vidya', 'Vinita', 'Yamini', 'Abha', 'Abhirami', 'Aditi', 'Ahalya', 'Aishwarya', 'Akshaya', 'Amrita', 'Amulya', 'Anamika', 'Aneesha', 'Anusha', 'Aparna', 'Apoorva', 'Aradhana', 'Arpita', 'Bani', 'Barkha', 'Bhavya', 'Chanchal', 'Damini', 'Darshana', 'Eshani', 'Garima', 'Gitanjali', 'Gunjan', 'Hemangi', 'Inaaya', 'Indu', 'Ishwarya', 'Jasmine', 'Kanak', 'Kashish', 'Kiran', 'Kirti', 'Lavanya', 'Lipi', 'Mahika', 'Malini', 'Manavi', 'Mihika', 'Mitali', 'Naina', 'Nalini', 'Namita', 'Narmada', 'Niharika', 'Nilanjana', 'Nirupama', 'Nishtha', 'Ojaswi', 'Padma', 'Pavitra', 'Pavni', 'Phalguni', 'Poorvi', 'Pramiti', 'Punya', 'Rachana', 'Raima', 'Rajashree', 'Ranhita', 'Rati', 'Ritika', 'Ruma', 'Sadhana', 'Sagarika', 'Samiksha', 'Samridhi', 'Sanya', 'Shaswati', 'Shipra', 'Shobhna', 'Srishti', 'Stuti', 'Suvarna', 'Tanushree', 'Tista', 'Udita', 'Unnati', 'Upasana', 'Urvi', 'Vandana', 'Vasudha', 'Vinaya', 'Yuktí'
+    ]
   },
   western: {
     male: ['James', 'Robert', 'John', 'Michael', 'David', 'William', 'Richard', 'Joseph', 'Thomas', 'Christopher', 'Charles', 'Daniel', 'Matthew', 'Anthony', 'Mark', 'Donald', 'Steven', 'Paul', 'Andrew', 'Joshua', 'Kevin', 'Brian', 'George', 'Timothy', 'Ronald', 'Edward', 'Jason', 'Jeffrey', 'Ryan', 'Jacob', 'Gary', 'Nicholas', 'Eric', 'Stephen', 'Adam', 'Alan', 'Austin', 'Benjamin', 'Brandon', 'Bryan', 'Carl', 'Chad', 'Christian', 'Cody', 'Connor', 'Corey', 'Craig', 'Derek', 'Dominic', 'Dustin', 'Dylan', 'Ethan', 'Evan', 'Frank', 'Gabriel', 'Gregory', 'Ian', 'Isaac', 'Jack', 'Jerry', 'Jesse', 'Joe', 'Jordan', 'Justin', 'Keith', 'Kenneth', 'Kyle', 'Larry', 'Lawrence', 'Logan', 'Lucas', 'Luke', 'Marcus', 'Nathan', 'Noah', 'Owen', 'Patrick', 'Peter', 'Philip', 'Raymond', 'Samuel', 'Scott', 'Sean', 'Seth', 'Shane', 'Shawn', 'Timothy', 'Todd', 'Travis', 'Trent', 'Tyler', 'Victor', 'Vincent', 'Walter', 'Wayne', 'Zachary'],
@@ -147,14 +151,14 @@ const RESPONSE_POOLS = [
 ];
 
 function getRandomProfile(gender: Gender) {
-  if (gender === 'Male') return 'Lurker';
+  if (gender === 'Male') return 'Lurker'; // 100% Non-responsive for Males
   
   const rand = Math.random() * 100;
   if (gender === 'Female') {
-    if (rand < 4) return 'Quick';      // 4%
-    if (rand < 9) return 'Moderate';   // 5%
-    if (rand < 15) return 'Sluggish';  // 6%
-    return 'Lurker';                   // 85%
+    if (rand < 4) return 'Quick';      // 4% Quick (5-10s)
+    if (rand < 9) return 'Moderate';   // 5% Moderate (30-60s)
+    if (rand < 15) return 'Sluggish';  // 6% Sluggish (2m)
+    return 'Lurker';                   // 85% Non-responsive
   }
   
   return 'Lurker';
@@ -332,15 +336,14 @@ function handleDummyResponses(io: Server, roomId: string, senderId: string, targ
 
       let poolIndex = 0;
       if (targetDummyId) {
-        // Private Message Logic: 2 replies, No Pool Repeats, Pool 1 Lock (First only)
+        // Private Message Logic: 2 replies max, No Pool Repeats, Pool 1 Lock (First only)
         if (currentDummy.repliesCount === 0) {
-          // First reply can pick from any pool (indices 0, 1, 2, 3)
-          poolIndex = Math.floor(Math.random() * 4);
+          // First reply MUST be from Pool 1
+          poolIndex = 0;
         } else {
           // Second reply picks from Pools 2, 3, or 4 (indices 1, 2, 3) 
-          // excluding whatever was used in the first reply
-          const firstPool = currentDummy.usedPools[0];
-          const availableSecondary = [1, 2, 3].filter(p => p !== firstPool);
+          // (No repeats is guaranteed since first was pool 0)
+          const availableSecondary = [1, 2, 3];
           poolIndex = availableSecondary[Math.floor(Math.random() * availableSecondary.length)];
         }
       } else {
