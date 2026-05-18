@@ -415,16 +415,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         : "Private Chat")
     : currentRoom === 'lobby' ? 'General Lobby' : (currentRoomData?.name || "The Lobby");
 
-  const peopleCount = [...onlineUsers, ...dummyUsers].filter(u => 
-    currentRoom === 'lobby' ||
-    (u.currentRoom?.toLowerCase() === currentRoom.toLowerCase()) || 
-    (u.id === user.id)
-  ).length;
+  const peopleCount = currentRoom === 'lobby' 
+    ? roomCounts['lobby']
+    : [...onlineUsers, ...dummyUsers].filter(u => 
+        (u.currentRoom?.toLowerCase() === currentRoom.toLowerCase()) || 
+        (u.id === user.id)
+      ).length;
 
   return (
     <div className="h-full flex flex-col bg-bg text-text overflow-hidden font-sans">
-      
-      {/* MAIN HEADER - TIGHTER */}
       <header className="h-12 flex-shrink-0 flex items-center justify-between px-4 bg-white border-b border-slate-100 sticky top-0 z-40">
         <div className="flex items-center gap-3">
           <button 
@@ -505,12 +504,16 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 if (tab === 'Messages') count = Object.keys(privateThreads).length;
                 if (tab === 'Rooms') count = rooms.length;
                 if (tab === 'People') {
-                  const allUsers = [...onlineUsers, ...dummyUsers];
-                  const isSelfInList = allUsers.some(u => u.id === user.id);
-                  const finalUserList = isSelfInList ? allUsers : [...allUsers, { id: user.id, nickname: user.nickname, gender: user.gender, currentRoom }];
-                  count = finalUserList.filter(u => 
-                    currentRoom === 'lobby' || (u.currentRoom?.toLowerCase() === currentRoom.toLowerCase()) || (u.id === user.id)
-                  ).length;
+                  if (currentRoom === 'lobby') {
+                    count = roomCounts['lobby'];
+                  } else {
+                    const allUsers = [...onlineUsers, ...dummyUsers];
+                    const isSelfInList = allUsers.some(u => u.id === user.id);
+                    const finalUserList = isSelfInList ? allUsers : [...allUsers, { id: user.id, nickname: user.nickname, gender: user.gender, currentRoom }];
+                    count = finalUserList.filter(u => 
+                      (u.currentRoom?.toLowerCase() === currentRoom.toLowerCase()) || (u.id === user.id)
+                    ).length;
+                  }
                 }
                 const hasUnread = tab === 'Messages' && unreadThreads.size > 0;
  

@@ -338,12 +338,13 @@ function handleDummyResponses(io: Server, roomId: string, senderId: string, targ
       if (targetDummyId) {
         // Private Message Logic: 2 replies max, No Pool Repeats, Pool 1 Lock (First only)
         if (currentDummy.repliesCount === 0) {
-          // First reply MUST be from Pool 1
-          poolIndex = 0;
+          // First reply can pick from any pool (indices 0, 1, 2, 3)
+          poolIndex = Math.floor(Math.random() * 4);
         } else {
           // Second reply picks from Pools 2, 3, or 4 (indices 1, 2, 3) 
-          // (No repeats is guaranteed since first was pool 0)
-          const availableSecondary = [1, 2, 3];
+          // excluding whatever was used in the first reply
+          const firstPool = currentDummy.usedPools[0];
+          const availableSecondary = [1, 2, 3].filter(p => p !== firstPool);
           poolIndex = availableSecondary[Math.floor(Math.random() * availableSecondary.length)];
         }
       } else {
