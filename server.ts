@@ -879,7 +879,7 @@ async function startServer() {
             }
             userTimers.delete(userId);
             sessions.delete(socket.id);
-          }, 300000); // 5 minute grace period (300 seconds)
+          }, 3600000); // 60 minute grace period (3600 seconds)
           
           userTimers.set(userId, timer);
         } else {

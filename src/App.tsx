@@ -15,8 +15,8 @@ import { useDummyUsers } from './hooks/useDummyUsers';
 
 const AdminPanel = React.lazy(() => import('./AdminPanel').then(m => ({ default: m.AdminPanel })));
 
-const INACTIVITY_LIMIT = 60 * 60 * 1000; // 60 minutes
-const WARNING_DURATION = 60; // 60 seconds
+const INACTIVITY_LIMIT = 120 * 60 * 1000; // 120 minutes
+const WARNING_DURATION = 120; // 120 seconds
 
 export default function App() {
   const dummyUsers = useDummyUsers();
