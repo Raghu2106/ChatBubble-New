@@ -152,8 +152,37 @@ export default function App() {
     setDisconnectReason(null);
     
     if (!socket.connected) {
-      setError('Connection to server lost. Reconnecting...');
+      // Set to pending state to show the "Entering Lounge..." spinner
+      setUser({ id: 'pending', nickname, gender, interests });
       socket.connect();
+      
+      const onConnect = () => {
+        socket.emit('register', { nickname, gender, interests });
+        socket.off('connect_error', onConnectError);
+      };
+
+      const onConnectError = (err: any) => {
+        setError(`Failed to connect to the server: ${err?.message || 'Connection lost'}. Please try again.`);
+        setUser(null);
+        socket.off('connect', onConnect);
+      };
+
+      socket.once('connect', onConnect);
+      socket.once('connect_error', onConnectError);
+
+      // Add a safety timeout to prevent getting stuck in "pending" state
+      setTimeout(() => {
+        socket.off('connect', onConnect);
+        socket.off('connect_error', onConnectError);
+        setUser(prev => {
+          if (prev?.id === 'pending') {
+            setError('Connection timed out. Please try again or refresh the page.');
+            return null;
+          }
+          return prev;
+        });
+      }, 15000);
+
       return;
     }
 
