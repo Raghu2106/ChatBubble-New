@@ -55,34 +55,48 @@ export const AdUnit: React.FC<AdUnitProps> = ({ id, format, className, adClient 
 
   // Resolve the key from props or env safely with cast to avoid Vite compiler errors
   const getAdKey = (): string => {
+    const winConfig = (window as any).__AD_CONFIG__ || {};
     if (id) return id;
     const env = (import.meta as any).env || {};
     
     if (format === '728x90') {
-      if (position === 'header') return env.VITE_ADSTERRA_KEY_HEADER_728X90 || env.VITE_ADSTERRA_KEY_728X90 || '';
-      if (position === 'footer') return env.VITE_ADSTERRA_KEY_FOOTER_728X90 || env.VITE_ADSTERRA_KEY_728X90 || '';
-      return env.VITE_ADSTERRA_KEY_728X90 || '';
+      if (position === 'header') return winConfig.VITE_ADSTERRA_KEY_HEADER_728X90 || env.VITE_ADSTERRA_KEY_HEADER_728X90 || winConfig.VITE_ADSTERRA_KEY_728X90 || env.VITE_ADSTERRA_KEY_728X90 || '';
+      if (position === 'footer') return winConfig.VITE_ADSTERRA_KEY_FOOTER_728X90 || env.VITE_ADSTERRA_KEY_FOOTER_728X90 || winConfig.VITE_ADSTERRA_KEY_728X90 || env.VITE_ADSTERRA_KEY_728X90 || '';
+      return winConfig.VITE_ADSTERRA_KEY_728X90 || env.VITE_ADSTERRA_KEY_728X90 || '';
     }
     
     if (format === '320x50') {
-      if (position === 'header') return env.VITE_ADSTERRA_KEY_HEADER_320X50 || env.VITE_ADSTERRA_KEY_320X50 || '';
-      if (position === 'footer') return env.VITE_ADSTERRA_KEY_FOOTER_320X50 || env.VITE_ADSTERRA_KEY_320X50 || '';
-      return env.VITE_ADSTERRA_KEY_320X50 || '';
+      if (position === 'header') return winConfig.VITE_ADSTERRA_KEY_HEADER_320X50 || env.VITE_ADSTERRA_KEY_HEADER_320X50 || winConfig.VITE_ADSTERRA_KEY_320X50 || env.VITE_ADSTERRA_KEY_320X50 || '';
+      if (position === 'footer') return winConfig.VITE_ADSTERRA_KEY_FOOTER_320X50 || env.VITE_ADSTERRA_KEY_FOOTER_320X50 || winConfig.VITE_ADSTERRA_KEY_320X50 || env.VITE_ADSTERRA_KEY_320X50 || '';
+      return winConfig.VITE_ADSTERRA_KEY_320X50 || env.VITE_ADSTERRA_KEY_320X50 || '';
     }
     
     if (format === '160x600') {
-      if (position === 'left') return env.VITE_ADSTERRA_KEY_LEFT_160X600 || env.VITE_ADSTERRA_KEY_160X600 || '';
-      if (position === 'right') return env.VITE_ADSTERRA_KEY_RIGHT_160X600 || env.VITE_ADSTERRA_KEY_160X600 || '';
-      return env.VITE_ADSTERRA_KEY_160X600 || '';
+      if (position === 'left') return winConfig.VITE_ADSTERRA_KEY_LEFT_160X600 || env.VITE_ADSTERRA_KEY_LEFT_160X600 || winConfig.VITE_ADSTERRA_KEY_160X600 || env.VITE_ADSTERRA_KEY_160X600 || '';
+      if (position === 'right') return winConfig.VITE_ADSTERRA_KEY_RIGHT_160X600 || env.VITE_ADSTERRA_KEY_RIGHT_160X600 || winConfig.VITE_ADSTERRA_KEY_160X600 || env.VITE_ADSTERRA_KEY_160X600 || '';
+      return winConfig.VITE_ADSTERRA_KEY_160X600 || env.VITE_ADSTERRA_KEY_160X600 || '';
     }
     
-    if (format === '300x250') return env.VITE_ADSTERRA_KEY_300X250 || '';
-    if (format === '468x60') return env.VITE_ADSTERRA_KEY_468X60 || '';
+    if (format === '300x250') return winConfig.VITE_ADSTERRA_KEY_300X250 || env.VITE_ADSTERRA_KEY_300X250 || '';
+    if (format === '468x60') return winConfig.VITE_ADSTERRA_KEY_468X60 || env.VITE_ADSTERRA_KEY_468X60 || '';
     
     return '';
   };
 
-  const rawKey = getAdKey();
+  const [dynamicKey, setDynamicKey] = React.useState<string>(getAdKey());
+
+  useEffect(() => {
+    setDynamicKey(getAdKey());
+    const handleConfigLoaded = () => {
+      setDynamicKey(getAdKey());
+    };
+    window.addEventListener('ad-config-loaded', handleConfigLoaded);
+    return () => {
+      window.removeEventListener('ad-config-loaded', handleConfigLoaded);
+    };
+  }, [position, format, id]);
+
+  const rawKey = dynamicKey;
   const resolvedKey = sanitizeAdKey(rawKey);
   const dimensions = formatDimensions[format];
 

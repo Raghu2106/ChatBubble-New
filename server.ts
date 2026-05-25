@@ -454,6 +454,20 @@ async function startServer() {
   app.get("/api/health", (req, res) => res.json({ status: "ok" }));
   app.get("/api/ping", (req, res) => res.send("pong"));
 
+  app.get("/api/config", (req, res) => {
+    res.json({
+      VITE_ADSTERRA_KEY_728X90: process.env.VITE_ADSTERRA_KEY_728X90 || process.env.ADSTERRA_KEY_728X90 || "",
+      VITE_ADSTERRA_KEY_320X50: process.env.VITE_ADSTERRA_KEY_320X50 || process.env.ADSTERRA_KEY_320X50 || "",
+      VITE_ADSTERRA_KEY_160X600: process.env.VITE_ADSTERRA_KEY_160X600 || process.env.ADSTERRA_KEY_160X600 || "",
+      VITE_ADSTERRA_KEY_HEADER_728X90: process.env.VITE_ADSTERRA_KEY_HEADER_728X90 || process.env.ADSTERRA_KEY_HEADER_728X90 || "",
+      VITE_ADSTERRA_KEY_HEADER_320X50: process.env.VITE_ADSTERRA_KEY_HEADER_320X50 || process.env.ADSTERRA_KEY_HEADER_320X50 || "",
+      VITE_ADSTERRA_KEY_FOOTER_728X90: process.env.VITE_ADSTERRA_KEY_FOOTER_728X90 || process.env.ADSTERRA_KEY_FOOTER_728X90 || "",
+      VITE_ADSTERRA_KEY_FOOTER_320X50: process.env.VITE_ADSTERRA_KEY_FOOTER_320X50 || process.env.ADSTERRA_KEY_FOOTER_320X50 || "",
+      VITE_ADSTERRA_KEY_LEFT_160X600: process.env.VITE_ADSTERRA_KEY_LEFT_160X600 || process.env.ADSTERRA_KEY_LEFT_160X600 || "",
+      VITE_ADSTERRA_KEY_RIGHT_160X600: process.env.VITE_ADSTERRA_KEY_RIGHT_160X600 || process.env.ADSTERRA_KEY_RIGHT_160X600 || "",
+    });
+  });
+
   // --- Self-Ping Logic for Render (Keep service awake) ---
   const SELF_URL = "https://chatbubble.fun"; 
   const PING_INTERVAL = 14 * 60 * 1000; // 14 minutes
