@@ -100,26 +100,46 @@ export const AdConfigModal: React.FC<AdConfigModalProps> = ({ isOpen, onClose })
     setFormValues(prev => ({ ...prev, [keyName]: value }));
   };
 
+  const isHtmlString = (str: string): boolean => {
+    if (!str) return false;
+    const trimmed = str.trim();
+    return trimmed.includes('<') && (
+      trimmed.toLowerCase().includes('<script') ||
+      trimmed.toLowerCase().includes('<div') ||
+      trimmed.toLowerCase().includes('<ins') ||
+      trimmed.toLowerCase().includes('<iframe') ||
+      trimmed.toLowerCase().includes('<a href')
+    );
+  };
+
   const handleSave = () => {
-    // Sanitize and save elements to localStorage
-    const sanitized: Record<string, string> = {};
+    // Preserve custom HTML scripts, otherwise clean/sanitize 32-digit keys
+    const savedValues: Record<string, string> = {};
     KEYS_META.forEach(({ key }) => {
       const raw = formValues[key] || '';
-      const clean = sanitizeKey(raw);
-      sanitized[key] = clean;
+      const trimmed = raw.trim();
       
-      if (clean) {
-        localStorage.setItem(key, clean);
+      let finalValue = '';
+      if (isHtmlString(trimmed)) {
+        finalValue = trimmed;
+      } else {
+        finalValue = sanitizeKey(trimmed);
+      }
+      
+      savedValues[key] = finalValue;
+      
+      if (finalValue) {
+        localStorage.setItem(key, finalValue);
       } else {
         localStorage.removeItem(key);
       }
     });
 
-    // Update state to show sanitized keys
-    setFormValues(sanitized);
+    // Update state to show the saved values (preserves raw code tags)
+    setFormValues(savedValues);
 
     // Notify window components to rebuild/re-read
-    window.dispatchEvent(new CustomEvent('ad-config-loaded', { detail: sanitized }));
+    window.dispatchEvent(new CustomEvent('ad-config-loaded', { detail: savedValues }));
     
     setSuccessMsg('Ad units updated and loaded successfully! Live containers are parsing the scripts.');
     setTimeout(() => setSuccessMsg(null), 4000);

@@ -299,7 +299,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
             <button onClick={() => setModalType('contact')} className="hover:text-brand transition-colors">Support</button>
             <button onClick={() => setModalType('privacy')} className="hover:text-brand transition-colors">Privacy</button>
             <button onClick={() => setModalType('terms')} className="hover:text-brand transition-colors">Terms</button>
-            <button onClick={() => setModalType('ads')} className="hover:text-brand transition-colors text-brand font-black">Manage Ads</button>
           </div>
 
           <div className="text-[12px] text-text-muted/60 font-medium whitespace-nowrap">

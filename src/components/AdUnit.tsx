@@ -105,11 +105,64 @@ export const AdUnit: React.FC<AdUnitProps> = ({ id, format, className, adClient 
   }, [position, format, id]);
 
   const rawKey = dynamicKey;
-  const resolvedKey = sanitizeAdKey(rawKey);
+  
+  const isHtmlString = (str: string): boolean => {
+    if (!str) return false;
+    const trimmed = str.trim();
+    return trimmed.includes('<') && (
+      trimmed.toLowerCase().includes('<script') ||
+      trimmed.toLowerCase().includes('<div') ||
+      trimmed.toLowerCase().includes('<ins') ||
+      trimmed.toLowerCase().includes('<iframe') ||
+      trimmed.toLowerCase().includes('<a href')
+    );
+  };
+
+  const isHtml = isHtmlString(rawKey);
+  const resolvedKey = isHtml ? rawKey : sanitizeAdKey(rawKey);
   const dimensions = formatDimensions[format];
 
   useEffect(() => {
     if (!adRef.current || !resolvedKey) return;
+    
+    // Direct raw HTML injection inside safe, un-sandboxed iframe (so script loads fine)
+    if (isHtml) {
+      const dimensions = formatDimensions[format];
+      const iframe = document.createElement('iframe');
+      iframe.width = dimensions.width > 0 ? dimensions.width.toString() : '100%';
+      iframe.height = dimensions.height > 0 ? dimensions.height.toString() : '100px';
+      iframe.frameBorder = '0';
+      iframe.scrolling = 'no';
+      iframe.style.border = 'none';
+      iframe.style.overflow = 'hidden';
+      
+      adRef.current.innerHTML = '';
+      adRef.current.appendChild(iframe);
+      
+      const setupIframe = () => {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (iframeDoc) {
+          iframeDoc.open();
+          iframeDoc.write(`
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <style>
+                  body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; overflow: hidden; width: 100vw; height: 100vh; }
+                </style>
+              </head>
+              <body>
+                ${resolvedKey}
+              </body>
+            </html>
+          `);
+          iframeDoc.close();
+        }
+      };
+      
+      const timer = setTimeout(setupIframe, 40);
+      return () => clearTimeout(timer);
+    }
     
     // AdSense Logic
     if (format === 'adsense') {
