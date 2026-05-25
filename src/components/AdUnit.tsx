@@ -18,6 +18,38 @@ const formatDimensions = {
   'adsense': { width: 0, height: 0 }
 };
 
+const DEFAULT_AD_KEYS: Record<string, string> = {
+  'VITE_ADSTERRA_KEY_HEADER_728X90': 'e09cae3901da8691e785bc3a6fb53b5f',
+  'VITE_ADSTERRA_KEY_FOOTER_728X90': 'e09cae3901da8691e785bc3a6fb53b5f',
+  'VITE_ADSTERRA_KEY_728X90': 'e09cae3901da8691e785bc3a6fb53b5f',
+
+  'VITE_ADSTERRA_KEY_LEFT_160X600': '1792c7f73f1077081cad03590a1a650d',
+  'VITE_ADSTERRA_KEY_RIGHT_160X600': '1792c7f73f1077081cad03590a1a650d',
+  'VITE_ADSTERRA_KEY_160X600': '1792c7f73f1077081cad03590a1a650d',
+
+  'VITE_ADSTERRA_KEY_HEADER_320X50': 'b4f39cdd8d2c49287bc15b998684cb7e',
+  'VITE_ADSTERRA_KEY_FOOTER_320X50': 'b4f39cdd8d2c49287bc15b998684cb7e',
+  'VITE_ADSTERRA_KEY_320X50': 'b4f39cdd8d2c49287bc15b998684cb7e'
+};
+
+const getAdDomain = (key: string): string => {
+  if (!key) return 'eternalwheeled.com';
+  const cleanKey = key.trim().replace(/['";\s]/g, '');
+  if (cleanKey === 'e09cae3901da8691e785bc3a6fb53b5f' || 
+      cleanKey === '1792c7f73f1077081cad03590a1a650d' || 
+      cleanKey === 'b4f39cdd8d2c49287bc15b998684cb7e') {
+    return 'eternalwheeled.com';
+  }
+  const htmlLower = key.toLowerCase();
+  if (htmlLower.includes('eternalwheeled.com')) return 'eternalwheeled.com';
+  if (htmlLower.includes('highperformanceformat.com')) return 'www.highperformanceformat.com';
+  
+  const srcMatch = key.match(/src=["']https?:\/\/([^/]+)/i);
+  if (srcMatch && srcMatch[1]) return srcMatch[1];
+  
+  return 'eternalwheeled.com';
+};
+
 export const AdUnit: React.FC<AdUnitProps> = ({ id, format, className, adClient = "ca-pub-9842476646609926", position }) => {
   const adRef = useRef<HTMLDivElement>(null);
 
@@ -61,10 +93,17 @@ export const AdUnit: React.FC<AdUnitProps> = ({ id, format, className, adClient 
     
     const getVal = (keyName: string): string => {
       try {
-        return localStorage.getItem(keyName) || winConfig[keyName] || env[keyName] || '';
-      } catch (e) {
-        return winConfig[keyName] || env[keyName] || '';
-      }
+        const local = localStorage.getItem(keyName);
+        if (local && local.trim() !== "") return local;
+      } catch (e) {}
+      
+      const winVal = winConfig[keyName];
+      if (winVal && winVal.trim() !== "") return winVal;
+      
+      const envVal = env[keyName];
+      if (envVal && envVal.trim() !== "") return envVal;
+      
+      return DEFAULT_AD_KEYS[keyName] || '';
     };
     
     if (format === '728x90') {
@@ -203,6 +242,7 @@ export const AdUnit: React.FC<AdUnitProps> = ({ id, format, className, adClient 
     const setupIframe = () => {
       const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
       if (iframeDoc) {
+        const domain = getAdDomain(rawKey);
         iframeDoc.open();
         iframeDoc.write(`
           <!DOCTYPE html>
@@ -221,7 +261,7 @@ export const AdUnit: React.FC<AdUnitProps> = ({ id, format, className, adClient 
                   'width' : ${dimensions.width},
                   'params' : {}
                 };
-                document.write('<scr' + 'ipt type="text/javascript" src="https://www.highperformanceformat.com/${resolvedKey}/invoke.js"></scr' + 'ipt>');
+                document.write('<scr' + 'ipt type="text/javascript" src="https://${domain}/${resolvedKey}/invoke.js"></scr' + 'ipt>');
               </script>
             </body>
           </html>
