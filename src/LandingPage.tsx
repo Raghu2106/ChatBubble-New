@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Users, MessageCircle, Shield, Zap, MessageSquare } from 'lucide-react';
 import { PolicyModal } from './components/PolicyModal';
 import { Logo } from './components/Logo';
+import { AdUnit } from './components/AdUnit';
 import { 
   PrivacyPolicyContent, 
   TermsOfServiceContent, 
@@ -22,13 +23,33 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
   const formattedUserCount = totalUsers.toLocaleString();
 
   return (
-    <div className="min-h-full bg-[#fafafa] text-slate-900 flex flex-col items-center justify-between font-sans relative overflow-x-hidden">
-      {/* Decorative Elements */}
-      <div className="absolute top-0 right-0 w-1/2 h-screen bg-brand/5 -skew-x-12 translate-x-1/3 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-1/3 h-1/2 bg-brand/5 skew-x-12 -translate-x-1/4 pointer-events-none" />
+    <div className="min-h-screen bg-[#fafafa] text-slate-900 flex flex-col font-sans relative">
+      {/* Top Page Header Ad Banner */}
+      <div className="w-full flex-shrink-0 flex justify-center py-2 bg-white border-b border-slate-100 relative z-30">
+        <div className="hidden md:block">
+          <AdUnit format="728x90" position="header" />
+        </div>
+        <div className="block md:hidden">
+          <AdUnit format="320x50" position="header" />
+        </div>
+      </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 pt-16 pb-12 w-full relative z-10">
+      {/* Main Wrapper with Left & Right Skyscrapers */}
+      <div className="flex-1 flex flex-row relative w-full justify-center">
+        
+        {/* Left Skyscraper - Desktop Only */}
+        <div className="hidden xl:flex flex-shrink-0 w-[180px] p-4 pt-16 items-start justify-center relative z-20 sticky top-12 h-[calc(100vh-48px)] self-start select-none">
+          <AdUnit format="160x600" position="left" className="rounded-2xl" />
+        </div>
+
+        {/* Center Content Container */}
+        <div className="flex-1 max-w-5xl flex flex-col items-center relative overflow-x-hidden min-w-0">
+          {/* Decorative Elements */}
+          <div className="absolute top-0 right-0 w-1/2 h-screen bg-brand/5 -skew-x-12 translate-x-1/3 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-1/3 h-1/2 bg-brand/5 skew-x-12 -translate-x-1/4 pointer-events-none" />
+
+          {/* Main Content */}
+          <div className="flex-1 flex flex-col items-center justify-center px-6 pt-16 pb-12 w-full relative z-10">
         <div className="text-center max-w-5xl mb-12">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -126,6 +147,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
               </div>
             </div>
           </section>
+
+          {/* Responsive Horizontal Ad Banner - SEO Footer Area */}
+          <div className="w-full max-w-5xl my-6 flex items-center justify-center relative z-10 flex-shrink-0">
+            <div className="hidden md:block">
+              <AdUnit format="728x90" position="footer" />
+            </div>
+            <div className="block md:hidden">
+              <AdUnit format="320x50" position="footer" />
+            </div>
+          </div>
 
           {/* New Footer Section for SEO */}
           <footer className="mt-12 pt-12 border-t border-slate-100 text-slate-400 pb-12">
@@ -247,6 +278,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
         </div>
       </div>
 
+      {/* Responsive Horizontal Ad Banner - Bottom Footer Area */}
+      <div className="w-full max-w-5xl px-6 mb-8 mt-12 flex items-center justify-center relative z-10 flex-shrink-0">
+        <div className="hidden md:block">
+          <AdUnit format="728x90" position="footer" />
+        </div>
+        <div className="block md:hidden">
+          <AdUnit format="320x50" position="footer" />
+        </div>
+      </div>
+
       {/* Footer */}
       <footer className="w-full py-8 border-t border-border bg-surface/50 backdrop-blur-md relative z-10">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -264,6 +305,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
           </div>
         </div>
       </footer>
+
+        </div> {/* End of Center Content Container */}
+
+        {/* Right Skyscraper - Desktop Only */}
+        <div className="hidden xl:flex flex-shrink-0 w-[180px] p-4 pt-16 items-start justify-center relative z-20 sticky top-12 h-[calc(100vh-48px)] self-start select-none">
+          <AdUnit format="160x600" position="right" className="rounded-2xl" />
+        </div>
+
+      </div> {/* End of Main Wrapper with Left & Right Skyscrapers */}
 
       <PolicyModal 
         isOpen={modalType === 'privacy'} 

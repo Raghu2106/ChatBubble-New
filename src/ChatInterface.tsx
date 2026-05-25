@@ -11,6 +11,7 @@ import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 import { Logo } from './components/Logo';
 import { socket } from './socket';
 import { ChatMessage, Room, Gender, DummyUser } from './types';
+import { AdUnit } from './components/AdUnit';
 
 // Helper to sanitize message content and strip clickable links/HTML
 const formatChatMessage = (content: string) => {
@@ -424,6 +425,16 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   return (
     <div className="h-full flex flex-col bg-bg text-text overflow-hidden font-sans">
+      {/* Top Page Header Ad Banner */}
+      <div className="w-full flex-shrink-0 flex justify-center py-2 bg-white border-b border-slate-100 relative z-30">
+        <div className="hidden md:block">
+          <AdUnit format="728x90" position="header" />
+        </div>
+        <div className="block md:hidden">
+          <AdUnit format="320x50" position="header" />
+        </div>
+      </div>
+
       <header className="h-12 flex-shrink-0 flex items-center justify-between px-4 bg-white border-b border-slate-100 sticky top-0 z-40">
         <div className="flex items-center gap-3">
           <button 
@@ -474,8 +485,16 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         </div>
       </header>
 
-      {/* MAIN CONTENT AREA */}
-      <div className="flex-1 flex overflow-hidden lg:pl-3 lg:py-3 gap-3 relative pb-16 md:pb-0">
+      {/* MAIN CONTENT AREA WITH SIDEBAR SKYSCRAPERS */}
+      <div className="flex-1 flex flex-row overflow-hidden relative pb-16 md:pb-0">
+        
+        {/* Left Skyscraper - Desktop Only */}
+        <div className="hidden xl:flex flex-shrink-0 w-[180px] p-2 items-center justify-center relative z-25 select-none bg-slate-50/50 border-r border-slate-100">
+          <AdUnit format="160x600" position="left" className="rounded-2xl" />
+        </div>
+
+        {/* Core Chat Box Section */}
+        <div className="flex-1 flex overflow-hidden lg:pl-3 lg:py-3 gap-3 relative">
         
         {/* Mobile Sidebar Overlay */}
         <AnimatePresence>
@@ -871,6 +890,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   </div>
               </div>
            </div>
+
         </aside>
 
         {/* CENTER CHAT DISPLAY WINDOW */}
@@ -1117,6 +1137,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
              )}
            </AnimatePresence>
 
+
             {/* Message Input Container */}
 
            <div className="p-3 pt-0 transition-all">
@@ -1203,7 +1224,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               )}
            </div>
         </main>
+      </div> {/* End of Core Chat Box Section */}
+
+      {/* Right Skyscraper - Desktop Only */}
+      <div className="hidden xl:flex flex-shrink-0 w-[180px] p-2 items-center justify-center relative z-25 select-none bg-slate-50/50 border-l border-slate-100">
+        <AdUnit format="160x600" position="right" className="rounded-2xl" />
       </div>
+
+    </div> {/* End of MAIN CONTENT AREA WITH SIDEBAR SKYSCRAPERS */}
 
       {/* MOBILE BOTTOM NAVIGATION - FIXED AT BOTTOM */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-surface border-t border-border flex items-center justify-around px-4 z-[45] shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
