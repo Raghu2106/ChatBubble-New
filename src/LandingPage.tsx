@@ -4,6 +4,7 @@ import { Users, MessageCircle, Shield, Zap, MessageSquare } from 'lucide-react';
 import { PolicyModal } from './components/PolicyModal';
 import { Logo } from './components/Logo';
 import { AdUnit } from './components/AdUnit';
+import { AdConfigModal } from './components/AdConfigModal';
 import { 
   PrivacyPolicyContent, 
   TermsOfServiceContent, 
@@ -17,7 +18,7 @@ interface LandingPageProps {
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 0 }) => {
-  const [modalType, setModalType] = useState<'privacy' | 'terms' | 'about' | 'contact' | null>(null);
+  const [modalType, setModalType] = useState<'privacy' | 'terms' | 'about' | 'contact' | 'ads' | null>(null);
 
   // Format totalUsers with comma if it's a large number
   const formattedUserCount = totalUsers.toLocaleString();
@@ -298,6 +299,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
             <button onClick={() => setModalType('contact')} className="hover:text-brand transition-colors">Support</button>
             <button onClick={() => setModalType('privacy')} className="hover:text-brand transition-colors">Privacy</button>
             <button onClick={() => setModalType('terms')} className="hover:text-brand transition-colors">Terms</button>
+            <button onClick={() => setModalType('ads')} className="hover:text-brand transition-colors text-brand font-black">Manage Ads</button>
           </div>
 
           <div className="text-[12px] text-text-muted/60 font-medium whitespace-nowrap">
@@ -346,6 +348,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
       >
         <ContactUsContent />
       </PolicyModal>
+
+      <AdConfigModal 
+        isOpen={modalType === 'ads'} 
+        onClose={() => setModalType(null)} 
+      />
     </div>
   );
 };
