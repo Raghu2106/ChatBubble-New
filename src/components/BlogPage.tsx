@@ -29,7 +29,6 @@ export const BlogPage: React.FC<BlogPageProps> = ({
   onNavigateBlog 
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const activePost = BLOG_POSTS.find(p => p.slug === currentBlogSlug);
 
@@ -43,19 +42,20 @@ export const BlogPage: React.FC<BlogPageProps> = ({
     window.scrollTo({ top: 0, behavior: 'instant' as any });
   }, [currentBlogSlug, activePost]);
 
-  // Extract all categories
-  const categories = Array.from(new Set(BLOG_POSTS.map(p => p.category)));
+  // Sort posts latest first (descending timestamp order)
+  const sortedPosts = [...BLOG_POSTS].sort((a, b) => {
+    const timeA = new Date(a.date).getTime() || 0;
+    const timeB = new Date(b.date).getTime() || 0;
+    return timeB - timeA;
+  });
 
-  // Filter posts
-  const filteredPosts = BLOG_POSTS.filter(post => {
-    const matchesSearch = 
+  // Filter posts based on search query
+  const filteredPosts = sortedPosts.filter(post => {
+    return (
       post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       post.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.introduction.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesCategory = !selectedCategory || post.category === selectedCategory;
-
-    return matchesSearch && matchesCategory;
+      post.introduction.toLowerCase().includes(searchQuery.toLowerCase())
+    );
   });
 
   return (
@@ -265,47 +265,18 @@ export const BlogPage: React.FC<BlogPageProps> = ({
               </p>
             </div>
 
-            {/* Interactive Filters Area Container */}
-            <div className="bg-surface border border-border p-4 rounded-2.5xl flex flex-col md:flex-row gap-4 items-center justify-between">
+            {/* Interactive Filters Area Container - Centered and Search-only */}
+            <div className="bg-surface border border-border p-4 rounded-2.5xl flex items-center justify-center">
               {/* Custom Search Box */}
-              <div className="relative w-full md:max-w-xs">
-                <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted/50" />
+              <div className="relative w-full max-w-lg">
+                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted/50" />
                 <input
                   type="text"
-                  placeholder="Search articles..."
+                  placeholder="Search articles by keywords..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-bg border border-border focus:border-brand/50 rounded-xl outline-none text-text text-xs leading-relaxed font-semibold transition-all"
+                  className="w-full pl-11 pr-4 py-3 bg-bg border border-border focus:border-brand/40 hover:border-border/80 rounded-2xl outline-none text-text text-sm leading-relaxed font-semibold transition-all shadow-inner"
                 />
-              </div>
-
-              {/* Filter Pills */}
-              <div className="flex flex-wrap gap-2 justify-center w-full md:w-auto">
-                <button
-                  type="button"
-                  onClick={() => setSelectedCategory(null)}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    selectedCategory === null
-                      ? 'bg-brand text-slate-950'
-                      : 'bg-bg hover:bg-surface-hover text-text-muted hover:text-text'
-                  }`}
-                >
-                  All Categories
-                </button>
-                {categories.map((cat, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                      selectedCategory === cat
-                        ? 'bg-brand text-slate-950'
-                        : 'bg-bg hover:bg-surface-hover text-text-muted hover:text-text'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
               </div>
             </div>
 
@@ -360,16 +331,16 @@ export const BlogPage: React.FC<BlogPageProps> = ({
             ) : (
               <div className="text-center py-16 bg-surface border border-border rounded-[2rem] space-y-4">
                 <HelpCircle size={36} className="mx-auto text-text-muted/40" />
-                <h3 className="text-lg font-bold text-text">No articles match your criteria</h3>
+                <h3 className="text-lg font-bold text-text">No articles match your search</h3>
                 <p className="text-xs text-text-muted max-w-sm mx-auto leading-relaxed">
-                  We couldn't search up any blog files containing details for your keyword. Try looking for "Safety", "Tips" or resetting filters.
+                  We couldn't find any articles matching your search query. Try searching for "Safety", "Anonymity", or "Icebrew".
                 </p>
                 <button
                   type="button"
-                  onClick={() => { setSearchQuery(''); setSelectedCategory(null); }}
-                  className="px-4 py-2 bg-brand text-slate-950 rounded-lg text-xs font-black uppercase tracking-wider"
+                  onClick={() => setSearchQuery('')}
+                  className="px-4 py-2 bg-brand text-slate-950 rounded-lg text-xs font-black uppercase tracking-wider hover:bg-brand/95 transition-all"
                 >
-                  Reset Filters
+                  Clear Search
                 </button>
               </div>
             )}
