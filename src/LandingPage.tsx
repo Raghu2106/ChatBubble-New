@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Users, MessageCircle, Shield, Zap, MessageSquare } from 'lucide-react';
+import { Users, MessageCircle, Shield, Zap, MessageSquare, BookOpen, Sparkles, HelpCircle, Heart, AlertTriangle } from 'lucide-react';
 import { PolicyModal } from './components/PolicyModal';
 import { Logo } from './components/Logo';
 import { AdUnit } from './components/AdUnit';
@@ -19,6 +19,7 @@ interface LandingPageProps {
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 0 }) => {
   const [modalType, setModalType] = useState<'privacy' | 'terms' | 'about' | 'contact' | 'ads' | null>(null);
+  const [activeTab, setActiveTab] = useState<'safety' | 'etiquette' | 'tips'>('safety');
 
   // Format totalUsers with comma if it's a large number
   const formattedUserCount = totalUsers.toLocaleString();
@@ -247,34 +248,300 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
           </div>
         </div>
 
-        {/* Minimal FAQ */}
-        <div className="mt-32 w-full max-w-3xl px-4">
-          <h2 className="text-2xl font-bold text-slate-950 mb-12 text-center">Frequently Asked Questions</h2>
-          <div className="space-y-12">
-            {[
-              {
-                q: "Is ChatBubble really free?",
-                a: "Yes, our anonymous chat service is 100% free. We offer premium chatrooms without registration fees or hidden costs."
-              },
-              {
-                q: "How safe is this anonymous chat?",
-                a: "Safety is our priority. We use real-time moderation and community reporting to keep our free chat rooms healthy and secure for everyone."
-              },
-              {
-                q: "Can I chat without signing up?",
-                a: "Absolutely. ChatBubble is built for instant access. Pick a nickname and you're in—no email or password needed."
-              }
-            ].map((item, idx) => (
-              <div key={idx} className="flex flex-col md:flex-row gap-4 md:gap-12">
-                <div className="md:w-1/3 flex items-start gap-3">
-                   <div className="w-1.5 h-1.5 bg-brand rounded-full mt-2" />
-                   <h4 className="text-lg font-bold text-slate-950 leading-tight">{item.q}</h4>
-                </div>
-                <p className="md:w-2/3 text-slate-500 text-sm leading-relaxed font-medium">
-                  {item.a}
-                </p>
+        {/* Safety & Communication Resource Hub */}
+        <div id="safety-resource-hub" className="w-full max-w-5xl px-4 relative z-10 mb-16">
+          <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 md:p-12 shadow-sm relative overflow-hidden">
+            {/* Ambient Background decoration */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-brand/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="text-center max-w-2xl mx-auto mb-10">
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand/10 text-brand rounded-full mb-4">
+                <BookOpen size={13} className="animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-widest">Resource & Safety Center</span>
+              </span>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
+                Safe Online Communication Handbook
+              </h2>
+              <p className="text-sm text-slate-500 mt-2 leading-relaxed">
+                We advocate for safe, respectful, and genuine stranger conversations. Read through our helpful guides, 
+                privacy recommendations, and communication icebreakers to elevate your chatroom experience.
+              </p>
+            </div>
+
+            {/* Tab selection buttons */}
+            <div className="flex justify-center border-b border-slate-100 pb-4 mb-8">
+              <div className="inline-flex p-1 bg-slate-100/80 rounded-2xl gap-1">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('safety')}
+                  className={`px-4 py-2.5 rounded-xl font-bold text-xs tracking-wide transition-all uppercase flex items-center gap-2 ${
+                    activeTab === 'safety'
+                      ? 'bg-white text-brand shadow-sm border border-slate-200/50'
+                      : 'text-slate-500 hover:text-slate-900'
+                  }`}
+                >
+                  <Shield size={14} />
+                  Safety First
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('etiquette')}
+                  className={`px-4 py-2.5 rounded-xl font-bold text-xs tracking-wide transition-all uppercase flex items-center gap-2 ${
+                    activeTab === 'etiquette'
+                      ? 'bg-white text-brand shadow-sm border border-slate-200/50'
+                      : 'text-slate-500 hover:text-slate-900'
+                  }`}
+                >
+                  <Users size={14} />
+                  Etiquette Code
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('tips')}
+                  className={`px-4 py-2.5 rounded-xl font-bold text-xs tracking-wide transition-all uppercase flex items-center gap-2 ${
+                    activeTab === 'tips'
+                      ? 'bg-white text-brand shadow-sm border border-slate-200/50'
+                      : 'text-slate-500 hover:text-slate-900'
+                  }`}
+                >
+                  <Sparkles size={14} />
+                  Icebreakers FAQ
+                </button>
               </div>
-            ))}
+            </div>
+
+            {/* Tab content wrapper */}
+            <div className="grid md:grid-cols-2 gap-6 relative z-10">
+              {activeTab === 'safety' && (
+                <>
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                    <div>
+                      <div className="inline-flex items-center justify-center p-3 bg-red-50 text-red-600 rounded-xl mb-4">
+                        <AlertTriangle size={18} />
+                      </div>
+                      <h3 className="text-base font-bold text-slate-900 mb-2">Protect Personal Details</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        Never share identifiers such as your exact physical location, phone contacts, official email, 
+                        or private handles (Instagram, Snapchat, Discord) right away. Safe chatting involves maintaining absolute anonymity until trust is built.
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-red-500 font-bold tracking-widest mt-4 uppercase">MINIMAL REVEAL PRINCIPLE</span>
+                  </div>
+
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                    <div>
+                      <div className="inline-flex items-center justify-center p-3 bg-indigo-50 text-indigo-600 rounded-xl mb-4">
+                        <Shield size={18} />
+                      </div>
+                      <h3 className="text-base font-bold text-slate-900 mb-2">Detect External Link Scams</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        Be suspicious of interlocutors typing short-links or pushing third-party download invitations, 
+                        profile checking tools, or spam boards. Safe web chats always run locally in your primary window.
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-brand font-bold tracking-widest mt-4 uppercase">SAFE INTERFACES ZONE</span>
+                  </div>
+
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                    <div>
+                      <div className="inline-flex items-center justify-center p-3 bg-amber-50 text-amber-600 rounded-xl mb-4">
+                        <AlertTriangle size={18} />
+                      </div>
+                      <h3 className="text-base font-bold text-slate-900 mb-2">Financial Security Habits</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        Fraudulent players often construct stories about immediate emergencies to solicit funds, gift cards, 
+                        or cryptocurrency payments. ChatBubble will never request billing transactions or verification feeds during your free session.
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-amber-600 font-bold tracking-widest mt-4 uppercase">FINANCIAL SHIELD</span>
+                  </div>
+
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                    <div>
+                      <div className="inline-flex items-center justify-center p-3 bg-teal-50 text-teal-600 rounded-xl mb-4">
+                        <Shield size={18} />
+                      </div>
+                      <h3 className="text-base font-bold text-slate-900 mb-2">Clean-Exit Protocol</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        You hold absolute control over your environment. If a participant makes you feel uncomfortable, chooses offensive topics, 
+                        or behaves inappropriately, simply click the 'Next' button or skip the room immediately to reset your pool.
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-teal-600 font-bold tracking-widest mt-4 uppercase">USER EMPOWERMENT</span>
+                  </div>
+                </>
+              )}
+
+              {activeTab === 'etiquette' && (
+                <>
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                    <div>
+                      <div className="inline-flex items-center justify-center p-3 bg-purple-50 text-purple-600 rounded-xl mb-4">
+                        <Heart size={18} />
+                      </div>
+                      <h3 className="text-base font-bold text-slate-900 mb-2">Empathy & Respect Online</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        Anonymity is a powerful privilege that is best combined with genuine human respect. Always approach your stranger counterpart 
+                        with patient greetings and positive, constructive intent to ensure a pleasant connection.
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-purple-600 font-bold tracking-widest mt-4 uppercase">MATURE PARTICIPATION</span>
+                  </div>
+
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                    <div>
+                      <div className="inline-flex items-center justify-center p-3 bg-rose-50 text-rose-600 rounded-xl mb-4">
+                        <AlertTriangle size={18} />
+                      </div>
+                      <h3 className="text-base font-bold text-slate-900 mb-2 font-sans">Zero Tolerance for Abuse</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        Hate speech, obscene slurs, sexual harassment, and discriminatory behavior are strictly prohibited in lobby screens. 
+                        We run automatic filters to review, flag, and ban offending IP addresses to keep ChatBubble inviting for everyone.
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-rose-600 font-bold tracking-widest mt-4 uppercase">MODERATION CODE</span>
+                  </div>
+
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                    <div>
+                      <div className="inline-flex items-center justify-center p-3 bg-sky-50 text-sky-600 rounded-xl mb-4">
+                        <MessageSquare size={18} />
+                      </div>
+                      <h3 className="text-base font-bold text-slate-900 mb-2">No Spam or Promotional Copy</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        Bulking up threads with repetitive advertisements, affiliate referrals, or promotional links triggers immediate ban limits. 
+                        ChatBubble is built for organic interpersonal conversations—not commercial spamming routines.
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-sky-600 font-bold tracking-widest mt-4 uppercase">ANTI-BOT LAWS</span>
+                  </div>
+
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                    <div>
+                      <div className="inline-flex items-center justify-center p-3 bg-emerald-50 text-emerald-600 rounded-xl mb-4">
+                        <Users size={18} />
+                      </div>
+                      <h3 className="text-base font-bold text-slate-900 mb-2">Cultural Inclusivity</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        With active channels matching USA, UK, India, and European networks, you will interact with global cultures. 
+                        Embrace international perspectives, maintain curiosity, and discover fascinating worldviews.
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-emerald-600 font-bold tracking-widest mt-4 uppercase">GLOBAL COMMERCE</span>
+                  </div>
+                </>
+              )}
+
+              {activeTab === 'tips' && (
+                <>
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                    <div>
+                      <div className="inline-flex items-center justify-center p-3 bg-yellow-50 text-yellow-600 rounded-xl mb-4">
+                        <Sparkles size={18} />
+                      </div>
+                      <h3 className="text-base font-bold text-slate-900 mb-2">Brilliant Icebreaker Ideas</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        Feeling tongue-tied? Start dynamic chats with open-minded entries. Try asking: "If you could immediately master any skill 
+                        overnight, what would it be?" or "What is your absolute favorite comfort food or movie selection?"
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-yellow-600 font-bold tracking-widest mt-4 uppercase">ICEBREAKING HANDBOOK</span>
+                  </div>
+
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                    <div>
+                      <div className="inline-flex items-center justify-center p-3 bg-red-50 text-red-500 rounded-xl mb-4">
+                        <MessageSquare size={18} />
+                      </div>
+                      <h3 className="text-base font-bold text-slate-900 mb-2">The Active Listening Strategy</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        Online dialogue is highly rewarding when both participants listen. Prompt follow-up answers and build on their responses. 
+                        It reveals interest, encourages the partner, and keeps the conversation flowing naturally.
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-red-500 font-bold tracking-widest mt-4 uppercase">FLOW METRICS</span>
+                  </div>
+
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                    <div>
+                      <div className="inline-flex items-center justify-center p-3 bg-teal-50 text-teal-600 rounded-xl mb-4">
+                        <Sparkles size={18} />
+                      </div>
+                      <h3 className="text-base font-bold text-slate-900 mb-2">Share Positive Vibrations</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        A friendly initial tone is contagious. Share stories about your hobbies, favorite pet animals, coding paths, 
+                        or weekend adventures. Optimistic, lighthearted framing makes users want to stay in your room longer.
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-teal-600 font-bold tracking-widest mt-4 uppercase">ATMOSPHERE DECREES</span>
+                  </div>
+
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                    <div>
+                      <div className="inline-flex items-center justify-center p-3 bg-violet-50 text-violet-600 rounded-xl mb-4">
+                        <Users size={18} />
+                      </div>
+                      <h3 className="text-base font-bold text-slate-900 mb-2">Respecting the Skip Command</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        Stranger chats are transient. If someone chooses to press next and skip the session, do not take it personally. 
+                        Embrace the rhythm, preserve a peaceful mindset, and welcome the next interesting person with high energy.
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-violet-600 font-bold tracking-widest mt-4 uppercase">DETACHMENT GUIDE</span>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Enhanced FAQ System */}
+        <div className="mt-16 w-full max-w-5xl px-4">
+          <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 md:p-12 shadow-sm">
+            <h2 className="text-3xl font-bold text-slate-950 mb-10 text-center tracking-tight">Frequently Asked Questions</h2>
+            <div className="grid md:grid-cols-2 gap-x-12 gap-y-10">
+              {[
+                {
+                  q: "Is ChatBubble 100% free anonymous chat?",
+                  a: "Yes, our anonymous chat is completely free for everyone. There are no registration forms, credit card requirements, or hidden charges. You can join localized lobby corridors and talk to strangers instantly without creating an account or providing email verification feeds."
+                },
+                {
+                  q: "How does the platform secure my browser safety and privacy?",
+                  a: "We minimize data collection strictly. ChatBubble does not record your IP address on durable database disks, nor do we store persistent chat history on physical servers. All conversations are handled through dynamic, in-memory WebSockets that vanish once the chat room pair is skipped or closed."
+                },
+                {
+                  q: "Can I choose chat rooms by region, like India, USA, or Europe?",
+                  a: "Yes! Our matching model pairs you up randomly from global pools or helps align conversations with local chatter in areas like India, the United States, United Kingdom, and Western Europe. This gives you a seamless combination of global cultures and localized dialogue."
+                },
+                {
+                  q: "How does the real-time moderation engine handle bad players?",
+                  a: "We deploy active, real-time keyword filters and dynamic block models. If a participant presents spam links, abusive tags, or harasses you, click the reporting triggers in the chat panel. This lets our automated moderation queue audit the user's connection and apply temporary or permanent IP bans."
+                },
+                {
+                  q: "Why does ChatBubble not support video streaming or image uploads?",
+                  a: "To maximize participant protection and comply with safe-web policies, we intentionally restrict chats to pure, lightweight text and secure interactions. This prevents the distribution of explicit uploads, malware packages, or unsolicited media, creating a warm and comfortable environment for our chatters."
+                },
+                {
+                  q: "Do I need to install any custom extension to run ChatBubble?",
+                  a: "Not at all. ChatBubble is built with modern, light-footprint Web standards that run seamlessly across Chrome, Safari, Firefox, Edge, and iOS/Android mobile screens. It operates instantly inside your browser without adding bloated scripts or background tracking extensions."
+                },
+                {
+                  q: "Why does this platform show banner advertisements?",
+                  a: "To keep our dedicated WebSocket servers running at zero latency without charging any subscription premium fees, we embed clean, authorized advertising units (such as Adsterra and AdSense). These units are configured in compliance with publisher guidelines to support server infrastructure costs."
+                }
+              ].map((item, idx) => (
+                <div key={idx} className="flex flex-col gap-2">
+                  <div className="flex items-start gap-2.5">
+                     <div className="w-2 h-2 bg-brand rounded-full mt-2 flex-shrink-0" />
+                     <h4 className="text-base font-bold text-slate-950 leading-snug">{item.q}</h4>
+                  </div>
+                  <p className="text-slate-500 text-xs leading-relaxed font-medium pl-4">
+                    {item.a}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
