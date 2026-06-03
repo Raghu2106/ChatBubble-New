@@ -12,6 +12,7 @@ import { Gender } from './types';
 import { Shield } from 'lucide-react';
 import { SessionTimeoutModal } from './components/SessionTimeoutModal';
 import { useDummyUsers } from './hooks/useDummyUsers';
+import { PolicyPage } from './components/PolicyPage';
 
 const AdminPanel = React.lazy(() => import('./AdminPanel').then(m => ({ default: m.AdminPanel })));
 
@@ -32,10 +33,29 @@ export default function App() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [totalUsers, setTotalUsers] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
   const [isAdmin, setIsAdmin] = useState(window.location.pathname === '/admin');
   const lastResetRef = React.useRef(Date.now());
   const [showTimeoutModal, setShowTimeoutModal] = useState(false);
   const [disconnectReason, setDisconnectReason] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname);
+      setIsAdmin(window.location.pathname === '/admin');
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const navigateTo = (path: string) => {
+    window.history.pushState({}, '', path);
+    setCurrentPath(path);
+    setIsAdmin(path === '/admin');
+    if (path === '/') {
+      document.title = 'ChatBubble | Free Chatrooms Without Registration';
+    }
+  };
 
   const inactivityTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -218,6 +238,14 @@ export default function App() {
     handleExit();
     setDisconnectReason('You were disconnected due to inactivity');
   };
+
+  if (currentPath === '/privacy') {
+    return <PolicyPage type="privacy" onNavigateHome={() => navigateTo('/')} />;
+  }
+
+  if (currentPath === '/terms') {
+    return <PolicyPage type="terms" onNavigateHome={() => navigateTo('/')} />;
+  }
 
   if (isAdmin) {
     return (

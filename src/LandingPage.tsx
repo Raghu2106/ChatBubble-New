@@ -564,8 +564,28 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
           <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-4 text-[13px] font-bold text-text-muted">
             <button onClick={() => setModalType('about')} className="hover:text-brand transition-colors">About</button>
             <button onClick={() => setModalType('contact')} className="hover:text-brand transition-colors">Support</button>
-            <button onClick={() => setModalType('privacy')} className="hover:text-brand transition-colors">Privacy</button>
-            <button onClick={() => setModalType('terms')} className="hover:text-brand transition-colors">Terms</button>
+            <a 
+              href="/privacy" 
+              onClick={(e) => {
+                e.preventDefault();
+                window.history.pushState({}, '', '/privacy');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              }}
+              className="hover:text-brand transition-colors"
+            >
+              Privacy
+            </a>
+            <a 
+              href="/terms" 
+              onClick={(e) => {
+                e.preventDefault();
+                window.history.pushState({}, '', '/terms');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              }}
+              className="hover:text-brand transition-colors"
+            >
+              Terms
+            </a>
           </div>
 
           <div className="text-[12px] text-text-muted/60 font-medium whitespace-nowrap">
@@ -582,22 +602,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
         </div>
 
       </div> {/* End of Main Wrapper with Left & Right Skyscrapers */}
-
-      <PolicyModal 
-        isOpen={modalType === 'privacy'} 
-        onClose={() => setModalType(null)} 
-        title="Privacy Policy"
-      >
-        <PrivacyPolicyContent />
-      </PolicyModal>
-
-      <PolicyModal 
-        isOpen={modalType === 'terms'} 
-        onClose={() => setModalType(null)} 
-        title="Terms of Service"
-      >
-        <TermsOfServiceContent />
-      </PolicyModal>
 
       <PolicyModal 
         isOpen={modalType === 'about'} 
