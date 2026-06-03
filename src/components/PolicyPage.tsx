@@ -12,6 +12,12 @@ interface PolicyPageProps {
 export const PolicyPage: React.FC<PolicyPageProps> = ({ type, onNavigateHome }) => {
   const isPrivacy = type === 'privacy';
 
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, callback: () => void) => {
+    if (e.metaKey || e.altKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    e.preventDefault();
+    callback();
+  };
+
   useEffect(() => {
     // Set document title dynamically for crawlers and tabs
     document.title = isPrivacy ? 'Privacy Policy - ChatBubble' : 'Terms of Service - ChatBubble';
@@ -24,16 +30,17 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({ type, onNavigateHome }) 
       {/* Policy Page Header */}
       <header className="w-full py-6 border-b border-border bg-surface/50 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-6 flex items-center justify-between">
-          <div className="cursor-pointer" onClick={onNavigateHome}>
+          <a href="/" onClick={(e) => handleLinkClick(e, onNavigateHome)} className="cursor-pointer">
             <Logo size="md" />
-          </div>
-          <button
-            onClick={onNavigateHome}
-            className="flex items-center gap-2 px-4 py-2 bg-brand/10 hover:bg-brand/15 text-brand rounded-xl font-bold text-xs uppercase tracking-wider transition-all"
+          </a>
+          <a
+            href="/"
+            onClick={(e) => handleLinkClick(e, onNavigateHome)}
+            className="flex items-center gap-2 px-4 py-2 bg-brand/10 hover:bg-brand/15 text-brand rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-center"
           >
             <ArrowLeft size={14} />
             Back to Home
-          </button>
+          </a>
         </div>
       </header>
 
@@ -86,36 +93,37 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({ type, onNavigateHome }) 
           <div className="pt-6 border-t border-border flex flex-wrap gap-4 items-center justify-between">
             <div className="flex gap-4 text-xs font-bold">
               {isPrivacy ? (
-                <button
-                  type="button"
-                  onClick={() => {
+                <a
+                  href="/terms"
+                  onClick={(e) => handleLinkClick(e, () => {
                     window.history.pushState({}, '', '/terms');
                     window.dispatchEvent(new PopStateEvent('popstate'));
-                  }}
+                  })}
                   className="hover:text-brand transition-colors text-text-muted/80 underline underline-offset-4"
                 >
                   View Terms of Service
-                </button>
+                </a>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => {
+                <a
+                  href="/privacy"
+                  onClick={(e) => handleLinkClick(e, () => {
                     window.history.pushState({}, '', '/privacy');
                     window.dispatchEvent(new PopStateEvent('popstate'));
-                  }}
+                  })}
                   className="hover:text-brand transition-colors text-text-muted/80 underline underline-offset-4"
                 >
                   View Privacy Policy
-                </button>
+                </a>
               )}
             </div>
 
-            <button
-              onClick={onNavigateHome}
-              className="px-6 py-3 bg-brand text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl hover:bg-brand/90 transition-all shadow-md shadow-brand/10 hover:shadow-brand/20"
+            <a
+              href="/"
+              onClick={(e) => handleLinkClick(e, onNavigateHome)}
+              className="px-6 py-3 bg-brand text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl hover:bg-brand/90 transition-all shadow-md shadow-brand/10 hover:shadow-brand/20 text-center"
             >
               Start Chatting Now
-            </button>
+            </a>
           </div>
         </motion.div>
       </main>

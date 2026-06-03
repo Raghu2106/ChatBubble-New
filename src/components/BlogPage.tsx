@@ -30,6 +30,12 @@ export const BlogPage: React.FC<BlogPageProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, callback: () => void) => {
+    if (e.metaKey || e.altKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    e.preventDefault();
+    callback();
+  };
+
   const activePost = BLOG_POSTS.find(p => p.slug === currentBlogSlug);
 
   useEffect(() => {
@@ -63,25 +69,27 @@ export const BlogPage: React.FC<BlogPageProps> = ({
       {/* Blog Sticky Header */}
       <header className="w-full py-6 border-b border-border bg-surface/50 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-6 flex items-center justify-between">
-          <div className="cursor-pointer" onClick={onNavigateHome}>
+          <a href="/" onClick={(e) => handleLinkClick(e, onNavigateHome)} className="cursor-pointer">
             <Logo size="md" />
-          </div>
+          </a>
           <div className="flex items-center gap-3">
             {currentBlogSlug && (
-              <button
-                onClick={() => onNavigateBlog(null)}
-                className="hidden sm:flex items-center gap-2 px-4 py-2 hover:bg-surface border border-transparent hover:border-border rounded-xl font-bold text-xs uppercase tracking-wider transition-all"
+              <a
+                href="/blog"
+                onClick={(e) => handleLinkClick(e, () => onNavigateBlog(null))}
+                className="hidden sm:flex items-center gap-2 px-4 py-2 hover:bg-surface border border-transparent hover:border-border rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-center"
               >
                 All Articles
-              </button>
+              </a>
             )}
-            <button
-              onClick={onNavigateHome}
-              className="flex items-center gap-2 px-4 py-2 bg-brand/10 hover:bg-brand/15 text-brand rounded-xl font-bold text-xs uppercase tracking-wider transition-all"
+            <a
+              href="/"
+              onClick={(e) => handleLinkClick(e, onNavigateHome)}
+              className="flex items-center gap-2 px-4 py-2 bg-brand/10 hover:bg-brand/15 text-brand rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-center"
             >
               <ArrowLeft size={14} />
               Back to Home
-            </button>
+            </a>
           </div>
         </div>
       </header>
@@ -104,14 +112,14 @@ export const BlogPage: React.FC<BlogPageProps> = ({
             <div className="lg:col-span-2 space-y-8">
               {/* Post Meta Header */}
               <div className="space-y-4">
-                <button
-                  type="button"
-                  onClick={() => onNavigateBlog(null)}
+                <a
+                  href="/blog"
+                  onClick={(e) => handleLinkClick(e, () => onNavigateBlog(null))}
                   className="inline-flex items-center gap-1.5 text-xs font-bold text-brand hover:underline"
                 >
                   <ArrowLeft size={12} />
                   Back to All Articles
-                </button>
+                </a>
 
                 <div className="flex flex-wrap items-center gap-3 text-xs font-bold text-brand uppercase tracking-wider">
                   <span className="px-2.5 py-1 bg-brand/10 rounded-lg">{activePost.category}</span>
@@ -185,19 +193,20 @@ export const BlogPage: React.FC<BlogPageProps> = ({
 
               {/* Navigation Footer Inside Article */}
               <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-border">
-                <button
-                  type="button"
-                  onClick={() => onNavigateBlog(null)}
-                  className="px-5 py-2.5 bg-surface border border-border hover:border-border/80 rounded-xl font-bold text-xs uppercase tracking-wider transition-all"
+                <a
+                  href="/blog"
+                  onClick={(e) => handleLinkClick(e, () => onNavigateBlog(null))}
+                  className="px-5 py-2.5 bg-surface border border-border hover:border-border/80 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-center"
                 >
                   View All Blog Articles
-                </button>
-                <button
-                  onClick={onNavigateHome}
-                  className="px-6 py-3 bg-brand text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl hover:bg-brand/90 transition-all shadow-md shadow-brand/10"
+                </a>
+                <a
+                  href="/"
+                  onClick={(e) => handleLinkClick(e, onNavigateHome)}
+                  className="px-6 py-3 bg-brand text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl hover:bg-brand/90 transition-all shadow-md shadow-brand/10 text-center"
                 >
                   Launch Anonymous Chat
-                </button>
+                </a>
               </div>
             </div>
 
@@ -214,12 +223,13 @@ export const BlogPage: React.FC<BlogPageProps> = ({
                   We match thousands of people globally without storing chat records. Experience instant connection safely, 
                   and discover perspectives from around the globe.
                 </p>
-                <button
-                  onClick={onNavigateHome}
-                  className="w-full py-2.5 bg-brand text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl hover:bg-brand/90 transition-all"
+                <a
+                  href="/"
+                  onClick={(e) => handleLinkClick(e, onNavigateHome)}
+                  className="w-full py-2.5 bg-brand text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl hover:bg-brand/90 transition-all text-center block"
                 >
                   Start Chatting Now
-                </button>
+                </a>
               </div>
 
               {/* Other Popular Articles */}
@@ -231,10 +241,10 @@ export const BlogPage: React.FC<BlogPageProps> = ({
                 
                 <div className="space-y-3">
                   {BLOG_POSTS.filter(p => p.slug !== currentBlogSlug).map((post, i) => (
-                    <button
+                    <a
                       key={i}
-                      type="button"
-                      onClick={() => onNavigateBlog(post.slug)}
+                      href={`/blog/${post.slug}`}
+                      onClick={(e) => handleLinkClick(e, () => onNavigateBlog(post.slug))}
                       className="w-full text-left p-3 hover:bg-bg/50 border border-transparent hover:border-border/50 rounded-2xl group transition-all space-y-1 block"
                     >
                       <span className="text-[10px] font-bold text-brand uppercase tracking-widest">{post.category}</span>
@@ -242,7 +252,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({
                         {post.title}
                       </h4>
                       <span className="text-[10px] text-text-muted/60">{post.readTime}</span>
-                    </button>
+                    </a>
                   ))}
                 </div>
               </div>
@@ -284,12 +294,13 @@ export const BlogPage: React.FC<BlogPageProps> = ({
             {filteredPosts.length > 0 ? (
               <div className="grid md:grid-cols-2 gap-6">
                 {filteredPosts.map((post, i) => (
-                  <motion.div
+                  <motion.a
                     key={i}
+                    href={`/blog/${post.slug}`}
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: i * 0.05 }}
-                    onClick={() => onNavigateBlog(post.slug)}
+                    onClick={(e) => handleLinkClick(e, () => onNavigateBlog(post.slug))}
                     className="group bg-surface border border-border p-6 rounded-[2rem] hover:shadow-premium transition-all duration-300 flex flex-col justify-between cursor-pointer relative overflow-hidden"
                   >
                     {/* Hover Glow Edge decoration */}
@@ -325,7 +336,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({
                         <ChevronRight size={12} />
                       </span>
                     </div>
-                  </motion.div>
+                  </motion.a>
                 ))}
               </div>
             ) : (

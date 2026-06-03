@@ -567,6 +567,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
             <a 
               href="/blog" 
               onClick={(e) => {
+                if (e.metaKey || e.altKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
                 e.preventDefault();
                 window.history.pushState({}, '', '/blog');
                 window.dispatchEvent(new PopStateEvent('popstate'));
@@ -578,6 +579,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
             <a 
               href="/privacy" 
               onClick={(e) => {
+                if (e.metaKey || e.altKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
                 e.preventDefault();
                 window.history.pushState({}, '', '/privacy');
                 window.dispatchEvent(new PopStateEvent('popstate'));
@@ -589,6 +591,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
             <a 
               href="/terms" 
               onClick={(e) => {
+                if (e.metaKey || e.altKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
                 e.preventDefault();
                 window.history.pushState({}, '', '/terms');
                 window.dispatchEvent(new PopStateEvent('popstate'));
