@@ -20,7 +20,7 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({ type, onNavigateHome }) 
   }, [type, isPrivacy]);
 
   return (
-    <div className="min-h-screen bg-bg text-text-muted flex flex-col selection:bg-brand/20 select-text">
+    <div className="h-screen overflow-y-auto bg-bg text-text-muted flex flex-col selection:bg-brand/20 select-text">
       {/* Policy Page Header */}
       <header className="w-full py-6 border-b border-border bg-surface/50 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-6 flex items-center justify-between">

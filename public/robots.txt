@@ -1,4 +1,9 @@
 User-agent: *
 Allow: /
+Allow: /privacy
+Allow: /terms
+Allow: /blog
+Allow: /blog/*
 
+# Sitemap pointer for Googlebot and other search engines
 Sitemap: https://chatbubble.fun/sitemap.xml

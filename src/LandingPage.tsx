@@ -565,6 +565,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
             <button onClick={() => setModalType('about')} className="hover:text-brand transition-colors">About</button>
             <button onClick={() => setModalType('contact')} className="hover:text-brand transition-colors">Support</button>
             <a 
+              href="/blog" 
+              onClick={(e) => {
+                e.preventDefault();
+                window.history.pushState({}, '', '/blog');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              }}
+              className="hover:text-brand transition-colors"
+            >
+              Blog
+            </a>
+            <a 
               href="/privacy" 
               onClick={(e) => {
                 e.preventDefault();

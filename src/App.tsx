@@ -13,6 +13,7 @@ import { Shield } from 'lucide-react';
 import { SessionTimeoutModal } from './components/SessionTimeoutModal';
 import { useDummyUsers } from './hooks/useDummyUsers';
 import { PolicyPage } from './components/PolicyPage';
+import { BlogPage } from './components/BlogPage';
 
 const AdminPanel = React.lazy(() => import('./AdminPanel').then(m => ({ default: m.AdminPanel })));
 
@@ -245,6 +246,20 @@ export default function App() {
 
   if (currentPath === '/terms') {
     return <PolicyPage type="terms" onNavigateHome={() => navigateTo('/')} />;
+  }
+
+  if (currentPath.startsWith('/blog')) {
+    const blogSlug = currentPath === '/blog' || currentPath === '/blog/' 
+      ? null 
+      : currentPath.split('/blog/')[1] || null;
+
+    return (
+      <BlogPage 
+        currentBlogSlug={blogSlug} 
+        onNavigateHome={() => navigateTo('/')} 
+        onNavigateBlog={(slug) => navigateTo(slug ? `/blog/${slug}` : '/blog')} 
+      />
+    );
   }
 
   if (isAdmin) {
