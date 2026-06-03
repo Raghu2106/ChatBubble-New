@@ -29,7 +29,9 @@ const DEFAULT_AD_KEYS: Record<string, string> = {
 
   'VITE_ADSTERRA_KEY_HEADER_320X50': 'b4f39cdd8d2c49287bc15b998684cb7e',
   'VITE_ADSTERRA_KEY_FOOTER_320X50': 'b4f39cdd8d2c49287bc15b998684cb7e',
-  'VITE_ADSTERRA_KEY_320X50': 'b4f39cdd8d2c49287bc15b998684cb7e'
+  'VITE_ADSTERRA_KEY_320X50': 'b4f39cdd8d2c49287bc15b998684cb7e',
+
+  'VITE_ADSTERRA_KEY_300X250': 'b4df80321991ad2e3e953641360223af'
 };
 
 const getAdDomain = (key: string): string => {
@@ -37,7 +39,8 @@ const getAdDomain = (key: string): string => {
   const cleanKey = key.trim().replace(/['";\s]/g, '');
   if (cleanKey === 'e09cae3901da8691e785bc3a6fb53b5f' || 
       cleanKey === '1792c7f73f1077081cad03590a1a650d' || 
-      cleanKey === 'b4f39cdd8d2c49287bc15b998684cb7e') {
+      cleanKey === 'b4f39cdd8d2c49287bc15b998684cb7e' ||
+      cleanKey === 'b4df80321991ad2e3e953641360223af') {
     return 'eternalwheeled.com';
   }
   const htmlLower = key.toLowerCase();

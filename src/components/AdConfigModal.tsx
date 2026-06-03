@@ -43,6 +43,12 @@ const KEYS_META = [
     label: 'Right Skyscraper (160x600)',
     desc: 'Vertical side banner displaying on the right screen rail of desktop devices.',
     placeholder: 'e.g. 9efbc9cd137af4bf3dbdf1ad124c81b8'
+  },
+  {
+    key: 'VITE_ADSTERRA_KEY_300X250',
+    label: 'Sidebar Box Ad (300x250)',
+    desc: 'Rectangular side discussion or details banner shown inside side columns.',
+    placeholder: 'e.g. b4df80321991ad2e3e953641360223af'
   }
 ];
 

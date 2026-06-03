@@ -319,52 +319,83 @@ export const BlogPage: React.FC<BlogPageProps> = ({
 
             {/* Articles Grid Listing */}
             {filteredPosts.length > 0 ? (
-              <div className="grid md:grid-cols-2 gap-6">
-                {filteredPosts.map((post, i) => (
-                  <motion.a
-                    key={i}
-                    href={`/blog/${post.slug}`}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2, delay: i * 0.05 }}
-                    onClick={(e) => handleLinkClick(e, () => onNavigateBlog(post.slug))}
-                    className="group bg-surface border border-border p-6 rounded-[2rem] hover:shadow-premium transition-all duration-300 flex flex-col justify-between cursor-pointer relative overflow-hidden"
-                  >
-                    {/* Hover Glow Edge decoration */}
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-brand/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none" />
+              <div className="grid lg:grid-cols-3 gap-8 items-start">
+                {/* Left Column: Articles List */}
+                <div className="lg:col-span-2 grid sm:grid-cols-2 gap-6">
+                  {filteredPosts.map((post, i) => (
+                    <motion.a
+                      key={i}
+                      href={`/blog/${post.slug}`}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2, delay: i * 0.05 }}
+                      onClick={(e) => handleLinkClick(e, () => onNavigateBlog(post.slug))}
+                      className="group bg-surface border border-border p-6 rounded-[2rem] hover:shadow-premium transition-all duration-300 flex flex-col justify-between cursor-pointer relative overflow-hidden"
+                    >
+                      {/* Hover Glow Edge decoration */}
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-brand/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none" />
 
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between text-[11px] font-bold text-brand uppercase tracking-wider">
-                        <span>{post.category}</span>
-                        <span className="flex items-center gap-1 text-text-muted/50">
-                          <Clock size={11} />
-                          {post.readTime}
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between text-[11px] font-bold text-brand uppercase tracking-wider">
+                          <span>{post.category}</span>
+                          <span className="flex items-center gap-1 text-text-muted/50">
+                            <Clock size={11} />
+                            {post.readTime}
+                          </span>
+                        </div>
+
+                        <div className="space-y-2">
+                          <h3 className="text-lg font-bold text-text leading-snug group-hover:text-brand transition-colors">
+                            {post.title}
+                          </h3>
+                          <p className="text-text-muted text-xs leading-relaxed font-semibold line-clamp-3">
+                            {post.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-4 mt-6 border-t border-border/60 text-xs text-text-muted/60">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar size={12} />
+                          <span>{post.date}</span>
+                        </div>
+
+                        <span className="flex items-center gap-1 font-bold text-brand group-hover:translate-x-1 transition-transform uppercase text-[10px] tracking-wider">
+                          Read Article
+                          <ChevronRight size={12} />
                         </span>
                       </div>
+                    </motion.a>
+                  ))}
+                </div>
 
-                      <div className="space-y-2">
-                        <h3 className="text-lg font-bold text-text leading-snug group-hover:text-brand transition-colors">
-                          {post.title}
-                        </h3>
-                        <p className="text-text-muted text-xs leading-relaxed font-semibold line-clamp-3">
-                          {post.description}
-                        </p>
-                      </div>
+                {/* Right Column: Sidebar Display Ad and Widgets */}
+                <div className="space-y-6">
+                  {/* Sidebar Display Ad Banner (300x250) */}
+                  <div className="flex flex-col items-center justify-center border border-border bg-surface p-4 rounded-[2rem] overflow-hidden shadow-sm">
+                    <span className="text-[9px] font-bold text-text-muted/40 uppercase tracking-widest mb-2">Advertisement</span>
+                    <AdUnit format="300x250" />
+                  </div>
+
+                  {/* Platform Protection Widget */}
+                  <div className="bg-gradient-to-br from-brand/5 to-indigo-500/5 border border-brand/20 p-6 rounded-[2rem] space-y-4">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-brand/10 text-brand rounded-full text-[10px] font-bold uppercase tracking-widest">
+                      <Shield size={12} />
+                      Safe Corridor
                     </div>
-
-                    <div className="flex items-center justify-between pt-4 mt-6 border-t border-border/60 text-xs text-text-muted/60">
-                      <div className="flex items-center gap-1.5">
-                        <Calendar size={12} />
-                        <span>{post.date}</span>
-                      </div>
-
-                      <span className="flex items-center gap-1 font-bold text-brand group-hover:translate-x-1 transition-transform uppercase text-[10px] tracking-wider">
-                        Read Article
-                        <ChevronRight size={12} />
-                      </span>
-                    </div>
-                  </motion.a>
-                ))}
+                    <h3 className="text-base font-bold text-text">Incognito Social Space</h3>
+                    <p className="text-xs leading-relaxed text-text-muted/90">
+                      Connect instantly with real users worldwide in our fully encrypted and temporary chat corridor. Read our safety guides to stay anonymous.
+                    </p>
+                    <a
+                      href="/"
+                      onClick={(e) => handleLinkClick(e, onNavigateHome)}
+                      className="w-full py-2.5 bg-brand text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl hover:bg-brand/90 text-center block transition-all"
+                    >
+                      Enter Lounge Chat
+                    </a>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="text-center py-16 bg-surface border border-border rounded-[2rem] space-y-4">
