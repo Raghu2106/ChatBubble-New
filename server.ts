@@ -492,13 +492,50 @@ async function startServer() {
   // --- Explicit Ads.txt and Robots.txt Routes ---
   // Ensuring these are always served correctly for crawlers
   app.get("/ads.txt", (req, res) => {
-    res.sendFile(path.join(process.cwd(), 'public', 'ads.txt'));
+    const paths = [
+      path.join(process.cwd(), 'public', 'ads.txt'),
+      path.join(process.cwd(), 'dist', 'ads.txt'),
+      path.join(process.cwd(), 'ads.txt'),
+    ];
+    for (const p of paths) {
+      if (fs.existsSync(p)) {
+        res.setHeader("Content-Type", "text/plain; charset=utf-8");
+        return res.sendFile(p);
+      }
+    }
+    res.status(404).send("ads.txt not found");
   });
+
   app.get("/robots.txt", (req, res) => {
-    res.sendFile(path.join(process.cwd(), 'public', 'robots.txt'));
+    const paths = [
+      path.join(process.cwd(), 'public', 'robots.txt'),
+      path.join(process.cwd(), 'dist', 'robots.txt'),
+      path.join(process.cwd(), 'robots.txt'),
+    ];
+    for (const p of paths) {
+      if (fs.existsSync(p)) {
+        res.setHeader("Content-Type", "text/plain; charset=utf-8");
+        return res.sendFile(p);
+      }
+    }
+    // Resilient fallback in case file-system is read-only or stripped
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.send("User-agent: *\nAllow: /\nAllow: /privacy\nAllow: /terms\nAllow: /blog\nAllow: /blog/*\n\nSitemap: https://chatbubble.fun/sitemap.xml");
   });
+
   app.get("/sitemap.xml", (req, res) => {
-    res.sendFile(path.join(process.cwd(), 'public', 'sitemap.xml'));
+    const paths = [
+      path.join(process.cwd(), 'public', 'sitemap.xml'),
+      path.join(process.cwd(), 'dist', 'sitemap.xml'),
+      path.join(process.cwd(), 'sitemap.xml'),
+    ];
+    for (const p of paths) {
+      if (fs.existsSync(p)) {
+        res.setHeader("Content-Type", "application/xml; charset=utf-8");
+        return res.sendFile(p);
+      }
+    }
+    res.status(404).send("sitemap.xml not found");
   });
 
   // --- Throttled Room Updates ---
@@ -1017,43 +1054,22 @@ async function startServer() {
     const renderSEOPage = (html: string, pathname: string): string => {
       const { title, description, canonicalUrl } = getMetaValuesForPath(pathname);
 
-      let newHtml = html.replace(/<title>.*?<\/title>/g, `<title>${title}</title>`);
+      let newHtml = html;
       
-      newHtml = newHtml.replace(
-        /<meta name="description" content=".*?" \/>/g,
-        `<meta name="description" content="${description}" />`
-      );
+      // Resilient case-insensitive multi-line replacements for title, description, canonical and other social tags
+      newHtml = newHtml.replace(/<title>[\s\S]*?<\/title>/gi, `<title>${title}</title>`);
+      
+      newHtml = newHtml.replace(/<meta\s+name=["']description["']\s+content="[\s\S]*?"\s*\/?>/gi, `<meta name="description" content="${description}" />`);
+      
+      newHtml = newHtml.replace(/<link\s+rel=["']canonical["']\s+href="[\s\S]*?"\s*\/?>/gi, `<link rel="canonical" href="${canonicalUrl}" />`);
 
-      newHtml = newHtml.replace(
-        /<link rel="canonical" href=".*?" \/>/g,
-        `<link rel="canonical" href="${canonicalUrl}" />`
-      );
+      newHtml = newHtml.replace(/<meta\s+property=["']og:title["']\s+content="[\s\S]*?"\s*\/?>/gi, `<meta property="og:title" content="${title}" />`);
+      newHtml = newHtml.replace(/<meta\s+property=["']og:description["']\s+content="[\s\S]*?"\s*\/?>/gi, `<meta property="og:description" content="${description}" />`);
+      newHtml = newHtml.replace(/<meta\s+property=["']og:url["']\s+content="[\s\S]*?"\s*\/?>/gi, `<meta property="og:url" content="${canonicalUrl}" />`);
 
-      newHtml = newHtml.replace(
-        /<meta property="og:title" content=".*?" \/>/g,
-        `<meta property="og:title" content="${title}" />`
-      );
-      newHtml = newHtml.replace(
-        /<meta property="og:description" content=".*?" \/>/g,
-        `<meta property="og:description" content="${description}" />`
-      );
-      newHtml = newHtml.replace(
-        /<meta property="og:url" content=".*?" \/>/g,
-        `<meta property="og:url" content="${canonicalUrl}" />`
-      );
-
-      newHtml = newHtml.replace(
-        /<meta property="twitter:title" content=".*?" \/>/g,
-        `<meta property="twitter:title" content="${title}" />`
-      );
-      newHtml = newHtml.replace(
-        /<meta property="twitter:description" content=".*?" \/>/g,
-        `<meta property="twitter:description" content="${description}" />`
-      );
-      newHtml = newHtml.replace(
-        /<meta property="twitter:url" content=".*?" \/>/g,
-        `<meta property="twitter:url" content="${canonicalUrl}" />`
-      );
+      newHtml = newHtml.replace(/<meta\s+property=["']twitter:title["']\s+content="[\s\S]*?"\s*\/?>/gi, `<meta property="twitter:title" content="${title}" />`);
+      newHtml = newHtml.replace(/<meta\s+property=["']twitter:description["']\s+content="[\s\S]*?"\s*\/?>/gi, `<meta property="twitter:description" content="${description}" />`);
+      newHtml = newHtml.replace(/<meta\s+property=["']twitter:url["']\s+content="[\s\S]*?"\s*\/?>/gi, `<meta property="twitter:url" content="${canonicalUrl}" />`);
 
       return newHtml;
     };
