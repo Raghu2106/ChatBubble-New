@@ -4,7 +4,9 @@ import https from "https";
 import { Server } from "socket.io";
 // Vite is imported dynamically in dev mode
 import path from "path";
+import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
+import { BLOG_POSTS } from "./src/constants/blogData";
 // Types duplicated from src/types.ts for backend consistency without runtime imports
 export type Gender = 'Male' | 'Female' | 'Other' | 'Non-binary' | 'Prefer not to say';
 
@@ -980,8 +982,99 @@ async function startServer() {
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+
+    const getMetaValuesForPath = (pathname: string) => {
+      const cleanPath = pathname.replace(/\/$/, ""); // strip trailing slash
+
+      let title = "ChatBubble | Free Chatrooms Without Registration";
+      let description = "ChatBubble offers premium free chatrooms without registration. Connect instantly and anonymously in secure public rooms or private one-on-one chats. The ultimate destination for chatting without signup.";
+      let canonicalUrl = `https://chatbubble.fun${cleanPath || "/"}`;
+
+      if (cleanPath === "/privacy") {
+        title = "Privacy Policy | ChatBubble Anonymous Chat Lounge";
+        description = "Read our full privacy policy. ChatBubble does not store your personal information, server chat logs, or IP directories permanently. Chat with absolute safety and peace of mind.";
+      } else if (cleanPath === "/terms") {
+        title = "Terms of Service | ChatBubble Chat Corridor Rules";
+        description = "Review our platform code of conduct and visitor rules. ChatBubble promotes safe, respectful, and friendly anonymous interactions for adults.";
+      } else if (cleanPath === "/blog") {
+        title = "Official ChatBubble Blog | Stranger Chat Safety & Communication Guides";
+        description = "Read helpful guides, safety tips, icebreakers, and tech tutorials from our editorial team on mastering free anonymous chatrooms safely.";
+      } else if (cleanPath.startsWith("/blog/")) {
+        const slug = cleanPath.split("/blog/")[1] || "";
+        const post = BLOG_POSTS.find(p => p.slug === slug);
+        if (post) {
+          title = `${post.title} | ChatBubble Editorial`;
+          description = post.description;
+        } else {
+          title = "Blog Article | ChatBubble Safety Lounge";
+          description = "Read safety protocols and messaging icebreakers on ChatBubble blog.";
+        }
+      }
+
+      return { title, description, canonicalUrl };
+    };
+
+    const renderSEOPage = (html: string, pathname: string): string => {
+      const { title, description, canonicalUrl } = getMetaValuesForPath(pathname);
+
+      let newHtml = html.replace(/<title>.*?<\/title>/g, `<title>${title}</title>`);
+      
+      newHtml = newHtml.replace(
+        /<meta name="description" content=".*?" \/>/g,
+        `<meta name="description" content="${description}" />`
+      );
+
+      newHtml = newHtml.replace(
+        /<link rel="canonical" href=".*?" \/>/g,
+        `<link rel="canonical" href="${canonicalUrl}" />`
+      );
+
+      newHtml = newHtml.replace(
+        /<meta property="og:title" content=".*?" \/>/g,
+        `<meta property="og:title" content="${title}" />`
+      );
+      newHtml = newHtml.replace(
+        /<meta property="og:description" content=".*?" \/>/g,
+        `<meta property="og:description" content="${description}" />`
+      );
+      newHtml = newHtml.replace(
+        /<meta property="og:url" content=".*?" \/>/g,
+        `<meta property="og:url" content="${canonicalUrl}" />`
+      );
+
+      newHtml = newHtml.replace(
+        /<meta property="twitter:title" content=".*?" \/>/g,
+        `<meta property="twitter:title" content="${title}" />`
+      );
+      newHtml = newHtml.replace(
+        /<meta property="twitter:description" content=".*?" \/>/g,
+        `<meta property="twitter:description" content="${description}" />`
+      );
+      newHtml = newHtml.replace(
+        /<meta property="twitter:url" content=".*?" \/>/g,
+        `<meta property="twitter:url" content="${canonicalUrl}" />`
+      );
+
+      return newHtml;
+    };
+
+    app.get('*', (req, res, next) => {
+      if (req.path.startsWith('/api') || req.path.includes('.')) {
+        return next();
+      }
+      const indexPath = path.join(distPath, 'index.html');
+      fs.readFile(indexPath, 'utf8', (err, html) => {
+        if (err) {
+          return res.sendFile(indexPath);
+        }
+        try {
+          const seoHtml = renderSEOPage(html, req.path);
+          res.setHeader('Content-Type', 'text/html');
+          res.send(seoHtml);
+        } catch (renderError) {
+          res.sendFile(indexPath);
+        }
+      });
     });
   }
 

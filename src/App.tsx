@@ -49,6 +49,14 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  useEffect(() => {
+    const link = document.querySelector("link[rel='canonical']");
+    if (link) {
+      const cleanPath = currentPath === '/' ? '/' : currentPath.replace(/\/$/, '');
+      link.setAttribute('href', `https://chatbubble.fun${cleanPath}`);
+    }
+  }, [currentPath]);
+
   const navigateTo = (path: string) => {
     window.history.pushState({}, '', path);
     setCurrentPath(path);
