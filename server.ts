@@ -489,7 +489,86 @@ async function startServer() {
     keepAwake();
   }
 
-  // --- Explicit Ads.txt and Robots.txt Routes ---
+  // --- Explicit Ads.txt, Robots.txt and Sitemap.xml Routes ---
+  // Guaranteed in-memory values as fail-safe fallback configs
+  const FALLBACK_ADS_TXT = "google.com, pub-9842476646609926, DIRECT, f08c47fec0942fa0\n";
+  
+  const FALLBACK_ROBOTS_TXT = "User-agent: *\nAllow: /\nAllow: /privacy\nAllow: /terms\nAllow: /blog\nAllow: /blog/*\n\nSitemap: https://chatbubble.fun/sitemap.xml\n";
+  
+  const FALLBACK_SITEMAP_XML = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Primary Core Corridor -->
+  <url>
+    <loc>https://chatbubble.fun/</loc>
+    <lastmod>2026-06-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Legal & Trust Compliance static URLs -->
+  <url>
+    <loc>https://chatbubble.fun/privacy</loc>
+    <lastmod>2026-06-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://chatbubble.fun/terms</loc>
+    <lastmod>2026-06-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Blog Index Hub -->
+  <url>
+    <loc>https://chatbubble.fun/blog</loc>
+    <lastmod>2026-06-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Deep-link Blog Post: Meaningful Conversations -->
+  <url>
+    <loc>https://chatbubble.fun/blog/how-to-have-meaningful-conversations</loc>
+    <lastmod>2026-06-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Deep-link Blog Post: Safety Tips -->
+  <url>
+    <loc>https://chatbubble.fun/blog/safety-tips-free-chatrooms</loc>
+    <lastmod>2026-06-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Deep-link Blog Post: Psychology of Connections -->
+  <url>
+    <loc>https://chatbubble.fun/blog/psychology-of-anonymous-connections</loc>
+    <lastmod>2026-06-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Deep-link Blog Post: Communication/Icebreakers Tips -->
+  <url>
+    <loc>https://chatbubble.fun/blog/art-of-digital-small-talk</loc>
+    <lastmod>2026-06-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Deep-link Blog Post: Ephemeral messaging tech/WebSockets -->
+  <url>
+    <loc>https://chatbubble.fun/blog/ephemeral-messaging-privacy</loc>
+    <lastmod>2026-06-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>
+`;
+
   // Ensuring these are always served correctly for crawlers
   app.get("/ads.txt", (req, res) => {
     const paths = [
@@ -503,7 +582,8 @@ async function startServer() {
         return res.sendFile(p);
       }
     }
-    res.status(404).send("ads.txt not found");
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.send(FALLBACK_ADS_TXT);
   });
 
   app.get("/robots.txt", (req, res) => {
@@ -518,9 +598,8 @@ async function startServer() {
         return res.sendFile(p);
       }
     }
-    // Resilient fallback in case file-system is read-only or stripped
     res.setHeader("Content-Type", "text/plain; charset=utf-8");
-    res.send("User-agent: *\nAllow: /\nAllow: /privacy\nAllow: /terms\nAllow: /blog\nAllow: /blog/*\n\nSitemap: https://chatbubble.fun/sitemap.xml");
+    res.send(FALLBACK_ROBOTS_TXT);
   });
 
   app.get("/sitemap.xml", (req, res) => {
@@ -535,7 +614,8 @@ async function startServer() {
         return res.sendFile(p);
       }
     }
-    res.status(404).send("sitemap.xml not found");
+    res.setHeader("Content-Type", "application/xml; charset=utf-8");
+    res.send(FALLBACK_SITEMAP_XML);
   });
 
   // --- Throttled Room Updates ---
