@@ -527,6 +527,14 @@ async function startServer() {
     <priority>0.9</priority>
   </url>
 
+  <!-- Deep-link Blog Post: Why People Open Up More in Anonymous Conversations -->
+  <url>
+    <loc>https://chatbubble.fun/blog/why-people-open-up-more-in-anonymous-conversations</loc>
+    <lastmod>2026-06-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- Deep-link Blog Post: Meaningful Conversations -->
   <url>
     <loc>https://chatbubble.fun/blog/how-to-have-meaningful-conversations</loc>
