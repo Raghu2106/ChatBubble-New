@@ -527,6 +527,14 @@ async function startServer() {
     <priority>0.9</priority>
   </url>
 
+  <!-- Deep-link Blog Post: Unfiltered Connection: The Global Evolution of Chatrooms Without Registration -->
+  <url>
+    <loc>https://chatbubble.fun/blog/unfiltered-connection-the-evolution-of-chatrooms-without-registration</loc>
+    <lastmod>2026-06-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- Deep-link Blog Post: Why People Open Up More in Anonymous Conversations -->
   <url>
     <loc>https://chatbubble.fun/blog/why-people-open-up-more-in-anonymous-conversations</loc>
