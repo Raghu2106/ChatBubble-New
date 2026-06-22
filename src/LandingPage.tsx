@@ -115,21 +115,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
               <div>
                 <h3 className="text-xl font-bold text-slate-900 mb-4">Chat Without Signup</h3>
                 <p className="text-sm text-slate-500 leading-relaxed mb-6">
-                  ChatBubble is built on the philosophy that social interaction should be friction-free. We provide **premium free chatrooms without registration**, allowing you to jump straight into conversations. No verification emails, no password management—just immediate human connection.
+                  ChatBubble is built on the philosophy that social interaction should be completely friction-free, natural, and instantaneous. We provide a premium suite of **free chatrooms without registration**, specifically engineered to allow users around the world to bypass typical web bottlenecks. By avoiding registration forms, security questions, or personal email verifications, you can jump directly into genuine digital encounters. This ephemeral approach lets you discover new cultures, share random thoughts, or find casual digital companions with absolute ease.
                 </p>
                 <h3 className="text-xl font-bold text-slate-900 mb-4">Secure & Anonymous</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">
-                  In an age of data tracking, we offer a refuge. Our **anonymous chat rooms** ensure your identity remains yours. We don't log your IP permanently, we don't store your message history on our servers, and we don't sell your data. Your privacy is our priority.
+                  In an era dominated by invasive tracking, commercial data profiling, and permanent social footprints, ChatBubble serves as a secure digital sanctuary. Our specialized **anonymous chat rooms** guarantee that your personal identifiers remain entirely confidential. We employ transient, in-memory architectures to run our routing tables: we do not write temporary conversations to disk, we do not record IP addresses on databases, and we enforce a zero-log policy. Your browser fingerprint stays isolated, and every active session dissolves the moment you exit.
                 </p>
               </div>
               <div>
                 <h3 className="text-xl font-bold text-slate-900 mb-4">Global Communities</h3>
                 <p className="text-sm text-slate-500 leading-relaxed mb-6">
-                  Whether you are looking for **chat rooms in India**, USA, or the UK, our localized hubs connect you with people from your region or around the globe. Our **General Lobby** is a melting pot of cultures, perfect for those who want to **talk to strangers** and learn about the world.
+                  Whether you are seeking custom **chat rooms in India**, connecting with friends in the United States, or engaging in dynamic group discussions across the United Kingdom, our network bridges geographical distances in milliseconds. The general lounge functions as a global town square where users from more than 150 countries exchange specialized views, practice foreign languages, and break down stereotypes. It is the ultimate digital environment to **talk to strangers** and experience authentic cultural dialogues.
                 </p>
                 <h3 className="text-xl font-bold text-slate-900 mb-4">Moderated Experience</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">
-                  While we value anonymity, we also value respect. ChatBubble features advanced automated moderation and dedicated community guides to keep the space safe from spam and harassment. It's a clean, inviting space for everyone.
+                  To ensure that ChatBubble remains a lighthearted, clean, and welcoming environment, we deploy state-of-the-art moderation logic inside our system corridors. Our servers leverage real-time keyword filters, automated spam detection daemons, and manual reporting mechanisms to filter out commercial advertisements, obscene behavior, and repetitive bot loops. This dual-layered verification system blocks unsolicited links and protects participants from harassment while fully preserving their personal anonymity.
                 </p>
               </div>
             </div>
@@ -137,15 +137,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
             <div className="mt-12 pt-12 border-t border-slate-100 grid sm:grid-cols-3 gap-8">
               <div className="bg-slate-50/50 p-6 rounded-2xl">
                 <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest mb-4">24/7 Availability</h4>
-                <p className="text-[12px] text-slate-400 leading-relaxed">Our servers are optimized for high performance, ensuring 99.9% uptime for our global community of thousands of active chatter.</p>
+                <p className="text-[12px] text-slate-500 leading-relaxed">Our backend nodes are strategically balanced across multiple Cloud Run instances, delivering 99.9% uptime uptime for our global community of thousands of active digital chatter. Enjoy zero-latency packet deliveries day or night.</p>
               </div>
               <div className="bg-slate-50/50 p-6 rounded-2xl">
                 <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest mb-4">Mobile Optimized</h4>
-                <p className="text-[12px] text-slate-400 leading-relaxed">Experience seamless chat on any device. Our responsive design ensures the best experience on smartphones, tablets, and desktops.</p>
+                <p className="text-[12px] text-slate-500 leading-relaxed">Experience fluid chats across any browser or device viewport. Our high-performance styling works beautifully on iOS, Android, and tablets, fully integrating safe layout safe areas and touch target sizes for seamless tap and swipe play.</p>
               </div>
               <div className="bg-slate-50/50 p-6 rounded-2xl">
                 <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest mb-4">Rich Features</h4>
-                <p className="text-[12px] text-slate-400 leading-relaxed">From private messaging and custom emojis to specialized interests, ChatBubble offers the features of a social network without the baggage.</p>
+                <p className="text-[12px] text-slate-500 leading-relaxed">We support active filters, direct interest matchmaking, real-time typing indicators, clean emojis, and instant session skipping. ChatBubble delivers all the capability of high-scale social platforms without the tracking or bloated scripts.</p>
               </div>
             </div>
           </section>
@@ -175,8 +175,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
               </div>
               <div>
                 <h3 className="text-2xl font-bold mb-2 tracking-tight text-slate-950">Anonymous Chat Rooms</h3>
-                <p className="text-slate-500 text-sm leading-relaxed font-medium">
-                  Join specialized lounges or general rooms. The perfect environment for group and private conversations.
+                <p className="text-slate-500 text-sm leading-relaxed font-semibold">
+                  Engage in specialized digital rooms and global chatter corridors. Connect based on shared interests or practice active listening with random stranger matches worldwide. Our infrastructure guarantees direct, low-latency client-to-client pipelines.
                 </p>
               </div>
             </motion.div>
@@ -192,8 +192,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
               </div>
               <div>
                 <h3 className="text-2xl font-bold mb-2 tracking-tight">Instant No Signup Chat</h3>
-                <p className="text-white/80 text-sm leading-relaxed font-medium">
-                  Zero lag. Zero waiting. No login required to start a **private chat** with strangers safely.
+                <p className="text-white/80 text-sm leading-relaxed font-semibold">
+                  Experience immediate random matchmaking with zero wait times. By avoiding registration walls, we keep all socket interactions completely private, making it exceptionally safe to connect and talk to strangers instantly under state-of-the-art secure standards.
                 </p>
               </div>
             </motion.div>
@@ -267,57 +267,53 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
             <div className="grid md:grid-cols-2 gap-6 relative z-10">
               {activeTab === 'safety' && (
                 <>
-                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between text-left">
                     <div>
                       <div className="inline-flex items-center justify-center p-3 bg-red-50 text-red-600 rounded-xl mb-4">
                         <AlertTriangle size={18} />
                       </div>
-                      <h3 className="text-base font-bold text-slate-900 mb-2">Protect Personal Details</h3>
-                      <p className="text-xs text-slate-500 leading-relaxed">
-                        Never share identifiers such as your exact physical location, phone contacts, official email, 
-                        or private handles (Instagram, Snapchat, Discord) right away. Safe chatting involves maintaining absolute anonymity until trust is built.
+                      <h3 className="text-base font-bold text-slate-900 mb-2">Protect Personal Identifiers</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                        Never share highly specific identifiers such as your exact physical coordinates, workplace or school names, personal phone contacts, official email handles, or active visual profiles (such as private Instagram, Snapchat, or Discord handles) right away. Safe chatting is anchored on maintaining absolute anonymity until deep, reciprocal trust is systematically established. Guarding your background descriptors protects you from phishing scams and off-site cyberstalking.
                       </p>
                     </div>
                     <span className="text-[10px] text-red-500 font-bold tracking-widest mt-4 uppercase">MINIMAL REVEAL PRINCIPLE</span>
                   </div>
 
-                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between text-left">
                     <div>
                       <div className="inline-flex items-center justify-center p-3 bg-indigo-50 text-indigo-600 rounded-xl mb-4">
                         <Shield size={18} />
                       </div>
                       <h3 className="text-base font-bold text-slate-900 mb-2">Detect External Link Scams</h3>
-                      <p className="text-xs text-slate-500 leading-relaxed">
-                        Be suspicious of interlocutors typing short-links or pushing third-party download invitations, 
-                        profile checking tools, or spam boards. Safe web chats always run locally in your primary window.
+                      <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                        Strictly avoid clicking or copying unverified URLs, shortened links, or invitations to join third-party platforms, download customized plugins, or register for off-site communities. Malicious actors frequently attempt to lure chat participants into external web spaces to bypass ChatBubble's filter systems. All safe, authentic stranger chat sessions originate and run locally within this isolated browser window.
                       </p>
                     </div>
                     <span className="text-[10px] text-brand font-bold tracking-widest mt-4 uppercase">SAFE INTERFACES ZONE</span>
                   </div>
 
-                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between text-left">
                     <div>
                       <div className="inline-flex items-center justify-center p-3 bg-amber-50 text-amber-600 rounded-xl mb-4">
                         <AlertTriangle size={18} />
                       </div>
-                      <h3 className="text-base font-bold text-slate-900 mb-2">Financial Security Habits</h3>
-                      <p className="text-xs text-slate-500 leading-relaxed">
-                        Fraudulent players often construct stories about immediate emergencies to solicit funds, gift cards, 
-                        or cryptocurrency payments. ChatBubble will never request billing transactions or verification feeds during your free session.
+                      <h3 className="text-base font-bold text-slate-900 mb-2">Maintain Absolute Financial Security</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                        Be highly skeptical of any room participant who begins constructing highly emotional narratives, emergency scenarios, or business investment schemes designed to solicit cash transfers, digital gift cards, or cryptocurrency payments. ChatBubble is an entirely free social environment; we never request billing transactions, bank deposits, or identity verification fees to continue your chatter play.
                       </p>
                     </div>
                     <span className="text-[10px] text-amber-600 font-bold tracking-widest mt-4 uppercase">FINANCIAL SHIELD</span>
                   </div>
 
-                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between text-left">
                     <div>
                       <div className="inline-flex items-center justify-center p-3 bg-teal-50 text-teal-600 rounded-xl mb-4">
                         <Shield size={18} />
                       </div>
-                      <h3 className="text-base font-bold text-slate-900 mb-2">Clean-Exit Protocol</h3>
-                      <p className="text-xs text-slate-500 leading-relaxed">
-                        You hold absolute control over your environment. If a participant makes you feel uncomfortable, chooses offensive topics, 
-                        or behaves inappropriately, simply click the 'Next' button or skip the room immediately to reset your pool.
+                      <h3 className="text-base font-bold text-slate-900 mb-2">Master the Clean-Exit Protocol</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                        You hold total control over your digital window. If a partner begins utilizing inappropriate language, steers the dialogue toward offensive topics, or violates web communication boundaries, simply click the 'Next' button or leave the chat lobby entirely. There is zero obligation to remain in a conversation that makes you feel uncomfortable, and skipping instantly repositions you in a clean queue.
                       </p>
                     </div>
                     <span className="text-[10px] text-teal-600 font-bold tracking-widest mt-4 uppercase">USER EMPOWERMENT</span>
@@ -327,57 +323,53 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
 
               {activeTab === 'etiquette' && (
                 <>
-                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between text-left">
                     <div>
                       <div className="inline-flex items-center justify-center p-3 bg-purple-50 text-purple-600 rounded-xl mb-4">
                         <Heart size={18} />
                       </div>
-                      <h3 className="text-base font-bold text-slate-900 mb-2">Empathy & Respect Online</h3>
-                      <p className="text-xs text-slate-500 leading-relaxed">
-                        Anonymity is a powerful privilege that is best combined with genuine human respect. Always approach your stranger counterpart 
-                        with patient greetings and positive, constructive intent to ensure a pleasant connection.
+                      <h3 className="text-base font-bold text-slate-900 mb-2">Practice Empathy & Respect</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                        Anonymity is a powerful privilege that is most rewarding when paired with basic human respect. Always approach your chat counterpart with polite greeting hooks and welcoming, constructive questions. Treat each interaction as an opportunity to discover unique worldviews, keeping the online atmosphere friendly, intellectual, and thoroughly safe.
                       </p>
                     </div>
                     <span className="text-[10px] text-purple-600 font-bold tracking-widest mt-4 uppercase">MATURE PARTICIPATION</span>
                   </div>
 
-                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between text-left">
                     <div>
                       <div className="inline-flex items-center justify-center p-3 bg-rose-50 text-rose-600 rounded-xl mb-4">
                         <AlertTriangle size={18} />
                       </div>
                       <h3 className="text-base font-bold text-slate-900 mb-2 font-sans">Zero Tolerance for Abuse</h3>
-                      <p className="text-xs text-slate-500 leading-relaxed">
-                        Hate speech, obscene slurs, sexual harassment, and discriminatory behavior are strictly prohibited in lobby screens. 
-                        We run automatic filters to review, flag, and ban offending IP addresses to keep ChatBubble inviting for everyone.
+                      <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                        Hate speech, explicit slurs, sexual harassment, or discriminatory remarks regarding any geopolitical background, culture, gender, or belief system are strictly banned on our servers. Our filters actively inspect room texts, and reporting is immediate. We enforce rigid IP bans against policy violators to ensure the platform remains secure and inviting.
                       </p>
                     </div>
                     <span className="text-[10px] text-rose-600 font-bold tracking-widest mt-4 uppercase">MODERATION CODE</span>
                   </div>
 
-                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between text-left">
                     <div>
                       <div className="inline-flex items-center justify-center p-3 bg-sky-50 text-sky-600 rounded-xl mb-4">
                         <MessageSquare size={18} />
                       </div>
-                      <h3 className="text-base font-bold text-slate-900 mb-2">No Spam or Promotional Copy</h3>
-                      <p className="text-xs text-slate-500 leading-relaxed">
-                        Bulking up threads with repetitive advertisements, affiliate referrals, or promotional links triggers immediate ban limits. 
-                        ChatBubble is built for organic interpersonal conversations—not commercial spamming routines.
+                      <h3 className="text-base font-bold text-slate-900 mb-2">Keep Chats Non-commercial</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                        Flooding the corridors with repetitive advertising copies, affiliate marketing schemes, or random promo URLs triggers immediate automated disconnection. ChatBubble is exclusively designed for organic, peer-to-peer conversations, human-to-human. Keeping the community free from spam ensures higher exchange quality for true users.
                       </p>
                     </div>
                     <span className="text-[10px] text-sky-600 font-bold tracking-widest mt-4 uppercase">ANTI-BOT LAWS</span>
                   </div>
 
-                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between text-left">
                     <div>
                       <div className="inline-flex items-center justify-center p-3 bg-emerald-50 text-emerald-600 rounded-xl mb-4">
                         <Users size={18} />
                       </div>
-                      <h3 className="text-base font-bold text-slate-900 mb-2">Cultural Inclusivity</h3>
-                      <p className="text-xs text-slate-500 leading-relaxed">
-                        With active channels matching USA, UK, India, and European networks, you will interact with global cultures. 
-                        Embrace international perspectives, maintain curiosity, and discover fascinating worldviews.
+                      <h3 className="text-base font-bold text-slate-900 mb-2">Cultivate Intercultural Openness</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                        With designated matching channels encompassing networks from the United States, Europe, India, and other global regions, you will regularly encounter diverse lifestyles and cultural paradigms. Embrace these moments to gain rich global wisdom, remain genuinely curious, and learn how people across different time zones navigate their daily challenges.
                       </p>
                     </div>
                     <span className="text-[10px] text-emerald-600 font-bold tracking-widest mt-4 uppercase">GLOBAL COMMERCE</span>
@@ -387,57 +379,53 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
 
               {activeTab === 'tips' && (
                 <>
-                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between text-left">
                     <div>
                       <div className="inline-flex items-center justify-center p-3 bg-yellow-50 text-yellow-600 rounded-xl mb-4">
                         <Sparkles size={18} />
                       </div>
-                      <h3 className="text-base font-bold text-slate-900 mb-2">Brilliant Icebreaker Ideas</h3>
-                      <p className="text-xs text-slate-500 leading-relaxed">
-                        Feeling tongue-tied? Start dynamic chats with open-minded entries. Try asking: "If you could immediately master any skill 
-                        overnight, what would it be?" or "What is your absolute favorite comfort food or movie selection?"
+                      <h3 className="text-base font-bold text-slate-900 mb-2">Deploy Inspiring Warm-Ups</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                        Bypass the classic, dull ASL routine and start chat rooms with a creative question. Try asking: "If you could master any specialized skill over the course of one night, what would you choose?" or "What film or book completely altered how you view daily life?" Inspiring intros double your partner's staying time.
                       </p>
                     </div>
                     <span className="text-[10px] text-yellow-600 font-bold tracking-widest mt-4 uppercase">ICEBREAKING HANDBOOK</span>
                   </div>
 
-                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between text-left">
                     <div>
                       <div className="inline-flex items-center justify-center p-3 bg-red-50 text-red-500 rounded-xl mb-4">
                         <MessageSquare size={18} />
                       </div>
-                      <h3 className="text-base font-bold text-slate-900 mb-2">The Active Listening Strategy</h3>
-                      <p className="text-xs text-slate-500 leading-relaxed">
-                        Online dialogue is highly rewarding when both participants listen. Prompt follow-up answers and build on their responses. 
-                        It reveals interest, encourages the partner, and keeps the conversation flowing naturally.
+                      <h3 className="text-base font-bold text-slate-900 mb-2">Practice True Active Listening</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                        A great digital dialogue is highly symmetrical and mutual. Avoid waiting for your turn to type a story; instead, pay close attention to your partner's sentences. Ask relevant, open-ended follow-up questions to demonstrate active interest, which encourages deeper sharing and makes the interaction memorable.
                       </p>
                     </div>
                     <span className="text-[10px] text-red-500 font-bold tracking-widest mt-4 uppercase">FLOW METRICS</span>
                   </div>
 
-                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between text-left">
                     <div>
                       <div className="inline-flex items-center justify-center p-3 bg-teal-50 text-teal-600 rounded-xl mb-4">
                         <Sparkles size={18} />
                       </div>
-                      <h3 className="text-base font-bold text-slate-900 mb-2">Share Positive Vibrations</h3>
-                      <p className="text-xs text-slate-500 leading-relaxed">
-                        A friendly initial tone is contagious. Share stories about your hobbies, favorite pet animals, coding paths, 
-                        or weekend adventures. Optimistic, lighthearted framing makes users want to stay in your room longer.
+                      <h3 className="text-base font-bold text-slate-900 mb-2">Radiate Lighthearted Optimism</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                        Optimism is incredibly infectious in a chat lobby. Discuss your hobbies, favorite pet animals, coding projects, cooking recipes, or latest outdoor travels. Structuring your conversations with positive, lighthearted framing draws people in and naturally filters out hostile exchanges.
                       </p>
                     </div>
                     <span className="text-[10px] text-teal-600 font-bold tracking-widest mt-4 uppercase">ATMOSPHERE DECREES</span>
                   </div>
 
-                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between text-left">
                     <div>
                       <div className="inline-flex items-center justify-center p-3 bg-violet-50 text-violet-600 rounded-xl mb-4">
                         <Users size={18} />
                       </div>
-                      <h3 className="text-base font-bold text-slate-900 mb-2">Respecting the Skip Command</h3>
-                      <p className="text-xs text-slate-500 leading-relaxed">
-                        Stranger chats are transient. If someone chooses to press next and skip the session, do not take it personally. 
-                        Embrace the rhythm, preserve a peaceful mindset, and welcome the next interesting person with high energy.
+                      <h3 className="text-base font-bold text-slate-900 mb-2">Gracefully Accept the Next Button</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                        Anonymous chat sessions are fundamentally transient. If someone chooses to click 'Next' and skip your room, support their choice without taking it personally. Some users are searching for specific interest tags. Maintain a calm, positive mindset and warmly greet the next matched person.
                       </p>
                     </div>
                     <span className="text-[10px] text-violet-600 font-bold tracking-widest mt-4 uppercase">DETACHMENT GUIDE</span>
@@ -456,31 +444,31 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
               {[
                 {
                   q: "Is ChatBubble 100% free anonymous chat?",
-                  a: "Yes, our anonymous chat is completely free for everyone. There are no registration forms, credit card requirements, or hidden charges. You can join localized lobby corridors and talk to strangers instantly without creating an account or providing email verification feeds."
+                  a: "Yes, our anonymous chat is completely free for everyone. There are no registration forms, subscription tiers, premium locks, or hidden charges of any kind. You can join specialized global corridors, localized matchmaking rooms, and talk to strangers instantly without creating an account or providing email verification feeds. Our goal is to keep authentic, organic online chat accessible to any digital citizen with an active browser connection."
                 },
                 {
                   q: "How does the platform secure my browser safety and privacy?",
-                  a: "We minimize data collection strictly. ChatBubble does not record your IP address on durable database disks, nor do we store persistent chat history on physical servers. All conversations are handled through dynamic, in-memory WebSockets that vanish once the chat room pair is skipped or closed."
+                  a: "We minimize data collection structurally and by design. ChatBubble does not record your IP address on durable database disks, nor do we store persistent chat history on physical servers. All messages are transmitted live using standard in-memory WebSockets that vanish from RAM the moment a chat room pair is skipped or closed. By avoiding permanent digital footprints, our users are protected from identity correlation and security leaks."
                 },
                 {
                   q: "Can I choose chat rooms by region, like India, USA, or Europe?",
-                  a: "Yes! Our matching model pairs you up randomly from global pools or helps align conversations with local chatter in areas like India, the United States, United Kingdom, and Western Europe. This gives you a seamless combination of global cultures and localized dialogue."
+                  a: "Yes! Our intelligent matching protocols allow you to connect randomly with users worldwide or align with localized chat rooms in major regions like India, the United States, United Kingdom, and Europe. This geographic flexibility provides a perfect blend of learning about diverse world cultures, practicing foreign languages, and engaging in regional, high-relevance dialogues in a smooth, high-speed interface."
                 },
                 {
                   q: "How does the real-time moderation engine handle bad players?",
-                  a: "We deploy active, real-time keyword filters and dynamic block models. If a participant presents spam links, abusive tags, or harasses you, click the reporting triggers in the chat panel. This lets our automated moderation queue audit the user's connection and apply temporary or permanent IP bans."
+                  a: "We deploy multi-layered automated keyword filters, spam-pattern detectors, and a simple peer reporting tool. If a participant presents commercial spam, explicit solicitations, or abusive speech, simply click the reporting triggers in the chat panel. This instantly alerts our automated moderation daemons to evaluate the connection metrics and enforce swift, programmatic IP bans against policy-violating clients."
                 },
                 {
                   q: "Why does ChatBubble not support video streaming or image uploads?",
-                  a: "To maximize participant protection and comply with safe-web policies, we intentionally restrict chats to pure, lightweight text and secure interactions. This prevents the distribution of explicit uploads, malware packages, or unsolicited media, creating a warm and comfortable environment for our chatters."
+                  a: "To maximize user safety, preserve browser bandwidth, and comply with strict clean-web policies, we intentionally keep our chat lobbies restricted to lightweight text interactions. This fully eliminates the risk of receiving malicious media file uploads, explicit visuals, or automated screen captures, maintaining a friendly, low-anxiety, and exceptionally cozy environment for all chatters."
                 },
                 {
                   q: "Do I need to install any custom extension to run ChatBubble?",
-                  a: "Not at all. ChatBubble is built with modern, light-footprint Web standards that run seamlessly across Chrome, Safari, Firefox, Edge, and iOS/Android mobile screens. It operates instantly inside your browser without adding bloated scripts or background tracking extensions."
+                  a: "Not at all. ChatBubble is built on open modern web standards that run natively across all updated versions of Chrome, Safari, Firefox, Edge, and mobile operating system browsers. There is zero bloat, zero background trackers, and no requirement to download separate plug-ins, files, or custom extensions. Your session starts instantly and cleanly with a simple button tap."
                 },
                 {
                   q: "Why does this platform show banner advertisements?",
-                  a: "To keep our dedicated WebSocket servers running at zero latency without charging any subscription premium fees, we embed clean, authorized advertising units (such as Adsterra and AdSense). These units are configured in compliance with publisher guidelines to support server infrastructure costs."
+                  a: "Operating thousands of simultaneous, zero-latency WebSockets globally requires significant high-end server resource allocations. To keep the service entirely free and performant without subscription walls, we partner with premium, clean advertising providers (including Google AdSense). These third-party ad blocks are integrated carefully to ensure they do not disrupt the chat interface or conflict with user safety."
                 }
               ].map((item, idx) => (
                 <div key={idx} className="flex flex-col gap-2">
