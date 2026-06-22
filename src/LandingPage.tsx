@@ -12,12 +12,37 @@ import {
   ContactUsContent 
 } from './constants/policyContent';
 
+import { Gender } from './types';
+import { ChatInterface } from './ChatInterface';
+import { EntryScreen } from './EntryScreen';
+
 interface LandingPageProps {
   onStart: () => void;
   totalUsers?: number;
+  step: 'landing' | 'entry' | 'chat';
+  setStep: (step: 'landing' | 'entry' | 'chat') => void;
+  user: any;
+  onExit: () => void;
+  error?: string | null;
+  setError: (err: string | null) => void;
+  dummyUsers: any[];
+  isRegistering?: boolean;
+  handleJoin: (nickname: string, gender: Gender, interests: string[]) => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 0 }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ 
+  onStart, 
+  totalUsers = 0,
+  step,
+  setStep,
+  user,
+  onExit,
+  error,
+  setError,
+  dummyUsers,
+  isRegistering = false,
+  handleJoin,
+}) => {
   const [modalType, setModalType] = useState<'privacy' | 'terms' | 'about' | 'contact' | 'ads' | null>(null);
   const [activeTab, setActiveTab] = useState<'safety' | 'etiquette' | 'tips'>('safety');
 
@@ -45,66 +70,94 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
         </div>
 
         {/* Center Content Container */}
-        <div className="flex-1 max-w-5xl flex flex-col items-center relative overflow-x-hidden min-w-0">
+        <div className={`flex-1 ${step === 'chat' && user ? 'max-w-[1350px]' : 'max-w-5xl'} flex flex-col items-center relative overflow-x-hidden min-w-0 transition-all duration-300`}>
           {/* Decorative Elements */}
           <div className="absolute top-0 right-0 w-1/2 h-screen bg-brand/5 -skew-x-12 translate-x-1/3 pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-1/3 h-1/2 bg-brand/5 skew-x-12 -translate-x-1/4 pointer-events-none" />
 
           {/* Main Content */}
           <div className="flex-1 flex flex-col items-center justify-center px-6 pt-16 pb-12 w-full relative z-10">
-        <div className="text-center max-w-5xl mb-12">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <div className="flex flex-col items-center gap-4 mb-8">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand/10 text-brand rounded-full border border-brand/5 transform hover:scale-105 transition-transform cursor-default">
-                <span className="w-2 h-2 bg-brand rounded-full animate-pulse" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Real-time anonymous chat</span>
-              </div>
-              
-              {totalUsers > 0 && (
-                <div className="flex items-center gap-2 px-3 py-1 bg-slate-900/5 rounded-lg border border-slate-900/5">
-                  <Users size={14} className="text-slate-400" />
-                  <span className="text-xs font-black text-slate-600 tracking-tight">
-                    <span className="text-brand tabular-nums">{formattedUserCount}</span> USERS ONLINE
-                  </span>
-                </div>
-              )}
-            </div>
+            {step === 'chat' && user ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.98, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="w-full max-w-[1350px] h-[650px] md:h-[620px] bg-white border border-slate-200/80 rounded-[2.5rem] shadow-2xl overflow-hidden mb-12 flex flex-col relative z-25"
+              >
+                <ChatInterface 
+                  user={user} 
+                  onExit={onExit} 
+                  error={error} 
+                  setError={setError} 
+                  dummyUsers={dummyUsers}
+                  isRegistering={isRegistering}
+                  isEmbedded={true}
+                />
+              </motion.div>
+            ) : (
+              <div className="text-center max-w-5xl mb-12 select-none">
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <div className="flex flex-col items-center gap-4 mb-8">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand/10 text-brand rounded-full border border-brand/5 transform hover:scale-105 transition-transform cursor-default">
+                      <span className="w-2 h-2 bg-brand rounded-full animate-pulse" />
+                      <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Real-time anonymous chat</span>
+                    </div>
+                    
+                    {totalUsers > 0 && (
+                      <div className="flex items-center gap-2 px-3 py-1 bg-slate-900/5 rounded-lg border border-slate-900/5">
+                        <Users size={14} className="text-slate-400" />
+                        <span className="text-xs font-black text-slate-600 tracking-tight">
+                          <span className="text-brand tabular-nums">{formattedUserCount}</span> USERS ONLINE
+                        </span>
+                      </div>
+                    )}
+                  </div>
 
-            <h1 className="text-4xl md:text-7xl font-bold mb-6 tracking-tighter leading-[0.95] font-display text-slate-950">
-              Connections <br />
-              <span className="text-brand">Simplified.</span>
-            </h1>
-            
-            <p className="text-base md:text-xl text-slate-500 max-w-xl mx-auto leading-relaxed font-medium mb-10">
-              Talk to anyone, anywhere, instantly. 
-              An anonymous social experience built for authentic conversations.
-            </p>
-          </motion.div>
+                  <h1 className="text-4xl md:text-7xl font-bold mb-6 tracking-tighter leading-[0.95] font-display text-slate-950">
+                    Connections <br />
+                    <span className="text-brand">Simplified.</span>
+                  </h1>
+                  
+                  <p className="text-base md:text-xl text-slate-500 max-w-xl mx-auto leading-relaxed font-medium mb-10">
+                    Talk to anyone, anywhere, instantly. 
+                    An anonymous social experience built for authentic conversations.
+                  </p>
+                </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.8 }}
-            className="flex flex-col items-center gap-6"
-          >
-            <button 
-              onClick={onStart}
-              className="group relative px-10 py-5 bg-slate-950 text-white rounded-full font-bold text-lg shadow-2xl hover:shadow-brand/20 hover:bg-brand transition-all flex items-center gap-4 active:scale-95"
-            >
-              Start Chatting
-              <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center group-hover:translate-x-1 transition-transform">
-                <MessageCircle size={18} />
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4, duration: 0.8 }}
+                  className="flex flex-col items-center gap-6"
+                >
+                  <button 
+                    onClick={onStart}
+                    className="group relative px-10 py-5 bg-slate-950 text-white rounded-full font-bold text-lg shadow-2xl hover:shadow-brand/20 hover:bg-brand transition-all flex items-center gap-4 active:scale-95"
+                  >
+                    Start Chatting
+                    <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                      <MessageCircle size={18} />
+                    </div>
+                  </button>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <Shield size={12} /> Encrypted & Private
+                  </p>
+                </motion.div>
               </div>
-            </button>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-              <Shield size={12} /> Encrypted & Private
-            </p>
-          </motion.div>
-        </div>
+            )}
+
+            {step === 'entry' && (
+              <EntryScreen 
+                onJoin={handleJoin} 
+                onClose={() => setStep('landing')} 
+                error={error} 
+                loading={user?.id === 'pending'}
+              />
+            )}
 
         {/* Feature Grid - REORGANIZED FOR SYMMETRY */}
         <div className="flex flex-col gap-4 w-full max-w-5xl px-4">

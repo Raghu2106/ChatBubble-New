@@ -292,40 +292,29 @@ export default function App() {
       <div className="flex flex-1 relative overflow-hidden">
         {/* MAIN CONTENT AREA */}
         <main className="flex-1 relative overflow-hidden flex flex-col">
-          {step === 'chat' && user ? (
-            <div className="flex-1 overflow-hidden flex flex-col">
-              <div className="flex-1 overflow-hidden">
-                <ChatInterface 
-                  user={user} 
-                  onExit={handleExit} 
-                  error={error} 
-                  setError={setError} 
-                  dummyUsers={dummyUsers}
-                  isRegistering={isRegistering}
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="flex-1 overflow-y-auto min-h-0 h-full">
-              {disconnectReason && (
-                <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] animate-in fade-in slide-in-from-top-4">
-                  <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-6 py-3 rounded-2xl flex items-center gap-3 backdrop-blur-md shadow-xl">
-                    <Shield size={20} />
-                    <span className="font-bold text-sm uppercase tracking-wider">{disconnectReason}</span>
-                  </div>
+          <div className="flex-1 overflow-y-auto min-h-0 h-full">
+            {disconnectReason && (
+              <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] animate-in fade-in slide-in-from-top-4">
+                <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-6 py-3 rounded-2xl flex items-center gap-3 backdrop-blur-md shadow-xl">
+                  <Shield size={20} />
+                  <span className="font-bold text-sm uppercase tracking-wider">{disconnectReason}</span>
                 </div>
-              )}
-              <LandingPage onStart={() => setStep('entry')} totalUsers={totalUsers} />
-              {step === 'entry' && (
-                <EntryScreen 
-                  onJoin={handleJoin} 
-                  onClose={() => setStep('landing')} 
-                  error={error} 
-                  loading={user?.id === 'pending'}
-                />
-              )}
-            </div>
-          )}
+              </div>
+            )}
+            <LandingPage 
+              onStart={() => setStep('entry')} 
+              totalUsers={totalUsers}
+              step={step}
+              setStep={setStep}
+              user={user}
+              onExit={handleExit}
+              error={error}
+              setError={setError}
+              dummyUsers={dummyUsers}
+              isRegistering={isRegistering}
+              handleJoin={handleJoin}
+            />
+          </div>
         </main>
       </div>
 

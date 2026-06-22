@@ -25,6 +25,7 @@ interface ChatInterfaceProps {
   setError: (err: string | null) => void;
   dummyUsers: DummyUser[];
   isRegistering?: boolean;
+  isEmbedded?: boolean;
 }
 
 type Tab = 'Rooms' | 'Messages' | 'People';
@@ -37,7 +38,7 @@ const CATEGORIES = [
 ];
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ 
-  user, onExit, error, setError, dummyUsers, isRegistering 
+  user, onExit, error, setError, dummyUsers, isRegistering, isEmbedded = false
 }) => {
   const [activeTab, setActiveTab] = useState<Tab>('Rooms');
   const [currentRoom, setCurrentRoom] = useState<string>('lobby');
@@ -426,14 +427,16 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   return (
     <div className="h-full flex flex-col bg-bg text-text overflow-hidden font-sans">
       {/* Top Page Header Ad Banner */}
-      <div className="w-full flex-shrink-0 flex justify-center py-2 bg-white border-b border-slate-100 relative z-30">
-        <div className="hidden md:block">
-          <AdUnit format="728x90" position="header" />
+      {!isEmbedded && (
+        <div className="w-full flex-shrink-0 flex justify-center py-2 bg-white border-b border-slate-100 relative z-30">
+          <div className="hidden md:block">
+            <AdUnit format="728x90" position="header" />
+          </div>
+          <div className="block md:hidden">
+            <AdUnit format="320x50" position="header" />
+          </div>
         </div>
-        <div className="block md:hidden">
-          <AdUnit format="320x50" position="header" />
-        </div>
-      </div>
+      )}
 
       <header className="h-12 flex-shrink-0 flex items-center justify-between px-4 bg-white border-b border-slate-100 sticky top-0 z-40">
         <div className="flex items-center gap-3">
@@ -489,9 +492,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       <div className="flex-1 flex flex-row overflow-hidden relative pb-16 md:pb-0">
         
         {/* Left Skyscraper - Desktop Only */}
-        <div className="hidden xl:flex flex-shrink-0 w-[180px] p-2 items-center justify-center relative z-25 select-none bg-slate-50/50 border-r border-slate-100">
-          <AdUnit format="160x600" position="left" className="rounded-2xl" />
-        </div>
+        {!isEmbedded && (
+          <div className="hidden xl:flex flex-shrink-0 w-[180px] p-2 items-center justify-center relative z-25 select-none bg-slate-50/50 border-r border-slate-100">
+            <AdUnit format="160x600" position="left" className="rounded-2xl" />
+          </div>
+        )}
 
         {/* Core Chat Box Section */}
         <div className="flex-1 flex overflow-hidden lg:pl-3 lg:py-3 gap-3 relative">
@@ -1227,9 +1232,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       </div> {/* End of Core Chat Box Section */}
 
       {/* Right Skyscraper - Desktop Only */}
-      <div className="hidden xl:flex flex-shrink-0 w-[180px] p-2 items-center justify-center relative z-25 select-none bg-slate-50/50 border-l border-slate-100">
-        <AdUnit format="160x600" position="right" className="rounded-2xl" />
-      </div>
+      {!isEmbedded && (
+        <div className="hidden xl:flex flex-shrink-0 w-[180px] p-2 items-center justify-center relative z-25 select-none bg-slate-50/50 border-l border-slate-100">
+          <AdUnit format="160x600" position="right" className="rounded-2xl" />
+        </div>
+      )}
 
     </div> {/* End of MAIN CONTENT AREA WITH SIDEBAR SKYSCRAPERS */}
 
