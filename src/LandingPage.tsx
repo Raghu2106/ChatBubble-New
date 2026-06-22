@@ -160,55 +160,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
             </div>
           </div>
 
-          {/* New Footer Section for SEO */}
-          <footer className="mt-12 pt-12 border-t border-slate-100 text-slate-400 pb-12">
-            <div className="grid md:grid-cols-4 gap-12 mb-12">
-              <div className="col-span-2">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400 to-teal-400 flex items-center justify-center">
-                    <MessageSquare size={16} className="text-white" />
-                  </div>
-                  <span className="text-xl font-black text-slate-900 tracking-tighter">ChatBubble</span>
-                </div>
-                <p className="text-xs leading-relaxed max-w-sm mb-6">
-                  ChatBubble is a premier anonymous social platform offering free chat rooms without registration. Our goal is to provide a safe, secure, and instant way to talk to strangers globally.
-                </p>
-                <div className="flex gap-4">
-                  <span className="text-[10px] uppercase font-bold tracking-widest px-3 py-1 bg-slate-100 rounded-full">Secure</span>
-                  <span className="text-[10px] uppercase font-bold tracking-widest px-3 py-1 bg-slate-100 rounded-full">Global</span>
-                  <span className="text-[10px] uppercase font-bold tracking-widest px-3 py-1 bg-slate-100 rounded-full">Private</span>
-                </div>
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-slate-900 mb-6">Popular Rooms</h4>
-                <ul className="space-y-3 text-[12px]">
-                  <li>General Lobby</li>
-                  <li>USA / UK Lounge</li>
-                  <li>India Chat Room</li>
-                  <li>Tech & Gaming</li>
-                  <li>Music & Arts</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-slate-900 mb-6">Platform</h4>
-                <ul className="space-y-3 text-[12px]">
-                  <li className="cursor-pointer hover:text-slate-900 transition-colors" onClick={() => setModalType('terms')}>Terms of Service</li>
-                  <li className="cursor-pointer hover:text-slate-900 transition-colors" onClick={() => setModalType('privacy')}>Privacy Policy</li>
-                  <li>Safety Center</li>
-                  <li>Contact Support</li>
-                  <li>Sitemap</li>
-                </ul>
-              </div>
-            </div>
-            
-            <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-8 border-t border-slate-50">
-              <p className="text-[10px] font-medium tracking-wide">© 2026 CHATBUBBLE.ALL RIGHTS RESERVED.</p>
-              <div className="flex gap-8 text-[10px] font-bold uppercase tracking-widest">
-                <span>Made for Connection</span>
-                <span>Hosted in the Cloud</span>
-              </div>
-            </div>
-          </footer>
+
 
           {/* Symmetrical Feature Row */}
           <div className="grid md:grid-cols-2 gap-4">
@@ -557,53 +509,92 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, totalUsers = 
       </div>
 
       {/* Footer */}
-      <footer className="w-full py-8 border-t border-border bg-surface/50 backdrop-blur-md relative z-10">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-          <Logo size="md" />
+      <footer className="w-full py-12 border-t border-slate-200 bg-white text-slate-800 relative z-10 font-sans">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8 pb-8 border-b border-slate-100">
+            <div className="md:col-span-2 space-y-4">
+              <Logo size="md" />
+              <p className="text-xs text-slate-500 leading-relaxed max-w-sm">
+                ChatBubble is a premier anonymous social platform offering immediate, free stranger chats without registration. Experience private, safe communication tunnels designed for authentic interactions in 2026.
+              </p>
+              <div className="flex flex-wrap gap-2 pt-1 font-mono text-[9px] uppercase tracking-wider">
+                <span className="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-lg">Encrypted & Private</span>
+                <span className="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-lg">No Registration</span>
+                <span className="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-lg">Global Match</span>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest">Popular Rooms</h4>
+              <ul className="space-y-2 text-xs text-slate-500 font-medium">
+                <li><span className="hover:text-brand cursor-default">General Corridor</span></li>
+                <li><span className="hover:text-brand cursor-default">Global Stranger Lobby</span></li>
+                <li><span className="hover:text-brand cursor-default">India Chat Lounge</span></li>
+                <li><span className="hover:text-brand cursor-default">Interactive Arts & Tech</span></li>
+              </ul>
+            </div>
 
-          <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-4 text-[13px] font-bold text-text-muted">
-            <button onClick={() => setModalType('about')} className="hover:text-brand transition-colors">About</button>
-            <button onClick={() => setModalType('contact')} className="hover:text-brand transition-colors">Support</button>
-            <a 
-              href="/blog" 
-              onClick={(e) => {
-                if (e.metaKey || e.altKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
-                e.preventDefault();
-                window.history.pushState({}, '', '/blog');
-                window.dispatchEvent(new PopStateEvent('popstate'));
-              }}
-              className="hover:text-brand transition-colors"
-            >
-              Blog
-            </a>
-            <a 
-              href="/privacy" 
-              onClick={(e) => {
-                if (e.metaKey || e.altKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
-                e.preventDefault();
-                window.history.pushState({}, '', '/privacy');
-                window.dispatchEvent(new PopStateEvent('popstate'));
-              }}
-              className="hover:text-brand transition-colors"
-            >
-              Privacy
-            </a>
-            <a 
-              href="/terms" 
-              onClick={(e) => {
-                if (e.metaKey || e.altKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
-                e.preventDefault();
-                window.history.pushState({}, '', '/terms');
-                window.dispatchEvent(new PopStateEvent('popstate'));
-              }}
-              className="hover:text-brand transition-colors"
-            >
-              Terms
-            </a>
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest">Legal & Support</h4>
+              <ul className="space-y-2 text-xs text-slate-500 font-bold">
+                <li>
+                  <button onClick={() => setModalType('about')} className="hover:text-brand transition-colors text-left uppercase text-[10px] tracking-wider text-slate-600">About Us</button>
+                </li>
+                <li>
+                  <button onClick={() => setModalType('contact')} className="hover:text-brand transition-colors text-left uppercase text-[10px] tracking-wider text-slate-600">Contact & Support</button>
+                </li>
+                <li>
+                  <a 
+                    href="/blog" 
+                    onClick={(e) => {
+                      if (e.metaKey || e.altKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+                      e.preventDefault();
+                      window.history.pushState({}, '', '/blog');
+                      window.dispatchEvent(new PopStateEvent('popstate'));
+                    }}
+                    className="hover:text-brand transition-colors block uppercase text-[10px] tracking-wider text-slate-600"
+                  >
+                    Blog
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="/privacy" 
+                    onClick={(e) => {
+                      if (e.metaKey || e.altKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+                      e.preventDefault();
+                      window.history.pushState({}, '', '/privacy');
+                      window.dispatchEvent(new PopStateEvent('popstate'));
+                    }}
+                    className="hover:text-brand transition-colors block uppercase text-[10px] tracking-wider text-slate-600"
+                  >
+                    Privacy Policy
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="/terms" 
+                    onClick={(e) => {
+                      if (e.metaKey || e.altKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+                      e.preventDefault();
+                      window.history.pushState({}, '', '/terms');
+                      window.dispatchEvent(new PopStateEvent('popstate'));
+                    }}
+                    className="hover:text-brand transition-colors block uppercase text-[10px] tracking-wider text-slate-600"
+                  >
+                    Terms of Service
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
 
-          <div className="text-[12px] text-text-muted/60 font-medium whitespace-nowrap">
-            © {new Date().getFullYear()} ChatBubble. All rights reserved.
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-400 font-medium pt-2">
+            <p>© {new Date().getFullYear()} CHATBUBBLE Anonymous Communications. ALL RIGHTS RESERVED.</p>
+            <div className="flex gap-6 uppercase text-[10px] tracking-widest font-bold text-slate-400/80">
+              <span>Made for Connection</span>
+              <span>Secure WebSocket Core</span>
+            </div>
           </div>
         </div>
       </footer>
