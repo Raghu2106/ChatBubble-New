@@ -1,5 +1,5 @@
 import express from "express";
-import { createServer } from "http";
+import http, { createServer } from "http";
 import https from "https";
 import { Server } from "socket.io";
 // Vite is imported dynamically in dev mode
@@ -471,16 +471,23 @@ async function startServer() {
   });
 
   // --- Self-Ping Logic for Render (Keep service awake) ---
-  const SELF_URL = "https://chatbubble.fun"; 
+  const SELF_URL = process.env.RENDER_EXTERNAL_URL || process.env.APP_URL || process.env.SELF_URL || "https://chatbubble.fun"; 
   const PING_INTERVAL = 14 * 60 * 1000; // 14 minutes
 
   function keepAwake() {
+    console.log(`Self-pinging service initialized. Target URL: ${SELF_URL}`);
     setInterval(() => {
-      https.get(`${SELF_URL}/api/ping`, (res) => {
-        console.log(`Self-ping successful: ${res.statusCode}`);
-      }).on("error", (err) => {
-        console.error(`Self-ping failed: ${err.message}`);
-      });
+      try {
+        const pingUrl = `${SELF_URL.replace(/\/$/, "")}/api/ping`;
+        const client = pingUrl.startsWith("https") ? https : http;
+        client.get(pingUrl, (res) => {
+          console.log(`Self-ping of ${SELF_URL} successful: ${res.statusCode}`);
+        }).on("error", (err) => {
+          console.error(`Self-ping of ${SELF_URL} failed: ${err.message}`);
+        });
+      } catch (e: any) {
+        console.error(`Self-ping of ${SELF_URL} threw an exception: ${e.message}`);
+      }
     }, PING_INTERVAL);
   }
 
