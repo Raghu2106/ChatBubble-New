@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Users, MessageSquare, Globe, User, MoreVertical, Menu,
-  Send, ShieldAlert, DoorOpen, Bell, BellOff, RefreshCw,
+  Send, ShieldAlert, LogOut, Bell, BellOff, RefreshCw,
   Lock, Search, Plus, ChevronDown, Music, Code, Zap,
   Moon, Hash, Shield, ChevronRight, Mars, Venus, X,
   Smile
@@ -468,9 +468,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
           <button 
             onClick={onExit}
             className="group flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 bg-slate-900 hover:bg-red-600 border border-slate-800 hover:border-red-500 text-white rounded-lg transition-all font-bold text-[10px] uppercase tracking-wider shadow-lg shadow-slate-900/10"
+            title="Logout"
           >
-            <DoorOpen size={16} />
-            <span className="hidden sm:inline">Exit App</span>
+            <LogOut size={16} />
+            <span className="hidden sm:inline">Logout</span>
           </button>
         </div>
       </header>
