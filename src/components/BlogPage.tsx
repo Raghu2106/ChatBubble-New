@@ -16,7 +16,6 @@ import {
 } from 'lucide-react';
 import { Logo } from './Logo';
 import { BLOG_POSTS, BlogPost } from '../constants/blogData';
-import { AdUnit } from './AdUnit';
 
 interface BlogPageProps {
   currentBlogSlug: string | null;
@@ -67,16 +66,6 @@ export const BlogPage: React.FC<BlogPageProps> = ({
 
   return (
     <div className="h-screen overflow-y-auto bg-bg text-text-muted flex flex-col selection:bg-brand/20 select-text">
-      {/* Top Page Header Ad Banner */}
-      <div className="w-full flex-shrink-0 flex justify-center py-2 bg-surface/50 border-b border-border relative z-30">
-        <div className="hidden md:block">
-          <AdUnit format="728x90" position="header" />
-        </div>
-        <div className="block md:hidden">
-          <AdUnit format="320x50" position="header" />
-        </div>
-      </div>
-
       {/* Blog Sticky Header */}
       <header className="w-full py-6 border-b border-border bg-surface/50 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-6 flex items-center justify-between">
@@ -105,14 +94,8 @@ export const BlogPage: React.FC<BlogPageProps> = ({
         </div>
       </header>
 
-      {/* Main Wrapper with Left & Right Skyscrapers */}
+      {/* Main Wrapper */}
       <div className="flex-1 flex flex-row relative w-full justify-center">
-        
-        {/* Left Skyscraper - Desktop Only */}
-        <div className="hidden xl:flex flex-shrink-0 w-[180px] p-4 pt-16 items-start justify-center relative z-20 sticky top-12 h-[calc(100vh-48px)] self-start select-none">
-          <AdUnit format="160x600" position="left" className="rounded-2xl" />
-        </div>
-
         {/* Center Content Container */}
         <div className="flex-1 max-w-5xl flex flex-col items-center relative overflow-x-hidden min-w-0 w-full">
           
@@ -234,11 +217,6 @@ export const BlogPage: React.FC<BlogPageProps> = ({
 
             {/* Right Column: Interactive Sidebar Panel */}
             <div className="space-y-6">
-              {/* Sidebar Display Ad Banner */}
-              <div className="flex justify-center border border-border bg-surface p-4 rounded-3xl overflow-hidden shadow-sm">
-                <AdUnit format="300x250" />
-              </div>
-
               {/* Platform Info Widget */}
               <div className="bg-gradient-to-br from-brand/5 to-indigo-500/5 border border-brand/20 p-6 rounded-3xl space-y-4">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-brand/10 text-brand rounded-full text-[10px] font-bold uppercase tracking-widest">
@@ -371,12 +349,6 @@ export const BlogPage: React.FC<BlogPageProps> = ({
 
                 {/* Right Column: Sidebar Display Ad and Widgets */}
                 <div className="space-y-6">
-                  {/* Sidebar Display Ad Banner (300x250) */}
-                  <div className="flex flex-col items-center justify-center border border-border bg-surface p-4 rounded-[2rem] overflow-hidden shadow-sm">
-                    <span className="text-[9px] font-bold text-text-muted/40 uppercase tracking-widest mb-2">Advertisement</span>
-                    <AdUnit format="300x250" />
-                  </div>
-
                   {/* Platform Protection Widget */}
                   <div className="bg-gradient-to-br from-brand/5 to-indigo-500/5 border border-brand/20 p-6 rounded-[2rem] space-y-4">
                     <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-brand/10 text-brand rounded-full text-[10px] font-bold uppercase tracking-widest">
@@ -417,16 +389,6 @@ export const BlogPage: React.FC<BlogPageProps> = ({
         )}
       </main>
 
-          {/* Bottom Footer Ad Banner */}
-          <div className="w-full max-w-5xl px-6 mb-8 mt-4 flex items-center justify-center relative z-10 flex-shrink-0">
-            <div className="hidden md:block">
-              <AdUnit format="728x90" position="footer" />
-            </div>
-            <div className="block md:hidden">
-              <AdUnit format="320x50" position="footer" />
-            </div>
-          </div>
-
           {/* Blog Screen Footer */}
           <footer className="w-full py-8 border-t border-border bg-surface/20">
             <div className="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-text-muted/50 font-medium">
@@ -441,13 +403,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({
           </footer>
 
         </div> {/* End of Center Content Container */}
-
-        {/* Right Skyscraper - Desktop Only */}
-        <div className="hidden xl:flex flex-shrink-0 w-[180px] p-4 pt-16 items-start justify-center relative z-20 sticky top-12 h-[calc(100vh-48px)] self-start select-none">
-          <AdUnit format="160x600" position="right" className="rounded-2xl" />
-        </div>
-
-      </div> {/* End of Main Wrapper with Left & Right Skyscrapers */}
+      </div> {/* End of Main Wrapper */}
 
     </div>
   );

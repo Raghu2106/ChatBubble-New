@@ -3,8 +3,6 @@ import { motion } from 'motion/react';
 import { Users, MessageCircle, Shield, Zap, MessageSquare, BookOpen, Sparkles, HelpCircle, Heart, AlertTriangle } from 'lucide-react';
 import { PolicyModal } from './components/PolicyModal';
 import { Logo } from './components/Logo';
-import { AdUnit } from './components/AdUnit';
-import { AdConfigModal } from './components/AdConfigModal';
 import { 
   PrivacyPolicyContent, 
   TermsOfServiceContent, 
@@ -43,7 +41,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   isRegistering = false,
   handleJoin,
 }) => {
-  const [modalType, setModalType] = useState<'privacy' | 'terms' | 'about' | 'contact' | 'ads' | null>(null);
+  const [modalType, setModalType] = useState<'privacy' | 'terms' | 'about' | 'contact' | null>(null);
   const [activeTab, setActiveTab] = useState<'safety' | 'etiquette' | 'tips'>('safety');
 
   // Format totalUsers with comma if it's a large number
@@ -51,24 +49,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
   return (
     <div className="min-h-screen bg-[#fafafa] text-slate-900 flex flex-col font-sans relative">
-      {/* Top Page Header Ad Banner */}
-      <div className="w-full flex-shrink-0 flex justify-center py-2 bg-white border-b border-slate-100 relative z-30">
-        <div className="hidden md:block">
-          <AdUnit format="728x90" position="header" />
-        </div>
-        <div className="block md:hidden">
-          <AdUnit format="320x50" position="header" />
-        </div>
-      </div>
-
-      {/* Main Wrapper with Left & Right Skyscrapers */}
+      {/* Main Wrapper */}
       <div className="flex-1 flex flex-row relative w-full justify-center">
-        
-        {/* Left Skyscraper - Desktop Only */}
-        <div className="hidden xl:flex flex-shrink-0 w-[180px] p-4 pt-16 items-start justify-center relative z-20 sticky top-12 h-[calc(100vh-48px)] self-start select-none">
-          <AdUnit format="160x600" position="left" className="rounded-2xl" />
-        </div>
-
         {/* Center Content Container */}
         <div className={`flex-1 ${step === 'chat' && user ? 'max-w-[1350px]' : 'max-w-5xl'} flex flex-col items-center relative overflow-x-hidden min-w-0 transition-all duration-300`}>
           {/* Decorative Elements */}
@@ -202,18 +184,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </div>
             </div>
           </section>
-
-          {/* Responsive Horizontal Ad Banner - SEO Footer Area */}
-          <div className="w-full max-w-5xl my-6 flex items-center justify-center relative z-10 flex-shrink-0">
-            <div className="hidden md:block">
-              <AdUnit format="728x90" position="footer" />
-            </div>
-            <div className="block md:hidden">
-              <AdUnit format="320x50" position="footer" />
-            </div>
-          </div>
-
-
 
           {/* Symmetrical Feature Row */}
           <div className="grid md:grid-cols-2 gap-4">
@@ -539,16 +509,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
       </div>
 
-      {/* Responsive Horizontal Ad Banner - Bottom Footer Area */}
-      <div className="w-full max-w-5xl px-6 mb-8 mt-12 flex items-center justify-center relative z-10 flex-shrink-0">
-        <div className="hidden md:block">
-          <AdUnit format="728x90" position="footer" />
-        </div>
-        <div className="block md:hidden">
-          <AdUnit format="320x50" position="footer" />
-        </div>
-      </div>
-
       {/* Footer */}
       <footer className="w-full py-12 border-t border-slate-200 bg-white text-slate-800 relative z-10 font-sans">
         <div className="max-w-6xl mx-auto px-6">
@@ -641,13 +601,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </footer>
 
         </div> {/* End of Center Content Container */}
-
-        {/* Right Skyscraper - Desktop Only */}
-        <div className="hidden xl:flex flex-shrink-0 w-[180px] p-4 pt-16 items-start justify-center relative z-20 sticky top-12 h-[calc(100vh-48px)] self-start select-none">
-          <AdUnit format="160x600" position="right" className="rounded-2xl" />
-        </div>
-
-      </div> {/* End of Main Wrapper with Left & Right Skyscrapers */}
+      </div> {/* End of Main Wrapper */}
 
       <PolicyModal 
         isOpen={modalType === 'about'} 
@@ -664,11 +618,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       >
         <ContactUsContent />
       </PolicyModal>
-
-      <AdConfigModal 
-        isOpen={modalType === 'ads'} 
-        onClose={() => setModalType(null)} 
-      />
     </div>
   );
 };
