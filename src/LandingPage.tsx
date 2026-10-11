@@ -86,7 +86,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <div className="flex flex-col items-center gap-4 mb-8">
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand/10 text-brand rounded-full border border-brand/5 transform hover:scale-105 transition-transform cursor-default">
                       <span className="w-2 h-2 bg-brand rounded-full animate-pulse" />
-                      <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Real-time anonymous chat</span>
+                      <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Real-time instant chat</span>
                     </div>
                     
                     {totalUsers > 0 && (
@@ -106,7 +106,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   
                   <p className="text-base md:text-xl text-slate-500 max-w-xl mx-auto leading-relaxed font-medium mb-10">
                     Talk to anyone, anywhere, instantly. 
-                    An anonymous social experience built for authentic conversations.
+                    A private social experience built for authentic conversations.
                   </p>
                 </motion.div>
 
@@ -152,9 +152,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <p className="text-sm text-slate-500 leading-relaxed mb-6">
                   ChatBubble is built on the philosophy that social interaction should be completely friction-free, natural, and instantaneous. We provide a premium suite of **free chatrooms without registration**, specifically engineered to allow users around the world to bypass typical web bottlenecks. By avoiding registration forms, security questions, or personal email verifications, you can jump directly into genuine digital encounters. This ephemeral approach lets you discover new cultures, share random thoughts, or find casual digital companions with absolute ease.
                 </p>
-                <h3 className="text-xl font-bold text-slate-900 mb-4">Secure & Anonymous</h3>
+                <h3 className="text-xl font-bold text-slate-900 mb-4">Secure & Private</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">
-                  In an era dominated by invasive tracking, commercial data profiling, and permanent social footprints, ChatBubble serves as a secure digital sanctuary. Our specialized **anonymous chat rooms** guarantee that your personal identifiers remain entirely confidential. We employ transient, in-memory architectures to run our routing tables: we do not write temporary conversations to disk, we do not record IP addresses on databases, and we enforce a zero-log policy. Your browser fingerprint stays isolated, and every active session dissolves the moment you exit.
+                  In an era dominated by invasive tracking, commercial data profiling, and permanent social footprints, ChatBubble serves as a secure digital sanctuary. Our specialized **private chat rooms** guarantee that your personal identifiers remain entirely confidential. We employ transient, in-memory architectures to run our routing tables: we do not write temporary conversations to disk, we do not record IP addresses on databases, and we enforce a zero-log policy. Your browser fingerprint stays isolated, and every active session dissolves the moment you exit.
                 </p>
               </div>
               <div>
@@ -164,7 +164,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </p>
                 <h3 className="text-xl font-bold text-slate-900 mb-4">Moderated Experience</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">
-                  To ensure that ChatBubble remains a lighthearted, clean, and welcoming environment, we deploy state-of-the-art moderation logic inside our system corridors. Our servers leverage real-time keyword filters, automated spam detection daemons, and manual reporting mechanisms to filter out commercial advertisements, obscene behavior, and repetitive bot loops. This dual-layered verification system blocks unsolicited links and protects participants from harassment while fully preserving their personal anonymity.
+                  To ensure that ChatBubble remains a lighthearted, clean, and welcoming environment, we deploy state-of-the-art moderation logic inside our system corridors. Our servers leverage real-time keyword filters, automated spam detection daemons, and manual reporting mechanisms to filter out commercial advertisements, obscene behavior, and repetitive bot loops. This dual-layered verification system blocks unsolicited links and protects participants from harassment while fully preserving their personal privacy.
                 </p>
               </div>
             </div>
@@ -197,7 +197,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <Users size={24} />
               </div>
               <div>
-                <h3 className="text-2xl font-bold mb-2 tracking-tight text-slate-950">Anonymous Chat Rooms</h3>
+                <h3 className="text-2xl font-bold mb-2 tracking-tight text-slate-950">Public & Private Rooms</h3>
                 <p className="text-slate-500 text-sm leading-relaxed font-semibold">
                   Engage in specialized digital rooms and global chatter corridors. Connect based on shared interests or practice active listening with random stranger matches worldwide. Our infrastructure guarantees direct, low-latency client-to-client pipelines.
                 </p>
@@ -297,7 +297,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       </div>
                       <h3 className="text-base font-bold text-slate-900 mb-2">Protect Personal Identifiers</h3>
                       <p className="text-xs text-slate-500 leading-relaxed font-semibold">
-                        Never share highly specific identifiers such as your exact physical coordinates, workplace or school names, personal phone contacts, official email handles, or active visual profiles (such as private Instagram, Snapchat, or Discord handles) right away. Safe chatting is anchored on maintaining absolute anonymity until deep, reciprocal trust is systematically established. Guarding your background descriptors protects you from phishing scams and off-site cyberstalking.
+                        Never share highly specific identifiers such as your exact physical coordinates, workplace or school names, personal phone contacts, official email handles, or active visual profiles (such as private Instagram, Snapchat, or Discord handles) right away. Safe chatting is anchored on keeping personal details private until deep, reciprocal trust is systematically established. Guarding your background descriptors protects you from phishing scams and off-site cyberstalking.
                       </p>
                     </div>
                     <span className="text-[10px] text-red-500 font-bold tracking-widest mt-4 uppercase">MINIMAL REVEAL PRINCIPLE</span>
@@ -353,7 +353,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       </div>
                       <h3 className="text-base font-bold text-slate-900 mb-2">Practice Empathy & Respect</h3>
                       <p className="text-xs text-slate-500 leading-relaxed font-semibold">
-                        Anonymity is a powerful privilege that is most rewarding when paired with basic human respect. Always approach your chat counterpart with polite greeting hooks and welcoming, constructive questions. Treat each interaction as an opportunity to discover unique worldviews, keeping the online atmosphere friendly, intellectual, and thoroughly safe.
+                        Private conversation is a powerful privilege that is most rewarding when paired with basic human respect. Always approach your chat counterpart with polite greeting hooks and welcoming, constructive questions. Treat each interaction as an opportunity to discover unique worldviews, keeping the online atmosphere friendly, intellectual, and thoroughly safe.
                       </p>
                     </div>
                     <span className="text-[10px] text-purple-600 font-bold tracking-widest mt-4 uppercase">MATURE PARTICIPATION</span>
@@ -448,7 +448,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       </div>
                       <h3 className="text-base font-bold text-slate-900 mb-2">Gracefully Accept the Next Button</h3>
                       <p className="text-xs text-slate-500 leading-relaxed font-semibold">
-                        Anonymous chat sessions are fundamentally transient. If someone chooses to click 'Next' and skip your room, support their choice without taking it personally. Some users are searching for specific interest tags. Maintain a calm, positive mindset and warmly greet the next matched person.
+                        Guest chat sessions are fundamentally transient. If someone chooses to click 'Next' and skip your room, support their choice without taking it personally. Some users are searching for specific interest tags. Maintain a calm, positive mindset and warmly greet the next matched person.
                       </p>
                     </div>
                     <span className="text-[10px] text-violet-600 font-bold tracking-widest mt-4 uppercase">DETACHMENT GUIDE</span>
@@ -466,8 +466,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <div className="grid md:grid-cols-2 gap-x-12 gap-y-10">
               {[
                 {
-                  q: "Is ChatBubble 100% free anonymous chat?",
-                  a: "Yes, our anonymous chat is completely free for everyone. There are no registration forms, subscription tiers, premium locks, or hidden charges of any kind. You can join specialized global corridors, localized matchmaking rooms, and talk to strangers instantly without creating an account or providing email verification feeds. Our goal is to keep authentic, organic online chat accessible to any digital citizen with an active browser connection."
+                  q: "Is ChatBubble 100% free to use without registration?",
+                  a: "Yes, our instant chat is completely free for everyone. There are no registration forms, subscription tiers, premium locks, or hidden charges of any kind. You can join specialized global corridors, localized matchmaking rooms, and talk to strangers instantly without creating an account or providing email verification feeds. Our goal is to keep authentic, organic online chat accessible to any digital citizen with an active browser connection."
                 },
                 {
                   q: "How does the platform secure my browser safety and privacy?",
@@ -516,7 +516,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <div className="md:col-span-2 space-y-4">
               <Logo size="md" />
               <p className="text-xs text-slate-500 leading-relaxed max-w-sm">
-                ChatBubble is a premier anonymous social platform offering immediate, free stranger chats without registration. Experience private, safe communication tunnels designed for authentic interactions in 2026.
+                ChatBubble is a premier private social platform offering immediate, free stranger chats without registration. Experience private, safe communication tunnels designed for authentic interactions in 2026.
               </p>
               <div className="flex flex-wrap gap-2 pt-1 font-mono text-[9px] uppercase tracking-wider">
                 <span className="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-lg">Encrypted & Private</span>
@@ -591,7 +591,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
 
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-400 font-medium pt-2">
-            <p>© {new Date().getFullYear()} CHATBUBBLE Anonymous Communications. ALL RIGHTS RESERVED.</p>
+            <p>© {new Date().getFullYear()} CHATBUBBLE Communications. ALL RIGHTS RESERVED.</p>
             <div className="flex gap-6 uppercase text-[10px] tracking-widest font-bold text-slate-400/80">
               <span>Made for Connection</span>
               <span>Secure WebSocket Core</span>

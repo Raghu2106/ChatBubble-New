@@ -4,7 +4,7 @@ export const PrivacyPolicyContent = () => (
   <div className="space-y-6 text-[13px] md:text-sm text-slate-500 leading-relaxed font-sans">
     <section>
       <h3 className="text-slate-900 font-bold text-lg mb-2">1. Comprehensive Overview & Commitment</h3>
-      <p>Welcome to ChatBubble (referred to herein as "the Platform", "we", "us", or "our"). We are dedicated to delivering a seamless, secure, and fully anonymous digital corridor for individuals worldwide. This Privacy Policy outlines our transparent, strict data-handling practices, your privacy rights, and how global regulations safeguard your interaction details when accessing our services.</p>
+      <p>Welcome to ChatBubble (referred to herein as "the Platform", "we", "us", or "our"). We are dedicated to delivering a seamless, secure, and fully private digital corridor for individuals worldwide. This Privacy Policy outlines our transparent, strict data-handling practices, your privacy rights, and how global regulations safeguard your interaction details when accessing our services.</p>
     </section>
 
     <section>

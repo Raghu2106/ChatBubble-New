@@ -210,7 +210,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({
                   onClick={(e) => handleLinkClick(e, onNavigateHome)}
                   className="px-6 py-3 bg-brand text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl hover:bg-brand/90 transition-all shadow-md shadow-brand/10 text-center"
                 >
-                  Launch Anonymous Chat
+                  Launch Instant Chat
                 </a>
               </div>
             </div>
@@ -276,7 +276,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({
                 ChatBubble Media Hub
               </h1>
               <p className="text-sm text-text-muted leading-relaxed">
-                Unlock communication strategies, safety guides, and technological walkthroughs to enhance your anonymous social experience.
+                Unlock communication strategies, safety guides, and technological walkthroughs to enhance your private social experience.
               </p>
             </div>
 
@@ -355,9 +355,9 @@ export const BlogPage: React.FC<BlogPageProps> = ({
                       <Shield size={12} />
                       Safe Corridor
                     </div>
-                    <h3 className="text-base font-bold text-text">Incognito Social Space</h3>
+                    <h3 className="text-base font-bold text-text">Private Social Space</h3>
                     <p className="text-xs leading-relaxed text-text-muted/90">
-                      Connect instantly with real users worldwide in our fully encrypted and temporary chat corridor. Read our safety guides to stay anonymous.
+                      Connect instantly with real users worldwide in our fully encrypted and temporary chat corridor. Read our safety guides to protect your privacy.
                     </p>
                     <a
                       href="/"
@@ -374,7 +374,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({
                 <HelpCircle size={36} className="mx-auto text-text-muted/40" />
                 <h3 className="text-lg font-bold text-text">No articles match your search</h3>
                 <p className="text-xs text-text-muted max-w-sm mx-auto leading-relaxed">
-                  We couldn't find any articles matching your search query. Try searching for "Safety", "Anonymity", or "Icebrew".
+                  We couldn't find any articles matching your search query. Try searching for "Safety", "Privacy", or "Icebreakers".
                 </p>
                 <button
                   type="button"
@@ -394,7 +394,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({
             <div className="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-text-muted/50 font-medium">
               <div className="flex items-center gap-2">
                 <MessageCircle size={14} className="text-brand" />
-                <span>ChatBubble — Free Anonymous Chat Corridor</span>
+                <span>ChatBubble — Free Chat Corridor</span>
               </div>
               <div>
                 © {new Date().getFullYear()} ChatBubble. All rights reserved.

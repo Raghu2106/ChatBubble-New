@@ -66,7 +66,7 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({ type, onNavigateHome }) 
               {isPrivacy ? 'Privacy Policy' : 'Terms of Service'}
             </h1>
             <p className="text-sm text-text-muted/70 font-medium">
-              Last updated: June 3, 2026 • ChatBubble Anonymous Chat Platform
+              Last updated: June 3, 2026 • ChatBubble Communication Platform
             </p>
           </div>
 
@@ -77,7 +77,7 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({ type, onNavigateHome }) 
               Quick Summary for Our Users
             </h2>
             <p className="text-xs text-text-muted leading-relaxed">
-              We operate ChatBubble as a completely anonymous and ephemeral service. This means we do not ask you to register,
+              We operate ChatBubble as a completely private and ephemeral service. This means we do not ask you to register,
               provide an email address, or link personal profiles. Our temporary WebSocket connections do not log or store chat histories
               permanently. We present these guidelines to guarantee service compliance, safeguard participant privacy, and satisfy our automated
               moderation rules.
@@ -133,7 +133,7 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({ type, onNavigateHome }) 
         <div className="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-text-muted/50 font-medium">
           <div className="flex items-center gap-2">
             <MessageCircle size={14} className="text-brand" />
-            <span>ChatBubble — Free Anonymous Chatroom Corridor</span>
+            <span>ChatBubble — Free Chatroom Corridor</span>
           </div>
           <div>
             © {new Date().getFullYear()} ChatBubble. All rights reserved.

@@ -533,9 +533,9 @@ async function startServer() {
     <priority>0.8</priority>
   </url>
 
-  <!-- Deep-link Blog Post: Why People Open Up More in Anonymous Conversations -->
+  <!-- Deep-link Blog Post: Why People Open Up More in Private Conversations -->
   <url>
-    <loc>https://chatbubble.fun/blog/why-people-open-up-more-in-anonymous-conversations</loc>
+    <loc>https://chatbubble.fun/blog/why-people-open-up-more-in-private-conversations</loc>
     <lastmod>2026-06-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -559,7 +559,7 @@ async function startServer() {
 
   <!-- Deep-link Blog Post: Psychology of Connections -->
   <url>
-    <loc>https://chatbubble.fun/blog/psychology-of-anonymous-connections</loc>
+    <loc>https://chatbubble.fun/blog/psychology-of-ephemeral-connections</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -1118,18 +1118,18 @@ async function startServer() {
       const cleanPath = pathname.replace(/\/$/, ""); // strip trailing slash
 
       let title = "ChatBubble | Free Chatrooms Without Registration";
-      let description = "ChatBubble offers premium free chatrooms without registration. Connect instantly and anonymously in secure public rooms or private one-on-one chats. The ultimate destination for chatting without signup.";
+      let description = "ChatBubble offers premium free chatrooms without registration. Connect instantly and privately in secure public rooms or private one-on-one chats. The ultimate destination for chatting without signup.";
       let canonicalUrl = `https://chatbubble.fun${cleanPath || "/"}`;
 
       if (cleanPath === "/privacy") {
-        title = "Privacy Policy | ChatBubble Anonymous Chat Lounge";
+        title = "Privacy Policy | ChatBubble Private Chat Lounge";
         description = "Read our full privacy policy. ChatBubble does not store your personal information, server chat logs, or IP directories permanently. Chat with absolute safety and peace of mind.";
       } else if (cleanPath === "/terms") {
         title = "Terms of Service | ChatBubble Chat Corridor Rules";
-        description = "Review our platform code of conduct and visitor rules. ChatBubble promotes safe, respectful, and friendly anonymous interactions for adults.";
+        description = "Review our platform code of conduct and visitor rules. ChatBubble promotes safe, respectful, and friendly guest interactions for adults.";
       } else if (cleanPath === "/blog") {
         title = "Official ChatBubble Blog | Stranger Chat Safety & Communication Guides";
-        description = "Read helpful guides, safety tips, icebreakers, and tech tutorials from our editorial team on mastering free anonymous chatrooms safely.";
+        description = "Read helpful guides, safety tips, icebreakers, and tech tutorials from our editorial team on mastering free guest chatrooms safely.";
       } else if (cleanPath.startsWith("/blog/")) {
         const slug = cleanPath.split("/blog/")[1] || "";
         const post = BLOG_POSTS.find(p => p.slug === slug);

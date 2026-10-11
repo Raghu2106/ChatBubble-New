@@ -868,7 +868,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     <h5 className="text-[10px] uppercase font-black tracking-[0.2em] mb-2">About ChatBubble</h5>
                     <p className="text-[10px] text-text-muted leading-relaxed">
                       ChatBubble provides premium <strong>free chatrooms without registration</strong>. 
-                      Connect instantly in localized lobbies or <strong>chat anonymously</strong> with private one-on-one sessions.
+                      Connect instantly in localized lobbies or <strong>chat privately</strong> with one-on-one sessions.
                       A secure space for talking to strangers worldwide.
                     </p>
                   </div>
@@ -1299,7 +1299,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 <section>
                   <h4 className="text-[10px] font-black uppercase tracking-widest text-brand mb-2">1. Respect Each Other</h4>
                   <p className="text-[11px] text-text-muted leading-relaxed font-medium">
-                    Harassment, hate speech, or bullying will not be tolerated. We are a place for anonymous interaction, but that doesn't excuse toxicity.
+                    Harassment, hate speech, or bullying will not be tolerated. We are a space for open, friendly interaction, but that doesn't excuse toxicity.
                   </p>
                 </section>
                 <section>
@@ -1317,7 +1317,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 <section>
                   <h4 className="text-[10px] font-black uppercase tracking-widest text-brand mb-2">4. Privacy First</h4>
                   <p className="text-[11px] text-text-muted leading-relaxed font-medium">
-                    Don't share personal identification (PII) of yourself or others. Our session-based model is designed to keep you anonymous.
+                    Don't share personal identification (PII) of yourself or others. Our session-based model is designed to keep your identity confidential.
                   </p>
                 </section>
                 <section>

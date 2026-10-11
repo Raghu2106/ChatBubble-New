@@ -38,9 +38,9 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- Deep-link Blog Post: Why People Open Up More in Anonymous Conversations -->
+  <!-- Deep-link Blog Post: Why People Open Up More in Private Conversations -->
   <url>
-    <loc>https://chatbubble.fun/blog/why-people-open-up-more-in-anonymous-conversations</loc>
+    <loc>https://chatbubble.fun/blog/why-people-open-up-more-in-private-conversations</loc>
     <lastmod>2026-06-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -64,7 +64,7 @@
 
   <!-- Deep-link Blog Post: Psychology of Connections -->
   <url>
-    <loc>https://chatbubble.fun/blog/psychology-of-anonymous-connections</loc>
+    <loc>https://chatbubble.fun/blog/psychology-of-ephemeral-connections</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
