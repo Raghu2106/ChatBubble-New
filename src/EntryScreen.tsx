@@ -115,7 +115,7 @@ export const EntryScreen: React.FC<EntryScreenProps> = ({ onJoin, onClose, error
             disabled={!isFormValid || loading}
             className={`w-full h-14 rounded-xl font-bold transition-all flex items-center justify-center gap-2 active:scale-95 ${
               isFormValid && !loading
-                ? 'bg-brand text-white shadow-lg shadow-brand/10 hover:bg-brand-dark' 
+                ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/25 hover:from-violet-500 hover:to-indigo-500 hover:shadow-violet-500/40' 
                 : 'bg-slate-100 text-slate-400 cursor-not-allowed opacity-60'
             }`}
           >

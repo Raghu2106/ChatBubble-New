@@ -48,17 +48,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const formattedUserCount = totalUsers.toLocaleString();
 
   return (
-    <div className="min-h-screen bg-[#fafafa] text-slate-900 flex flex-col font-sans relative">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-purple-50/20 to-slate-50 text-slate-900 flex flex-col font-sans relative overflow-x-hidden">
+      {/* Full-Width Ambient Glows (eliminates edge clipping / vertical lines) */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-1/4 w-[32rem] h-[32rem] bg-gradient-to-bl from-purple-500/8 via-pink-500/4 to-transparent rounded-full blur-3xl" />
+        <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-gradient-to-tr from-cyan-500/8 via-blue-500/4 to-transparent rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-gradient-to-t from-violet-500/8 to-transparent rounded-full blur-3xl" />
+      </div>
+
       {/* Main Wrapper */}
       <div className="flex-1 flex flex-row relative w-full justify-center">
         {/* Center Content Container */}
-        <div className={`flex-1 ${step === 'chat' && user ? 'max-w-[1350px]' : 'max-w-5xl'} flex flex-col items-center relative overflow-x-hidden min-w-0 transition-all duration-300`}>
-          {/* Decorative Elements */}
-          <div className="absolute top-0 right-0 w-1/2 h-screen bg-brand/5 -skew-x-12 translate-x-1/3 pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-1/3 h-1/2 bg-brand/5 skew-x-12 -translate-x-1/4 pointer-events-none" />
-
+        <div className={`flex-1 ${step === 'chat' && user ? 'max-w-[1350px]' : 'max-w-5xl'} flex flex-col items-center relative min-w-0 transition-all duration-300`}>
           {/* Main Content */}
-          <div className="flex-1 flex flex-col items-center justify-center px-6 pt-16 pb-12 w-full relative z-10">
+          <div className="flex-1 flex flex-col items-center justify-center px-6 pt-16 pb-12 w-full relative z-10 border-0 border-none outline-none">
             {step === 'chat' && user ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.98, y: 15 }}
@@ -90,10 +93,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     </div>
                     
                     {totalUsers > 0 && (
-                      <div className="flex items-center gap-2 px-3 py-1 bg-slate-900/5 rounded-lg border border-slate-900/5">
-                        <Users size={14} className="text-slate-400" />
-                        <span className="text-xs font-black text-slate-600 tracking-tight">
-                          <span className="text-brand tabular-nums">{formattedUserCount}</span> USERS ONLINE
+                      <div className="flex items-center gap-2 px-3.5 py-1.5 bg-white shadow-sm rounded-full border border-purple-100">
+                        <Users size={14} className="text-brand" />
+                        <span className="text-xs font-black text-slate-700 tracking-tight">
+                          <span className="text-brand tabular-nums font-black">{formattedUserCount}</span> USERS ONLINE
                         </span>
                       </div>
                     )}
@@ -101,7 +104,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
                   <h1 className="text-4xl md:text-7xl font-bold mb-6 tracking-tighter leading-[0.95] font-display text-slate-950">
                     Connections <br />
-                    <span className="text-brand">Simplified.</span>
+                    <span className="bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 bg-clip-text text-transparent">Simplified.</span>
                   </h1>
                   
                   <p className="text-base md:text-xl text-slate-500 max-w-xl mx-auto leading-relaxed font-medium mb-10">
@@ -118,10 +121,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 >
                   <button 
                     onClick={onStart}
-                    className="group relative px-10 py-5 bg-slate-950 text-white rounded-full font-bold text-lg shadow-2xl hover:shadow-brand/20 hover:bg-brand transition-all flex items-center gap-4 active:scale-95"
+                    className="group relative px-10 py-5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-full font-bold text-lg shadow-xl shadow-violet-500/25 hover:shadow-2xl hover:shadow-violet-500/40 hover:from-violet-500 hover:to-indigo-500 transition-all flex items-center gap-4 active:scale-95 border border-white/20"
                   >
                     Start Chatting
-                    <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                    <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center group-hover:translate-x-1 transition-transform">
                       <MessageCircle size={18} />
                     </div>
                   </button>
@@ -208,10 +211,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="p-8 bg-brand text-white rounded-[2.5rem] shadow-xl flex flex-col justify-between group"
+              className="p-8 bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 text-white rounded-[2.5rem] shadow-xl shadow-purple-600/20 flex flex-col justify-between group border border-purple-400/20"
             >
-              <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
-                <Zap size={24} />
+              <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-sm">
+                <Zap size={24} className="text-white" />
               </div>
               <div>
                 <h3 className="text-2xl font-bold mb-2 tracking-tight">Instant No Signup Chat</h3>
